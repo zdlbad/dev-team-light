@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>界面 · 小样</title>
+<style>
+:root{
+  --bg:#f7f6f3; --panel:#ffffff; --ink:#1d1d1b; --ink-2:#55534e; --ink-3:#8a877f; --line:#dedbd3; --accent:#2563eb; --accent-bg:#e8efff;
+  --data:#e7f5ec; --data-line:#2f855a; --area:#f4f4f1; --area-line:#b8b5ad;
+  --badge:#fff3cd; --badge-ink:#7a5200; --badge-line:#f0d58c; --warn:#b35c00; --red:#cf222e;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#18181a; --panel:#222225; --ink:#ecebe7; --ink-2:#b5b2ab; --ink-3:#85827b; --line:#3a3a3e; --accent:#7aa2ff; --accent-bg:#26314d;
+    --data:#1f3327; --data-line:#4ade80; --area:#1d1d20; --area-line:#4a4a50;
+    --badge:#3a3220; --badge-ink:#fbbf24; --badge-line:#6b5f2e; --warn:#fb923c; --red:#ff6b6b;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 system-ui,"PingFang SC","Microsoft YaHei",sans-serif}
+h1{font-size:20px;margin:0 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h1 .kind{color:var(--ink-3);font-weight:400;font-size:14px}
+h1 .sep{color:var(--ink-3);font-weight:400}
+h1 .id{color:var(--ink-3);font-weight:400}
+h1 .cnt{color:var(--ink-3);font-weight:400;font-size:13px}
+.sub{color:var(--ink-2);margin:0 0 10px;max-width:960px}
+.badge{font-size:11px;padding:1px 7px;border-radius:9px;background:var(--badge);color:var(--badge-ink);border:1px solid var(--badge-line);font-weight:400;white-space:nowrap}
+.badge.ok{background:var(--data);color:var(--data-line);border-color:var(--data-line)}
+.act{font-size:12px;padding:3px 12px;border:1px solid var(--accent);color:var(--accent);background:var(--panel);border-radius:4px;cursor:pointer}
+.act:disabled{border-color:var(--line);color:var(--ink-3);cursor:default}
+.who{display:inline-block;font-size:12px;padding:0 8px;border-radius:9px;border:1px solid var(--area-line);background:var(--area);white-space:nowrap}
+/* 视角切换：一条需求里有几个角色就有几个视角，一行按钮，当前的高亮 */
+.views{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.views .lbl{font-size:12px;color:var(--ink-3);margin-right:4px}
+.views .vw{font-size:13px;padding:3px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink-2);cursor:pointer}
+.views .vw.on{background:var(--accent-bg);border-color:var(--accent);color:var(--ink);font-weight:600}
+.views .vw small{color:var(--ink-3);font-weight:400;margin-left:6px;font-size:11px}
+/* 一行屏的序列：① 老人列表 → ② 建档 → ③ 档案页，两头上一屏下一屏；只走本视角的屏 */
+.seq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.seq .steps{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.seq .step{font-size:13px;padding:3px 10px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink-2);cursor:pointer}
+.seq .step.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.seq .step.end{border-style:dashed;cursor:default}
+.seq .step.end.on{background:var(--data);border-color:var(--data-line);color:var(--data-line)}
+.seq .arr{color:var(--ink-3)}
+.seq .nav2{margin-left:auto;display:flex;gap:6px}
+/* 当前屏的标题一行，右边是这一屏的「定下」 */
+.scrhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;font-size:15px;font-weight:600}
+.scrhead .n{color:var(--ink-3);font-weight:400}
+.scrhead .gate{margin-left:auto;display:flex;align-items:center;gap:8px;font-weight:400}
+/* 左边大框嵌小样，右边一栏说明 */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:900px){.stage{grid-template-columns:1fr}}
+iframe.mock{width:100%;height:600px;border:1px solid var(--line);border-radius:10px;background:#fff;display:block}
+/* 小样上方一行：钉了几条要问的 */
+.pinbar{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12px;color:var(--ink-3)}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card h3{font-size:12px;margin:0 0 6px;color:var(--ink-3);font-weight:600;display:flex;align-items:center;gap:8px}
+.card ul{margin:0;padding-left:18px}
+.card li{margin:2px 0}
+.card li .to{color:var(--ink-3)}
+.card li .to b{color:var(--ink);font-weight:500}
+.card li .scr{color:var(--ink-3);font-size:12px;margin-right:4px}
+.card li .hand{font-size:11px;padding:0 7px;border-radius:9px;border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
+.card .none{color:var(--ink-3)}
+/* 问了什么：照业务页的问题卡，红框、底下一排选项（第一个是偏向，加粗）加「另说」；只列没答的 */
+.ask{position:relative;border:1.2px solid var(--red);background:var(--panel);border-radius:10px;padding:10px 32px 10px 12px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.ask .no{position:absolute;top:9px;right:9px;width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:600;line-height:18px;text-align:center}
+.ask + .ask{margin-top:8px}
+.ask .q{font-size:13.5px;font-weight:600}
+.ask .lean{font-size:12.5px;color:var(--ink-2);border-left:3px solid var(--red);padding-left:8px}
+.ask .lean b{color:var(--ink)}
+.ask .scr{font-size:12px;color:var(--ink-3)}
+.ask .ans{font-size:12.5px;color:var(--ink-2)}
+.ask .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.ask .opt{font:inherit;font-size:12px;text-align:left;padding:3px 9px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);cursor:pointer}
+.ask .opt.b{border-color:var(--accent);color:var(--accent);font-weight:600}
+.scrhead .stp{font-size:12px;font-weight:400;color:var(--ink-3)}
+.fin{display:flex;align-items:flex-start;gap:8px;margin:4px 0}
+.fin .badge{margin-top:3px}
+.idle{color:var(--ink-3)}
+.done{background:var(--data);border:1px solid var(--data-line);color:var(--data-line);border-radius:8px;padding:8px 12px;margin:0 0 12px;font-size:13px}
+.done a{color:var(--accent);text-decoration:none}
+/* 左边栏多两层：需求下面是视角，视角下面是屏；屏那行右边小字标定过的日期 */
+/* 需求那行：三角、标题（可折行）、红点、已定几屏；三角能点 */
+nav a.sub.req{display:flex;align-items:flex-start;gap:2px;padding-left:14px}
+nav a.sub.req .t{flex:1;min-width:0}
+nav a.sub.req .open{margin-top:1px}
+nav a.sub.req .dc{flex:none;margin-left:6px;font-size:10.5px;font-weight:400;color:var(--ink-3)}
+nav .tri[data-tg]{cursor:pointer;flex:none;width:14px;text-align:center;font-size:11px}
+nav .tri[data-tg]:hover{color:var(--ink)}
+nav a.sub2.vw{padding:4px 16px 2px 40px;font-size:11px;color:var(--ink-3)}
+nav a.sub2.vw .tri{display:inline-block;margin-left:-14px;font-size:10px;color:var(--ink-3)}
+nav a.sub2.vw.on{background:none;color:var(--ink);font-weight:600}
+nav a.sub2.scr{padding-left:56px;display:flex;align-items:center}
+nav a.sub2.scr i{margin-left:auto;font-style:normal;font-size:10px;color:var(--data-line);white-space:nowrap}
+/* 左边栏需求、屏那行的红点，数字是还没答的问题条数（照业务页） */
+nav a .open,nav a.sub2.scr i.open{display:inline-block;min-width:8px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--red);color:#fff;font-style:normal;font-size:10.5px;font-weight:600;text-align:center;line-height:16px;vertical-align:1px}
+</style>
+<link rel="stylesheet" href="../../lib/shell.css">
+<script src="../../lib/shell.js"></script>
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="wrap">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+// 工作台起的时候 window.DATA 由 /data/<页>.js 先定义，下面每个常量都先取它；单开这份小样时 DATA 是空的，用写死的
+const DATA = (typeof window !== 'undefined' && window.DATA) || {}
+const LIVE = Object.keys(DATA).length > 0
+const post = (action, body) => fetch('api/' + action, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json()).then((o) => { if (o.ok) location.reload(); else alert(o.error) })
+// UI 设计的输出，形状照 roles/UI 设计.md：
+// 上下文/<名>/界面/<需求编号>.json：{ req, title, flow?, views: [{ who, screens: [{ id, title, file, step?, shows: [字段], does: [{ act, to, note? }], asks?: [{ id, q, lean, options?, answer?, answeredAt? }], finds?: [一句需求候选], decidedAt? }] }] }
+//   一条需求是系统功能，里面有几个角色就有几个视角（views），每个视角自己一串屏，按操作先后排
+//   屏 id 在一条需求里不重复（跨视角也不重复）；does 的 to 是这条需求里任何一屏的 id 或「完」；to 指到别的视角的屏就是交棒
+//   note 是按了之后的提醒（比如「下一条需求」「交棒」）；decidedAt 是这一屏定下的那天，没有就是没定——定下按屏来，一屏一个
+// 上下文/<名>/界面/<需求编号>/<屏 id>.html：单开能看的一屏，写死数据；跳下一屏的链接写成 <a href="#go:<屏 id>">，这页嵌进去时拦下来切屏
+// 屏可以带 step：它对着 flow 那段流程的第几步；工作台读流程文件，把那一步的标题记进屏的 stepTitle
+// asks 是画的时候没说清的，挂在出问题的这一屏上，在这页答：id 在一条需求里不重复；options 第一个是偏向；答了写 answer 和 answeredAt。
+//   页面只摆没答的：答过的不列、不钉（角色照着改了屏就把它删掉，再有问题再问），碰到带 answer 的也当没有
+// 工作台给的：REQS { 上下文: [需求] }，MOCKS { '<需求编号>/<屏 id>': 屏的 html }，OPEN { '<上下文>/<需求编号>/<屏 id>': 没答的条数 }（没有就不列）
+// 地址：#<上下文>/<需求编号>/<屏 id>（视角从屏推出来）；按「定下」= post('定下', { mockup: 需求编号, screen: 屏 id, context })，这一屏记 decidedAt: 今天
+// 点问题卡上的一个选项或「另说」= post('答', { mockup: 需求编号, screen: 问题所在的屏 id, ask: 问题 id, context, text })，写回那条问题
+
+const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统', '共享内核']
+const REQS = DATA.REQS ?? {
+  '养老系统': [
+    { req: 'N-01', title: '给老人建档，记下支持计划和决定通知书', flow: '01-老人注册',
+      views: [
+        { who: '案例经理', screens: [
+          { id: 'list', title: '老人列表', file: 'list.html', decidedAt: '2026-11-01',
+            shows: ['姓名', 'My Aged Care 编号', '分级', '状态'],
+            does: [{ act: '建档', to: 'new' }],
+            finds: ['老人列表要能按状态筛（待评估 / 未签约 / 在册）'] },
+          { id: 'new', title: '建档', file: 'new.html', decidedAt: '2026-11-02', step: '5',
+            shows: ['My Aged Care 编号', '姓名', '决定通知书上的分级与路径', '批的服务类型（多选）', '支持计划日期'],
+            does: [{ act: '建档', to: 'file' }, { act: '取消', to: 'list' }],
+            asks: [
+              { id: 'a-1', q: '分级与路径是通知书上抄还是下拉选？', lean: '下拉选，手册 7 级 + 过渡', options: ['下拉选，手册 7 级 + 过渡', '照通知书原样抄'] },
+              { id: 'a-2', q: '同一个编号第二次建档怎么办？', lean: '提示已有档案、跳过去', options: ['提示已有档案、跳过去', '不让建，报错'] } ] },
+          { id: 'file', title: '档案页', file: 'file.html', decidedAt: null,
+            shows: ['她是谁', '批了什么', '走到哪一段：未签约'],
+            does: [{ act: '记签协议', to: '完', note: '下一条需求' }, { act: '给家属看', to: 'mine', note: '交棒' }] } ] },
+        { who: '老人/家属', screens: [
+          { id: 'mine', title: '我的档案', file: 'mine.html', decidedAt: null,
+            shows: ['支持计划', '决定通知书'],
+            does: [{ act: '看通知书', to: '完' }],
+            asks: [{ id: 'a-3', q: '家属能看到支持计划的金额吗？', lean: '能' }],
+            finds: ['家属要有登录入口'] } ] } ] },
+    { req: 'N-03', title: '录一笔服务记录，扣她的基金', flow: '03-服务发生与申报',
+      views: [
+        { who: '照护伙伴', screens: [
+          { id: 'log', title: '录一笔服务', file: 'log.html', decidedAt: null,
+            shows: ['老人', '日期', '服务类型', '时长', '单价（自动带出）', '金额'],
+            does: [{ act: '记下', to: 'after' }],
+            asks: [{ id: 'a-1', q: '单价按协议价还是价目表价？', lean: '协议价', options: ['协议价', '价目表价'] }] },
+          { id: 'after', title: '录完', file: 'after.html', decidedAt: null,
+            shows: ['她名下基金还剩多少', '这一笔扣在哪笔基金上'],
+            does: [{ act: '再录一笔', to: 'log' }, { act: '交给案例经理核', to: 'review', note: '交棒' }] } ] },
+        { who: '案例经理', screens: [
+          { id: 'review', title: '待核的服务记录', file: 'review.html', decidedAt: null,
+            shows: ['谁录的', '老人', '服务', '金额', '扣在哪笔基金上'],
+            does: [{ act: '核过', to: '完' }],
+            asks: [{ id: 'a-2', q: '每笔都要核还是抽核？', lean: '每笔', options: ['每笔', '抽核'] }] } ] },
+        { who: '老人/家属', screens: [
+          { id: 'balance', title: '我的基金余额', file: 'balance.html', decidedAt: null,
+            shows: ['这一季还剩多少', '这个月扣了什么'],
+            does: [{ act: '看明细', to: '完' }],
+            finds: ['家属要收到扣款通知'] } ] } ] } ] }
+
+// 屏的 html 写死在这里，键 <需求编号>/<屏 id>；工作台里 DATA.MOCKS 从文件读进来，一样的键。粗线条：系统字体、白底、一屏一件事，顶上一行写谁在用
+const MOCK_CSS = '<style>body{margin:0;padding:18px 24px;background:#fff;color:#222;font:14px/1.6 system-ui,"PingFang SC","Microsoft YaHei",sans-serif}h1{font-size:16px;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid #ddd;font-weight:600}h1 i{font-style:normal;color:#888;font-weight:400;margin-right:8px}table{border-collapse:collapse;width:100%;margin-bottom:16px}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #e5e5e5}th{color:#666;font-weight:600;font-size:12px}label{display:block;margin:0 0 10px;color:#444}label span{display:block;font-size:12px;color:#777}input,select{font:inherit;padding:4px 6px;border:1px solid #bbb;border-radius:3px;min-width:260px;background:#fff;color:#222}input[readonly]{background:#f3f3f3;color:#555}.row{display:flex;gap:8px;align-items:center;margin-top:16px}.btn{display:inline-block;padding:5px 14px;border:1px solid #333;border-radius:4px;color:#222;background:#fff;text-decoration:none}.btn.pri{background:#222;color:#fff}.btn.sm{padding:2px 10px;font-size:12px}dl{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin:0 0 16px}dt{color:#777;font-size:12px;padding-top:3px}dd{margin:0}.box{border:1px solid #ddd;border-radius:6px;padding:10px 14px;margin-bottom:12px}.box h2{font-size:13px;margin:0 0 6px;color:#666}.chk{display:inline-block;margin-right:14px}.big{font-size:22px;font-weight:600}.muted{color:#777;font-size:12px}</style>'
+const mockDoc = (body) => '<!doctype html><html lang="zh"><head><meta charset="utf-8">' + MOCK_CSS + '</head><body>' + body + '</body></html>'
+const MOCKS = DATA.MOCKS ?? {
+  'N-01/list': mockDoc(`<h1><i>案例经理</i>老人列表</h1>
+<table><tr><th>姓名</th><th>My Aged Care 编号</th><th>分级</th><th>状态</th></tr>
+<tr><td>黄太太</td><td>AC12345678</td><td>HCP 3 级（过渡）</td><td>未签约</td></tr>
+<tr><td>陈先生</td><td>AC23456789</td><td>HCP 2 级</td><td>在册</td></tr>
+<tr><td>李奶奶</td><td>AC34567890</td><td>—</td><td>待评估</td></tr></table>
+<div class="row"><a class="btn pri" href="#go:new">建档</a><span class="muted">拿到决定通知书，给一位老人建档</span></div>`),
+  'N-01/new': mockDoc(`<h1><i>案例经理</i>建档</h1>
+<label><span>My Aged Care 编号</span><input value="AC12345678" data-ask="a-2"></label>
+<label><span>姓名</span><input value="黄太太"></label>
+<label><span>决定通知书上的分级与路径</span><select data-ask="a-1"><option>HCP 3 级 · 过渡</option><option>HCP 1 级</option><option>HCP 2 级</option><option>HCP 3 级</option><option>HCP 4 级</option></select></label>
+<label><span>批的服务类型（多选）</span><span class="chk"><input type="checkbox" checked style="min-width:0"> 居家清洁</span><span class="chk"><input type="checkbox" checked style="min-width:0"> 个人护理</span><span class="chk"><input type="checkbox" style="min-width:0"> 交通</span><span class="chk"><input type="checkbox" style="min-width:0"> 护理</span></label>
+<label><span>支持计划日期</span><input value="2026-11-02"></label>
+<div class="row"><a class="btn pri" href="#go:file">建档</a><a class="btn" href="#go:list">取消</a></div>`),
+  'N-01/file': mockDoc(`<h1><i>案例经理</i>黄太太的档案</h1>
+<div class="box"><h2>她是谁</h2><dl><dt>姓名</dt><dd>黄太太</dd><dt>My Aged Care 编号</dt><dd>AC12345678</dd><dt>支持计划日期</dt><dd>2026-11-02</dd></dl></div>
+<div class="box"><h2>批了什么</h2><dl><dt>分级与路径</dt><dd>HCP 3 级 · 过渡</dd><dt>批的服务类型</dt><dd>居家清洁、个人护理</dd><dt>决定通知书</dt><dd>2026-10-28 收到</dd></dl></div>
+<div class="box"><h2>走到哪一段</h2><dl><dt>状态</dt><dd><b>未签约</b></dd></dl></div>
+<div class="row"><a class="btn pri" href="#go:完">记签协议</a><span class="muted">下一条需求</span><a class="btn" href="#go:mine">给家属看</a><span class="muted">交给老人/家属</span></div>`),
+  'N-01/mine': mockDoc(`<h1><i>老人/家属</i>黄太太的档案</h1>
+<div class="box"><h2>支持计划</h2><dl><dt>计划日期</dt><dd>2026-11-02</dd><dt>案例经理</dt><dd>王敏 · 0412 345 678</dd><dt>批的服务</dt><dd>居家清洁、个人护理</dd><dt>每季预算</dt><dd data-ask="a-3">$4,000.00</dd></dl></div>
+<div class="box"><h2>决定通知书</h2><dl><dt>分级与路径</dt><dd>HCP 3 级 · 过渡</dd><dt>收到</dt><dd>2026-10-28</dd><dt>有效期</dt><dd>到 2027-10-27</dd></dl></div>
+<div class="row"><a class="btn pri" href="#go:完">看通知书</a><span class="muted">打开通知书原件</span></div>`),
+  'N-03/log': mockDoc(`<h1><i>照护伙伴</i>录一笔服务</h1>
+<label><span>老人</span><select><option>黄太太 · AC12345678</option><option>陈先生 · AC23456789</option></select></label>
+<label><span>日期</span><input value="2026-11-02"></label>
+<label><span>服务类型</span><select><option>居家清洁</option><option>个人护理</option></select></label>
+<label><span>时长</span><input value="2 小时"></label>
+<label><span>单价（自动带出）</span><input value="$62.00 / 小时" readonly data-ask="a-1"></label>
+<label><span>金额</span><input value="$124.00" readonly></label>
+<div class="row"><a class="btn pri" href="#go:after">记下</a></div>`),
+  'N-03/after': mockDoc(`<h1><i>照护伙伴</i>录完了</h1>
+<div class="box"><h2>这一笔</h2><dl><dt>老人</dt><dd>黄太太</dd><dt>服务</dt><dd>2026-11-02 居家清洁 2 小时</dd><dt>金额</dt><dd>$124.00</dd></dl></div>
+<div class="box"><h2>扣在哪笔基金上</h2><dl><dt>基金</dt><dd>HCP 3 级 · 过渡 · 政府补贴</dd><dt>这一季还剩</dt><dd><span class="big">$3,876.00</span> <span class="muted">/ $4,000.00</span></dd></dl></div>
+<div class="row"><a class="btn pri" href="#go:log">再录一笔</a><a class="btn" href="#go:review">交给案例经理核</a><span class="muted">交给案例经理</span></div>`),
+  'N-03/review': mockDoc(`<h1><i>案例经理</i>待核的服务记录</h1>
+<table><tr><th>谁录的</th><th>老人</th><th>服务</th><th>金额</th><th>扣在哪笔基金上</th><th></th></tr>
+<tr><td>周姐</td><td>黄太太</td><td>2026-11-02 居家清洁 2 小时</td><td>$124.00</td><td>HCP 3 级 · 过渡</td><td><a class="btn pri sm" href="#go:完">核过</a></td></tr>
+<tr><td>周姐</td><td>陈先生</td><td>2026-11-01 个人护理 1 小时</td><td>$68.00</td><td>HCP 2 级</td><td><a class="btn pri sm" href="#go:完">核过</a></td></tr></table>
+<span class="muted">核过的才扣基金、才进申报</span>`),
+  'N-03/balance': mockDoc(`<h1><i>老人/家属</i>我的基金余额</h1>
+<div class="box"><h2>这一季还剩</h2><dl><dt>基金</dt><dd>HCP 3 级 · 过渡 · 政府补贴</dd><dt>余额</dt><dd><span class="big">$3,876.00</span> <span class="muted">/ $4,000.00 · 到 2026-12-31</span></dd></dl></div>
+<div class="box"><h2>这个月扣了什么</h2><table><tr><th>日期</th><th>服务</th><th>谁来的</th><th>金额</th></tr>
+<tr><td>2026-11-02</td><td>居家清洁 2 小时</td><td>周姐</td><td>$124.00</td></tr></table></div>
+<div class="row"><a class="btn pri" href="#go:完">看明细</a><span class="muted">每一笔的时长和单价</span></div>`) }
+
+// 注进每屏 srcdoc 末尾的一小段：拦 a[href^="#go:"] 的点击，告诉外面切屏
+const INJECT = '<scr' + 'ipt>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest(\'a[href^="#go:"]\');if(!a)return;e.preventDefault();parent.postMessage({go:decodeURIComponent(a.getAttribute("href").slice(4))},"*")})</scr' + 'ipt>'
+
+// 问题钉在小样上，像设计稿上的评论：注进 srcdoc 的第二段。屏的 html 里问题说的那个元素带 data-ask="a-4"（几条同一处空格隔开）；
+// 那个元素右上角一个带编号的圆点，没答红、答了灰；没标的、或 data-ask 指的元素找不到的，摞在这一屏右上角。
+// 点圆点弹气泡（问题、偏向、选项、「另说」），点外面收起；点选项告诉外面 { answer: { screen, ask, opt | other } }，外面走同一套答。
+// 圆点和气泡画在小样里面的一层，只占圆点自己那 18px，别处的点击照常落到小样上；只钉没答的
+const PIN_CSS = '<style>#__asks{position:absolute;left:0;top:0;width:0;height:0;z-index:2147483000;font:12.5px/1.5 system-ui,"PingFang SC","Microsoft YaHei",sans-serif}#__asks .__pin{position:absolute;width:18px;height:18px;border-radius:9px;background:#cf222e;color:#fff;font-size:11px;font-weight:600;line-height:18px;text-align:center;cursor:pointer;box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.35)}#__asks .__pin.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #cf222e}#__asks .__pin.flash{animation:__fl .45s ease-in-out 3}@keyframes __fl{50%{transform:scale(1.7)}}#__asks .__bub{position:absolute;width:260px;background:#fff;color:#222;border:1.2px solid #cf222e;border-radius:8px;padding:8px 10px;box-shadow:0 4px 14px rgba(0,0,0,.18)}#__asks .__q{font-weight:600;margin-bottom:4px}#__asks .__lean{color:#55534e;border-left:3px solid #cf222e;padding-left:6px;margin-bottom:6px}#__asks .__opt{display:inline-block;font:inherit;font-size:12px;text-align:left;margin:0 6px 6px 0;padding:2px 8px;border:1px solid #ccc;border-radius:4px;background:#fff;color:#222;cursor:pointer}#__asks .__opt.b{border-color:#2563eb;color:#2563eb;font-weight:600}</style>'
+// 在小样里跑的那段：D = { screen, flash, asks: [{ id, n, q, lean, options }] }（只有没答的）；只用老写法，整段 toString 注进去
+function pinScript(D) {
+  var L = document.createElement('div'); L.id = '__asks'; document.body.appendChild(L)
+  var open = D.flash || null, flash = D.flash || null
+  var h = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] }) }
+  var find = function (id) { var all = document.querySelectorAll('[data-ask]'); for (var i = 0; i < all.length; i++) if ((' ' + all[i].getAttribute('data-ask') + ' ').replace(/\s+/g, ' ').indexOf(' ' + id + ' ') >= 0) return all[i]; return null }
+  function bubble(a, x, y, W) {
+    var opts = a.options && a.options.length ? a.options : a.lean ? [a.lean] : []
+    var body = (a.lean ? '<div class="__lean">偏向 <b>' + h(a.lean) + '</b></div>' : '')
+        + opts.map(function (o, i) { return '<button class="__opt' + (i === 0 ? ' b' : '') + '" data-id="' + h(a.id) + '" data-opt="' + h(o) + '">' + h(a.options && a.options.length ? o : '照偏向') + '</button>' }).join('')
+        + '<button class="__opt" data-id="' + h(a.id) + '" data-other="1">另说</button>'
+    // 往右下展开：左边对齐圆点；右边放不下才翻到左边
+    var bx = x + 264 <= W ? x : Math.max(4, x + 18 - 260)
+    return '<div class="__bub" data-id="' + h(a.id) + '" style="left:' + Math.round(bx) + 'px;top:' + Math.round(y + 24) + 'px"><div class="__q">' + a.n + '. ' + h(a.q) + '</div>' + body + '</div>'
+  }
+  function draw() {
+    var W = document.documentElement.clientWidth, sx = window.pageXOffset || 0, sy = window.pageYOffset || 0, used = [], corner = 0, out = '', bub = ''
+    D.asks.forEach(function (a) {
+      var el = find(a.id), x, y, k = 0, i
+      if (el) { for (i = 0; i < used.length; i++) if (used[i] === el) k++; used.push(el); var r = el.getBoundingClientRect(); x = r.right + sx - 9 - k * 22; y = r.top + sy - 9 }
+      else { x = W - 28; y = 6 + corner++ * 24 }
+      x = Math.max(2, Math.min(x, W - 20)); y = Math.max(2, y)
+      out += '<span class="__pin' + (a.id === open ? ' on' : '') + (a.id === flash ? ' flash' : '') + '" data-id="' + h(a.id) + '" data-at="' + (el ? 'el' : 'corner') + '" title="' + h(a.q) + '" style="left:' + Math.round(x) + 'px;top:' + Math.round(y) + 'px">' + a.n + '</span>'
+      if (a.id === open) bub = bubble(a, x, y, W)
+    })
+    // 气泡最后画，压在所有圆点上面
+    L.innerHTML = out + bub
+    flash = null
+    // 气泡往下会出小样的底：翻到圆点上面
+    var b = L.querySelector ? L.querySelector('.__bub') : null
+    if (b && b.offsetHeight) { var top = parseFloat(b.style.top), bottom = (window.innerHeight || 0) + sy; if (top + b.offsetHeight > bottom && top - 30 - b.offsetHeight > sy) b.style.top = (top - 30 - b.offsetHeight) + 'px' }
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target, c = function (sel) { return t && t.closest ? t.closest(sel) : null }
+    var p = c('#__asks .__pin')
+    if (p) { var id = p.getAttribute('data-id'); open = open === id ? null : id; draw(); return }
+    var o = c('#__asks .__opt')
+    if (o) { var m = { screen: D.screen, ask: o.getAttribute('data-id') }; if (o.getAttribute('data-other')) m.other = '1'; else m.opt = o.getAttribute('data-opt'); parent.postMessage({ answer: m }, '*'); return }
+    if (c('#__asks .__bub')) return
+    if (open) { open = null; draw() }
+  })
+  window.addEventListener('resize', draw); window.addEventListener('load', draw)
+  draw()
+}
+// 一屏要问的：没答的那几条；编号是它在这里的第几条，小样上的圆点和旁边一栏的卡用同一个
+const asksOf = (sc) => (sc.asks ?? []).filter((a) => !a.answer)
+// 这一屏要注进去的：跳屏那段，加上钉问题那段（这一屏没有要问的就不加）
+const injectFor = (sc, flash) => {
+  const asks = asksOf(sc)
+  if (!asks.length) return INJECT
+  const D = { screen: sc.id, flash: flash ?? null, asks: asks.map((a, i) => ({ id: a.id, n: i + 1, q: a.q, lean: a.lean ?? null, options: a.options ?? [] })) }
+  return INJECT + PIN_CSS + '<scr' + 'ipt>(' + pinScript.toString() + ')(' + JSON.stringify(D).replace(/</g, '\\u003c') + ')</scr' + 'ipt>'
+}
+
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+const NUM = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
+const num = (i) => NUM[i] ?? `${i + 1}.`
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+
+// 上下文：左边栏第一层；地址 #<上下文>/<需求编号>/<屏 id>，视角不进地址，从屏 id 推出来（屏 id 在一条需求里不重复）
+let context = '养老系统'
+let view = ''          // '<需求编号>/<屏 id>'
+let finished = false   // 小样里按到了「完」
+let pendingFlash = null   // 右边一栏点了一条：{ screen, ask }，下一次画到那一屏时在小样上闪那个圆点、弹出气泡
+const reqsOf = (cx) => REQS[cx] ?? []
+const screensOf = (req) => req.views.flatMap((v) => v.screens)                       // 这条需求所有视角的屏
+const firstOf = (req) => req.views[0].screens[0].id                                   // 切需求默认进第一个视角第一屏
+const dfltOf = (cx) => { const r = reqsOf(cx)[0]; return r ? r.req + '/' + firstOf(r) : '' }
+const viewOf = (req, id) => req.views.find((v) => v.screens.some((s) => s.id === id)) ?? null   // 屏在哪个视角
+const parseHash = () => { const h = decodeURIComponent(location.hash.slice(1)); const i = h.indexOf('/'); const cx = i > 0 ? h.slice(0, i) : h; return CONTEXTS.includes(cx) ? { cx, v: (i > 0 ? h.slice(i + 1) : '') || dfltOf(cx) } : { cx: context, v: h || dfltOf(context) } }
+const go = (v) => { location.hash = context + '/' + v }
+// 当前看的：需求、视角、屏、屏在本视角里的序号；view 指的需求不在就取这个上下文第一条，屏不在就取第一个视角第一屏
+function current() {
+  const [rid, sid] = view.split('/')
+  const req = reqsOf(context).find((r) => r.req === rid) ?? reqsOf(context)[0]
+  if (!req) return null
+  const vw = viewOf(req, sid) ?? req.views[0]
+  const i = Math.max(0, vw.screens.findIndex((s) => s.id === sid))
+  return { req, vw, sc: vw.screens[i], i }
+}
+const scTitle = (req, id) => id === '完' ? '完' : (screensOf(req).find((s) => s.id === id)?.title ?? id)
+const scNum = (vw, id) => { const i = vw.screens.findIndex((s) => s.id === id); return i < 0 ? '' : num(i) }
+// 下一屏照 does 的 to 走：第一个指向本视角里别的屏的（指到别的视角的是交棒，不算下一屏）；上一屏是本视角前面哪一屏的 does 指到这里
+const nextOf = (vw, sc) => sc.does.find((d) => d.to !== '完' && d.to !== sc.id && vw.screens.some((s) => s.id === d.to))?.to ?? null
+const prevOf = (vw, i) => { for (let k = i - 1; k >= 0; k--) if (vw.screens[k].does.some((d) => d.to === vw.screens[i].id)) return vw.screens[k].id; return null }
+const decidedCount = (req) => screensOf(req).filter((s) => s.decidedAt).length
+// 还没答的问题条数：工作台注入 DATA.OPEN（键 '<上下文>/<需求编号>/<屏 id>' → 条数）；单开时（或单开里答了一条之后）从 REQS 数
+const openIn = (sc) => asksOf(sc).length
+const openOfScreen = (cx, req, sc) => DATA.OPEN ? (DATA.OPEN[cx + '/' + req.req + '/' + sc.id] ?? 0) : openIn(sc)
+const openOfReq = (cx, req) => screensOf(req).reduce((t, sc) => t + openOfScreen(cx, req, sc), 0)
+const dot = (n) => n ? `<i class="open" title="${n} 条没答">${n}</i>` : ''
+
+// 左边栏的折叠：需求那行、视角那行前面一个三角，点三角折起/展开下面那一层；正在看的那条需求，点需求那行本身也是折/展。
+// navOpen 只记手动折过的（键 '<上下文>/<需求编号>'、'<上下文>/<需求编号>/<视角>' → true/false），只在这一次打开页面里有效，不存。
+// 没记的：需求是正在看的那条才展开，视角都展开。切到一条需求（或一个视角）时它要是被手动折着，就打开；别的保持手动设的样子
+const navOpen = {}
+let navAt = { req: null, vw: null }   // 上一次画左边栏时正在看的需求、视角，切换时才去打开新的
+const tri = (key, open) => `<span class="tri" data-tg="1" data-key="${esc(key)}" data-open="${open ? 1 : 0}" title="${open ? '收起' : '展开'}">${open ? '▾' : '▸'}</span>`
+
+// 左边栏：框架画上下文那一层；这页交每个上下文展开后的 需求 › 视角 › 屏，右边小字几条需求。
+// 需求那行：三角、编号和标题、没答的红点（各屏之和）、已定几屏，折起来也照样显示；一条需求只有一个视角时不出视角那一层，屏直接挂在需求下面。
+// 视角那行折起来时带它下面各屏没答的红点；屏那行有没答的标红点加条数，定过的标 ✓ 和日期
+Shell.init({ contexts: CONTEXTS, page: {
+  badge: (cx) => { const n = reqsOf(cx).length; return n ? `${n} 条需求` : '' },
+  items: (cx) => {
+    const rs = reqsOf(cx); if (!rs.length) return ''
+    const cur = cx === context ? current() : null
+    if (cur) {
+      const rk = cx + '/' + cur.req.req, vk = rk + '/' + cur.vw.who
+      if (rk !== navAt.req && navOpen[rk] === false) delete navOpen[rk]
+      if (vk !== navAt.vw && navOpen[vk] === false) delete navOpen[vk]
+      navAt = { req: rk, vw: vk }
+    }
+    const scrRow = (r, s, i, onReq) => `<a href="#${esc(r.req + '/' + s.id)}" class="sub2 scr${onReq && cur.sc.id === s.id ? ' on' : ''}"><small>${num(i)}</small>${esc(s.title)}${dot(openOfScreen(cx, r, s))}${s.decidedAt ? `<i title="已定 ${esc(s.decidedAt)}">✓ ${esc(s.decidedAt.slice(5))}</i>` : ''}</a>`
+    return rs.map((r) => {
+      const onReq = !!cur && cur.req.req === r.req, rk = cx + '/' + r.req, open = navOpen[rk] ?? onReq
+      // 正在看的那条，整行就是折/展的开关；别的需求点那行是切过去（切过去自动展开），点三角只折/展
+      const self = onReq ? ` data-tg="1" data-key="${esc(rk)}" data-open="${open ? 1 : 0}"` : ''
+      const head = `<a href="#${esc(r.req + '/' + firstOf(r))}" class="sub req${onReq ? ' on' : ''}"${self}>${tri(rk, open)}<span class="t">${esc(r.req + ' ' + r.title)}</span>${dot(openOfReq(cx, r))}<span class="dc" title="已定几屏">${decidedCount(r)}/${screensOf(r).length}</span></a>`
+      if (!open) return head
+      if (r.views.length === 1) return head + r.views[0].screens.map((s, i) => scrRow(r, s, i, onReq)).join('')
+      return head + r.views.map((v) => {
+        const vk = rk + '/' + v.who, vOpen = navOpen[vk] ?? true
+        const n = vOpen ? 0 : v.screens.reduce((t, s) => t + openOfScreen(cx, r, s), 0)
+        return `<a href="#${esc(r.req + '/' + v.screens[0].id)}" class="sub2 vw${onReq && cur.vw === v ? ' on' : ''}">${tri(vk, vOpen)}${esc(v.who)}${dot(n)}</a>`
+          + (vOpen ? v.screens.map((s, i) => scrRow(r, s, i, onReq)).join('') : '')
+      }).join('')
+    }).join('')
+  },
+  pick: (cx) => { if (cx !== context) { context = cx; view = dfltOf(cx); finished = false } go(view); render() } },
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '界面', '建模', '编码'], current: '界面', live: !!DATA.WB } })
+
+// 「定下」按屏来：这一屏定过就显示那天，没定就一个按钮
+function gateView(sc) {
+  if (sc.decidedAt) return `<span class="gate"><span class="badge ok">已定 ${esc(sc.decidedAt)}</span></span>`
+  return `<span class="gate"><span class="badge">未定</span><button class="act">定下</button></span>`
+}
+// 视角切换那一行：每个视角一个按钮，按了进那个视角的第一屏；小字是这个视角定了几屏
+function viewsView(req, vw) {
+  return `<div class="views"><span class="lbl">视角</span>${req.views.map((v) => `<span class="vw${v === vw ? ' on' : ''}" data-go="${esc(v.screens[0].id)}">${esc(v.who)}<small>${v.screens.filter((s) => s.decidedAt).length}/${v.screens.length}</small></span>`).join('')}</div>`
+}
+// 本视角的屏序列；上一屏下一屏只在本视角里走
+function seqView(vw, sc, i) {
+  const ends = vw.screens.some((s) => s.does.some((d) => d.to === '完'))
+  const steps = vw.screens.map((s, k) => `<span class="step${s.id === sc.id && !finished ? ' on' : ''}" data-go="${esc(s.id)}">${num(k)} ${esc(s.title)}</span>`)
+  if (ends) steps.push(`<span class="step end${finished ? ' on' : ''}">完</span>`)
+  const prev = prevOf(vw, i), next = nextOf(vw, sc)
+  const t = (id) => vw.screens.find((s) => s.id === id)?.title ?? id
+  return `<div class="seq"><div class="steps">${steps.join('<span class="arr">→</span>')}</div>
+    <div class="nav2"><button class="act" data-go="${esc(prev ?? '')}"${prev ? '' : ' disabled'}>‹ 上一屏${prev ? ' ' + esc(t(prev)) : ''}</button><button class="act" data-go="${esc(next ?? '')}"${next ? '' : ' disabled'}>下一屏${next ? ' ' + esc(t(next)) : ''} ›</button></div></div>`
+}
+// 右边一栏：谁在用、显示什么、能按什么（交棒的那条标「→ 视角名」）、问了什么、发现了什么；问与发现是这条需求各视角各屏的都列，别的屏的标上视角和屏号
+function sideView(req, vw, sc) {
+  const others = (key) => req.views.flatMap((v) => v.screens.flatMap((s) => (s.id === sc.id ? [] : (s[key] ?? []).map((x) => ({ x, v, s })))))
+  const asks = asksOf(sc).map((x) => ({ x, s: null })).concat(others('asks').filter(({ x }) => !x.answer))
+  const finds = (sc.finds ?? []).map((x) => ({ x, s: null })).concat(others('finds'))
+  const tag = (v, s) => s ? `<span class="scr">${v !== vw ? esc(v.who) + ' · ' : ''}${scNum(v, s.id)} ${esc(s.title)}</span>` : ''
+  // 问题卡：红框，问题、偏向，底下一排按钮（options 各一个，第一个加粗是偏向；没有 options 就一个「照偏向」），最后「另说」自己输。
+  // 按钮带问题所在的屏（别的屏的问题也在这里答）和问题 id
+  const optBtn = (sid, x, text, cls, extra) => `<button class="opt${cls}" data-screen="${esc(sid)}" data-ask="${esc(x.id)}"${extra}>${esc(text)}</button>`
+  const optsView = (sid, x) => `<div class="opts">${(x.options?.length ? x.options : x.lean ? [x.lean] : []).map((o, i) => optBtn(sid, x, x.options?.length ? o : '照偏向', i === 0 ? ' b' : '', ` data-opt="${esc(o)}"`)).join('')}${optBtn(sid, x, '另说', ' other', ' data-other="1"')}</div>`
+  // 卡右上角的编号就是小样上那个圆点的编号（问题在它那一屏 asks 里的第几条）
+  const head = (x, s) => { const at = s ?? sc; return ` data-pin="${esc(at.id + '/' + x.id)}" title="点一下，在小样上找到它"><span class="no">${asksOf(at).indexOf(x) + 1}</span>` }
+  const askView = ({ x, v, s }) => `<div class="ask"${head(x, s)}${tag(v, s)}<div class="q">${esc(x.q)}</div>${x.lean ? `<div class="lean">偏向 <b>${esc(x.lean)}</b></div>` : ''}${optsView((s ?? sc).id, x)}</div>`
+  const doesLi = (d) => {
+    const toView = d.to === '完' ? null : viewOf(req, d.to)
+    const hand = toView && toView !== vw ? ` <span class="hand">→ ${esc(toView.who)}</span>` : ''
+    return `<li>${esc(d.act)} <span class="to">→ <b>${esc(scTitle(req, d.to))}</b></span>${hand}${d.note ? ` <span class="badge">${esc(d.note)}</span>` : ''}</li>`
+  }
+  return `<div class="side">
+    <div class="card"><h3>谁在用</h3><span class="who">${esc(vw.who)}</span></div>
+    <div class="card"><h3>这一屏显示什么</h3><ul>${sc.shows.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
+    <div class="card"><h3>能按什么</h3><ul>${sc.does.map(doesLi).join('')}</ul></div>
+    <div class="card"><h3>问了什么 <small>${asks.length ? `${asks.length} 条，带着偏向` : ''}</small></h3>${asks.length ? asks.map(askView).join('') : '<span class="none">没有要问的</span>'}</div>
+    <div class="card"><h3>发现了什么</h3>${finds.length ? finds.map(({ x, v, s }) => `<div class="fin"><span class="badge">需求候选</span><span>${tag(v, s)}${esc(x)}</span></div>`).join('') : '<span class="none">按的时候没冒出别的</span>'}</div>
+  </div>`
+}
+// 小样上方一行：这一屏钉了几条要问的；没有要问的就不要这一行
+function pinBar(sc) {
+  const n = asksOf(sc).length; if (!n) return ''
+  return `<div class="pinbar">问题钉在小样上：${n} 条要问；没标位置的在右上角，点圆点答</div>`
+}
+function render() {
+  Shell.current = context; Shell.nav()
+  const main = document.getElementById('main')
+  const c = current()
+  if (!c) { main.innerHTML = `<h1>界面 <span class="kind">· ${esc(context)}</span></h1><p class="idle">还没有小样。UI 设计照这个上下文的需求出小样，放在 上下文/${esc(context)}/界面/ 下。</p>`; return }
+  const { req, vw, sc, i } = c
+  const src = MOCKS[req.req + '/' + sc.id]
+  const flow = req.flow ? `<span class="kind">· 对着流程 ${esc(req.flow)}</span>` : ''
+  const endAct = sc.does.find((d) => d.to === '完')
+  const flash = pendingFlash && pendingFlash.screen === sc.id ? pendingFlash.ask : null; pendingFlash = null
+  main.innerHTML = `<h1><span class="kind">需求</span><span class="sep">›</span><span class="id">${esc(req.req)}</span> · ${esc(req.title)} ${flow}<span class="cnt">已定 ${decidedCount(req)}/${screensOf(req).length} 屏</span></h1>
+    <p class="sub">${req.views.map((v) => `<span class="who">${esc(v.who)}</span>`).join(' ')} 一条需求是一个系统功能，里面有几个角色就有几个视角，一个视角一串屏。照着小样把操作按一遍：按得通就是这一屏说清了，按「定下」；按不通的改小样再按；冒出来的「那这个呢」记成需求候选。</p>
+    ${viewsView(req, vw)}
+    ${seqView(vw, sc, i)}
+    ${finished ? `<div class="done">${esc(vw.who)} 这一串按完了：${esc(req.req)} 到「${esc(endAct?.act ?? '')}」${endAct?.note ? '，' + esc(endAct.note) : ''}。<a href="#${esc(req.req + '/' + vw.screens[0].id)}">回第一屏 ›</a></div>` : ''}
+    <div class="scrhead"><span class="n">${num(i)}</span>${esc(sc.title)}${sc.step != null ? `<span class="stp">对着流程第 ${esc(sc.step)} 步${sc.stepTitle ? '：' + esc(sc.stepTitle) : ''}</span>` : ''}${gateView(sc)}</div>
+    <div class="stage">
+      ${src ? `<div>${pinBar(sc)}<iframe class="mock" title="${esc(sc.title)}" srcdoc="${esc(src + injectFor(sc, flash))}" onload="try{this.style.height=Math.max(400,this.contentDocument.documentElement.scrollHeight+4)+'px'}catch(e){}"></iframe></div>` : `<div class="card idle">这一屏还没有小样文件（${esc(req.req + '/' + (sc.file ?? sc.id + '.html'))}）</div>`}
+      ${sideView(req, vw, sc)}
+    </div>`
+}
+// 答一条问题：工作台上发给后端写进这条需求的 json、重载；单开时只改内存里的那条、重画
+function answerAsk(d) {
+  const c = current(); if (!c) return
+  const text = d.other ? (typeof prompt === 'function' ? prompt('另说：') : '') : d.opt
+  if (!text) return
+  if (LIVE) return post('答', { mockup: c.req.req, screen: d.screen, ask: d.ask, context, text })
+  const item = (screensOf(c.req).find((s) => s.id === d.screen)?.asks ?? []).find((a) => a.id === d.ask)
+  if (!item || item.answer) return
+  item.answer = text; item.answeredAt = today()
+  render()
+}
+// 页里的链接都写成 #<需求编号>/<屏 id>，点的时候补上上下文；地址变了再 render
+function onHash() { const { cx, v } = parseHash(); if (cx !== context || v !== view) { context = cx; Shell.show(cx); view = v; finished = false; render() } }
+function bind() {
+  document.getElementById('main').addEventListener('click', (ev) => {
+    if (ev.target.closest('.gate button.act')) {   // 定下只定当前这一屏
+      const c = current(); if (!c) return
+      if (LIVE) { post('定下', { mockup: c.req.req, screen: c.sc.id, context }); return }
+      c.sc.decidedAt = today(); render(); return   // 单开时就地记一下，看看定下之后长什么样
+    }
+    const ob = ev.target.closest('.ask button.opt')   // 问题卡上的一个选项或「另说」
+    if (ob) { answerAsk(ob.dataset); return }
+    // 点右边一栏的一条：到它那一屏，小样上那个圆点闪一下、弹出气泡
+    const card = ev.target.closest('.ask[data-pin]')
+    if (card) {
+      const c = current(); if (!c) return
+      const [screen, ask] = card.dataset.pin.split('/')
+      pendingFlash = { screen, ask }; finished = false
+      if (screen === c.sc.id) render(); else go(c.req.req + '/' + screen)
+      return
+    }
+    // 序列里的步、视角切换、上一屏下一屏都带 data-go = 屏 id；指到别的视角的屏时视角跟着换
+    const b = ev.target.closest('[data-go]')
+    if (b && b.dataset.go) { const c = current(); finished = false; if (b.dataset.go === c.sc.id) render(); else go(c.req.req + '/' + b.dataset.go) }
+  })
+  // 左边栏的三角（和正在看的那条需求的整行）：折/展，不换地址
+  document.addEventListener('click', (ev) => {
+    const t = ev.target.closest && ev.target.closest('[data-tg]'); if (!t) return
+    ev.preventDefault(); ev.stopImmediatePropagation?.()
+    navOpen[t.dataset.key] = t.dataset.open !== '1'; Shell.nav()
+  })
+  document.addEventListener('click', (ev) => { if (ev.defaultPrevented) return; const a = ev.target.closest && ev.target.closest('a[href^="#"]'); if (!a) return; const v = decodeURIComponent(a.getAttribute('href').slice(1)); if (v.indexOf('/') > 0 && CONTEXTS.includes(v.slice(0, v.indexOf('/')))) return; ev.preventDefault(); go(v) })
+  window.addEventListener('hashchange', onHash)
+  // 小样里按了跳屏的链接：iframe 里那段脚本发 { go: 屏 id }，「完」就标走完了；to 在别的视角就是交棒，切过去视角自然跟着换
+  window.addEventListener('message', (ev) => {
+    if (ev.data && ev.data.answer) { answerAsk(ev.data.answer); return }   // 小样上气泡里点了选项或「另说」
+    const to = ev.data && ev.data.go; if (!to) return
+    const c = current(); if (!c) return
+    if (to === '完') { finished = true; render(); return }
+    if (screensOf(c.req).some((s) => s.id === to)) { finished = false; go(c.req.req + '/' + to) }
+  })
+}
+;({ cx: context, v: view } = parseHash()); Shell.show(context)
+render(); bind()
+</script>
+</body>
+</html>

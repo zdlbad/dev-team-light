@@ -1,0 +1,38 @@
+{
+  "edges": [
+    {
+      "from": "care",
+      "to": "chat",
+      "kind": "事件",
+      "name": "协议已签",
+      "note": "app 上给她开聊天"
+    },
+    {
+      "from": "care",
+      "to": "chat",
+      "kind": "事件",
+      "name": "服务已开始"
+    },
+    {
+      "from": "chat",
+      "to": "care",
+      "kind": "查询",
+      "name": "看她的档案",
+      "note": "聊天页顶上显示她在哪一段"
+    },
+    {
+      "from": "layout",
+      "to": "care",
+      "kind": "查询",
+      "name": "看这一季的账目",
+      "note": "排申报表用"
+    },
+    {
+      "from": "care",
+      "to": "layout",
+      "kind": "事件",
+      "name": "账单已出",
+      "note": "出了就排一版"
+    }
+  ]
+}

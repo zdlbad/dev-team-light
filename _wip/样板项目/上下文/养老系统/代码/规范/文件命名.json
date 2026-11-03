@@ -1,0 +1,84 @@
+{
+  "decidedAt": "2026-11-01",
+  "sample": [
+    {
+      "line": "src/"
+    },
+    {
+      "line": "  participant-file/",
+      "kind": "模块",
+      "note": "聚合根的英文名，小写连字符"
+    },
+    {
+      "line": "    participant-file.ts",
+      "kind": "聚合根",
+      "exports": "class ParticipantFile",
+      "note": "模型名字的英文；文件名是类名的小写连字符，不带种类前缀"
+    },
+    {
+      "line": "    level-and-pathway.ts",
+      "kind": "值对象",
+      "exports": "class LevelAndPathway"
+    },
+    {
+      "line": "    events.ts",
+      "kind": "事件",
+      "exports": "class FileCreated, AgreementSigned, …",
+      "note": "这个聚合的事件合在一个文件"
+    },
+    {
+      "line": "    errors.ts",
+      "kind": "错误",
+      "exports": "class IncompleteNotice, …",
+      "note": "错误也合在一个文件"
+    },
+    {
+      "line": "    participant-file-repository.ts",
+      "kind": "仓储接口",
+      "exports": "interface ParticipantFileRepository",
+      "note": "<根>-repository"
+    },
+    {
+      "line": "    in-memory-participant-file-repository.ts",
+      "kind": "内存仓储",
+      "exports": "class InMemoryParticipantFileRepository",
+      "note": "in-memory-<根>-repository"
+    },
+    {
+      "line": "    participant-registration.ts",
+      "kind": "领域服务",
+      "exports": "const participantRegistration",
+      "note": "模型名字的英文"
+    },
+    {
+      "line": "    register.ts",
+      "kind": "命令",
+      "exports": "class Register, function register()",
+      "note": "清单里的名字，英文动词短语"
+    },
+    {
+      "line": "    view-file.ts",
+      "kind": "查询",
+      "exports": "function viewFile()"
+    },
+    {
+      "line": "    participant-file.test.ts",
+      "kind": "测试",
+      "note": "被测文件名加 .test"
+    },
+    {
+      "line": "  fund/"
+    },
+    {
+      "line": "    open-fund-on-allocation.ts",
+      "kind": "事件处理器",
+      "exports": "function openFundOnAllocation()",
+      "note": "<动作>-on-<事件>"
+    },
+    {
+      "line": "  app.ts",
+      "kind": "入口",
+      "note": "固定叫 app.ts"
+    }
+  ]
+}

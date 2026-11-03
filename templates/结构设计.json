@@ -1,0 +1,73 @@
+{
+  "_": "结构设计的默认：来自旧 dev-team。关系图加一份文件结构小样；软件工程师拿它来、照上下文改，定下的存 上下文/<名>/代码/规范/结构设计.json",
+  "layers": [
+    { "name": "外壳", "holds": "HTTP 路由、仓储实现、外部系统的适配器、组合根" },
+    { "name": "应用", "holds": "命令、查询、事件处理器" },
+    { "name": "领域", "holds": "聚合、领域服务、事件、错误、仓储接口" }
+  ],
+  "deps": [["外壳", "应用"], ["应用", "领域"], ["外壳", "领域"]],
+  "between": "一个主题一个模块，层在模块里面；模块之间不互相 import，只靠事件和端口来往",
+  "outside": [
+    { "name": "外部系统", "how": "端口（接口）在领域旁的 ports/，适配器在外壳；原型先给假实现" }
+  ],
+  "modules": [
+    { "topic": "t1", "dir": "orders" },
+    { "topic": "t2", "dir": "customers" },
+    { "topic": "t3", "dir": "inventory" }
+  ],
+  "parts": [
+    { "dir": "adapters/", "layer": "外壳", "holds": "仓储实现、实现 ports/ 的适配器、入站路由；用到 infras/ 的总线和 HTTP 件的只有这里" },
+    { "dir": "application/", "layer": "应用", "holds": "命令、查询、事件处理器" },
+    { "dir": "domain/", "layer": "领域", "holds": "聚合、领域服务、事件、错误、仓储接口" },
+    { "dir": "ports/", "holds": "向别的模块、向外面要东西的口" },
+    { "dir": "module.ts", "layer": "外壳", "holds": "模块组合根，只管装载：new 总线、适配器、领域服务、处理器，把它们接起来、订阅事件" }
+  ],
+  "top": [
+    { "dir": "bootstrap/", "holds": "整个后端的组合根、起服务" },
+    { "dir": "infras/", "holds": "不含业务的技术件：HTTP 应用、两条事件总线、时钟、发编号" }
+  ],
+  "buses": [
+    { "name": "模块内事件总线", "scope": "模块内", "holds": "模块里聚合发的事件给本模块的处理器，比如 订单已建 → 通知供应商", "where": "src/infras/event-bus/module-event-bus.ts，每个模块的 module.ts 各 new 一条" },
+    { "name": "模块间事件总线", "scope": "模块间", "holds": "一个模块的事件给别的模块听，比如 订单已建 → inventory 预留库存", "where": "src/infras/event-bus/cross-module-event-bus.ts，bootstrap/composition-root.ts new 一条交给各模块" }
+  ],
+  "sample": [
+    { "line": "src/" },
+    { "line": "  contexts/orders/", "note": "一个主题一个模块" },
+    { "line": "    domain/", "layer": "领域" },
+    { "line": "      order/", "note": "一个聚合一个文件夹" },
+    { "line": "        aggregate-root.OrderAggregateRoot.ts", "note": "聚合根" },
+    { "line": "        entity.OrderLineEntity.ts", "note": "实体" },
+    { "line": "        value-object.MoneyValueObject.ts", "note": "值对象" },
+    { "line": "        event.OrderCreatedEvent.ts", "note": "事件，一个一个文件" },
+    { "line": "        error.OrderClosedError.ts", "note": "错误，一个一个文件" },
+    { "line": "        repository.OrderRepositoryInterface.ts", "note": "仓储接口" },
+    { "line": "      service.PricingService.ts", "note": "领域服务直接放 domain/ 下" },
+    { "line": "    application/", "layer": "应用" },
+    { "line": "      command-handler.CreateOrderCommandHandler.ts", "note": "命令" },
+    { "line": "      query-handler.GetOrderQueryHandler.ts", "note": "查询" },
+    { "line": "      event-handler.NotifySupplierOnOrderCreatedEventHandler.ts", "note": "事件处理器" },
+    { "line": "    ports/" },
+    { "line": "      port.PaymentGatewayInterface.ts", "note": "向外面要：付款网关" },
+    { "line": "      port.CustomerProfileQueryInterface.ts", "note": "向别的模块要：customers 的客户资料（查询）" },
+    { "line": "      port.StockReservationInterface.ts", "note": "向别的模块要：inventory 预留库存（命令）" },
+    { "line": "      port.EventPublisherInterface.ts", "note": "发事件的口：命令处理器把聚合发的事件交给它，不直接碰总线" },
+    { "line": "    adapters/", "layer": "外壳" },
+    { "line": "      adapter.InMemoryOrderRepository.ts", "note": "仓储实现，原型用内存" },
+    { "line": "      adapter.FakePaymentGateway.ts", "note": "实现付款网关的口，原型给假实现、不真扣钱" },
+    { "line": "      adapter.InProcessCustomerProfileQuery.ts", "note": "实现客户资料的口：在进程里调 customers 的查询处理器" },
+    { "line": "      adapter.InProcessStockReservation.ts", "note": "实现预留库存的口：在进程里调 inventory 的命令处理器" },
+    { "line": "      adapter.EventBusPublisher.ts", "note": "实现发事件的口：交给模块内总线，要给别的模块听的同时交给模块间总线" },
+    { "line": "      http.OrdersRoutes.ts", "note": "本模块的入站路由，挂到 infras/http/ 的应用上" },
+    { "line": "    module.ts", "layer": "外壳", "note": "模块组合根，只管装载：new 模块内总线、适配器、领域服务、处理器，接起来、订阅事件" },
+    { "line": "  bootstrap/", "layer": "外壳" },
+    { "line": "    composition-root.ts", "note": "整个后端的组合根：new 模块间总线，调各模块的 buildOrdersModule，把 ports/ 接到别的模块上" },
+    { "line": "    server.ts", "note": "起服务" },
+    { "line": "  infras/", "layer": "外壳" },
+    { "line": "    http/app.ts", "note": "HTTP 应用：挂各模块的路由，错误统一转成响应" },
+    { "line": "    event-bus/module-event-bus.ts", "note": "模块内事件总线，每个模块 new 一条" },
+    { "line": "    event-bus/cross-module-event-bus.ts", "note": "模块间事件总线，整个后端一条" },
+    { "line": "    clock/system-clock.ts", "note": "取当前时间；测试里换成固定时间" },
+    { "line": "    id/uuid-generator.ts", "note": "发编号" },
+    { "line": "tests/contexts/orders/", "note": "测试单独一棵，镜像 src/contexts/" }
+  ]
+}

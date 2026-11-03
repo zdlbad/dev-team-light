@@ -1,0 +1,18 @@
+{
+  "_": "全局结构的默认：整个项目一份。用的人、前端、后端、数据库与存储、外部系统各几个框，线上写来往什么；软件工程师拿它来照项目改，定下的存项目根 代码/规范/全局结构.json",
+  "nodes": [
+    { "id": "clerk", "name": "店员", "kind": "用户", "holds": "在浏览器上录订单" },
+    { "id": "web", "name": "订单 web", "kind": "前端", "context": "订单", "holds": "录订单、看订单", "tech": "React + Vite + Ant Design" },
+    { "id": "api", "name": "订单后端", "kind": "后端", "context": "订单", "holds": "各模块的命令、查询、事件；HTTP 口给前端", "tech": "Node 24 + Express" },
+    { "id": "db", "name": "数据库", "kind": "数据库", "holds": "各模块的仓储", "tech": "PostgreSQL（Prisma）", "later": "正式化时接；原型阶段仓储在内存" },
+    { "id": "files", "name": "文件存储", "kind": "存储", "holds": "发票 PDF", "tech": "原型存本机文件夹" },
+    { "id": "pay", "name": "支付网关", "kind": "外部", "holds": "收款" }
+  ],
+  "edges": [
+    { "from": "clerk", "to": "web", "label": "用页面" },
+    { "from": "web", "to": "api", "label": "HTTP：命令和查询" },
+    { "from": "api", "to": "db", "label": "存取" },
+    { "from": "api", "to": "files", "label": "存发票" },
+    { "from": "api", "to": "pay", "label": "收款走端口" }
+  ]
+}

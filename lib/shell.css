@@ -1,0 +1,48 @@
+/* 工作台的框架样式：顶栏固定、左边栏固定、只有右边主区滚；左边栏的行一个样。五页共用，小样单开也引它。 */
+:root {
+  --bg: #f7f6f3; --panel: #ffffff; --ink: #1d1d1b; --ink-2: #55534e; --ink-3: #8a877f; --line: #dedbd3; --accent: #2563eb; --accent-bg: #e8efff;
+  --area: #f4f4f1; --area-line: #b8b5ad; --data: #e7f5ec; --data-line: #2f855a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #18181a; --panel: #222225; --ink: #ecebe7; --ink-2: #b5b2ab; --ink-3: #85827b; --line: #3a3a3e; --accent: #7aa2ff; --accent-bg: #26314d;
+    --area: #1d1d20; --area-line: #4a4a50; --data: #1f3327; --data-line: #4ade80;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body { display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font: 14px/1.6 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+/* 顶栏 */
+.topbar { flex: none; display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; background: #24292f; color: #fff; font-size: 13px; }
+.topbar b { margin-right: 10px; font-size: 14px; }
+.topbar a, .topbar span { padding: 4px 10px; color: #d0d7de; text-decoration: none; border: 1px solid transparent; border-radius: 6px; }
+.topbar a.on, .topbar span.on { color: #fff; border-color: #57606a; }
+
+/* 左边栏 + 主区 */
+.wrap { flex: 1; min-height: 0; display: flex; align-items: stretch; }
+nav { width: 300px; flex: none; min-height: 0; overflow: auto; border-right: 1px solid var(--line); background: var(--panel); padding: 0 0 24px; font-size: 13px; }
+main { flex: 1; min-width: 0; overflow: auto; padding: 18px 28px; }
+
+/* 左边栏的行 */
+nav .cx { display: flex; align-items: center; gap: 6px; padding: 7px 12px 5px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; border-top: 1px solid var(--line); text-decoration: none; }
+nav .cx:first-child { border-top: 0; }
+nav .cx.on { background: var(--accent-bg); }
+nav .cx .tri { display: inline-block; width: 12px; color: var(--ink-3); font-size: 10px; font-weight: 400; }
+nav .cx small { margin-left: auto; font-weight: 400; color: var(--ink-3); font-size: 11px; }
+nav .cx.proj { padding: 9px 16px 7px; border-top: 0; border-bottom: 1px solid var(--line); margin-bottom: 2px; }
+nav .cx.proj + .cx { border-top: 0; }
+nav .gn { font-size: 12px; color: var(--ink-3); padding: 10px 16px 4px; }
+nav a.sub { display: block; padding: 4px 16px 4px 30px; color: var(--ink-2); text-decoration: none; font-size: 12px; }
+nav a.sub.on { background: var(--accent-bg); color: var(--ink); font-weight: 600; }
+nav a.sub .tri { display: inline-block; width: 12px; color: var(--ink-3); font-size: 10px; }
+nav a.sub2 { display: block; padding: 3px 16px 3px 48px; color: var(--ink-2); text-decoration: none; font-size: 12px; }
+nav a.sub2.on { background: var(--accent-bg); color: var(--ink); font-weight: 600; }
+nav a.sub2 small { color: var(--ink-3); margin-right: 5px; font-size: 10px; }
+nav .tn .id { color: var(--ink-3); }
+nav .tn.clip { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+nav .tn { padding: 3px 16px 3px 30px; font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+nav .tn.none { color: var(--ink-3); }
+nav .tn b { font-weight: 600; color: var(--ink); }
+nav .tn .bar { flex: 1; height: 5px; border-radius: 3px; background: var(--area); overflow: hidden; max-width: 80px; }
+nav .tn .bar i { display: block; height: 100%; background: var(--data-line); }

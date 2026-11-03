@@ -1,0 +1,27 @@
+{
+  "_": "文件命名的默认：来自旧 dev-team。一份文件结构小样，每种东西一行，写它里面导出什么、名字照哪条起；定下的存 上下文/<名>/代码/规范/文件命名.json",
+  "sample": [
+    { "line": "src/contexts/orders/", "kind": "模块", "note": "模块名 PascalCase（Orders），文件夹全小写、多词连字符" },
+    { "line": "  domain/" },
+    { "line": "    order-line/", "note": "聚合文件夹同理，小写连字符" },
+    { "line": "      aggregate-root.OrderAggregateRoot.ts", "kind": "聚合根", "exports": "class OrderAggregateRoot", "note": "文件名 = 种类前缀 + 类名，类名以种类后缀结尾，主导出和文件名里的类名一字不差" },
+    { "line": "      entity.OrderLineEntity.ts", "kind": "实体", "exports": "class OrderLineEntity" },
+    { "line": "      value-object.MoneyValueObject.ts", "kind": "值对象", "exports": "class MoneyValueObject" },
+    { "line": "      event.OrderCreatedEvent.ts", "kind": "事件", "exports": "class OrderCreatedEvent", "note": "一个事件一个文件" },
+    { "line": "      error.OrderClosedError.ts", "kind": "错误", "exports": "class OrderClosedError", "note": "一种错一个文件" },
+    { "line": "      repository.OrderRepositoryInterface.ts", "kind": "仓储接口", "exports": "interface OrderRepositoryInterface" },
+    { "line": "    service.PricingService.ts", "kind": "领域服务", "exports": "class PricingService" },
+    { "line": "  application/" },
+    { "line": "    command-handler.CreateOrderCommandHandler.ts", "kind": "命令", "exports": "class CreateOrderCommandHandler, class CreateOrderCommand", "note": "伴随导出命令类" },
+    { "line": "    query-handler.GetOrderQueryHandler.ts", "kind": "查询", "exports": "class GetOrderQueryHandler, class GetOrderQuery, class GetOrderResult" },
+    { "line": "    event-handler.NotifySupplierOnOrderCreatedEventHandler.ts", "kind": "事件处理器", "exports": "class NotifySupplierOnOrderCreatedEventHandler", "note": "<动作>On<事件类名>EventHandler，从类名读出听哪个事件" },
+    { "line": "  ports/" },
+    { "line": "    port.PaymentGatewayInterface.ts", "kind": "端口", "exports": "interface PaymentGatewayInterface" },
+    { "line": "  adapters/" },
+    { "line": "    adapter.InMemoryOrderRepository.ts", "kind": "适配器", "exports": "class InMemoryOrderRepository", "note": "<技术><被实现的接口名去掉 Interface>，没有种类后缀" },
+    { "line": "    http.OrdersRoutes.ts", "kind": "路由", "exports": "const OrdersRoutes", "note": "一个模块一份，是口的数组不是类" },
+    { "line": "  module.ts", "kind": "组合根", "exports": "function buildOrdersModule()", "note": "固定叫 module.ts" },
+    { "line": "src/bootstrap/composition-root.ts", "kind": "入口", "note": "bootstrap 与 infras 里的文件小写连字符，不带种类前缀" },
+    { "line": "tests/contexts/orders/domain/order-line/aggregate-root.OrderAggregateRoot.test.ts", "kind": "测试", "note": "镜像 src/，源文件名加 .test.ts" }
+  ]
+}

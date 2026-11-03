@@ -1,0 +1,1347 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>业务 · 小样</title>
+<style>
+:root{
+  --bg:#f7f6f3; --panel:#ffffff; --ink:#1d1d1b; --ink-2:#55534e; --ink-3:#8a877f; --line:#dedbd3; --accent:#2563eb; --accent-bg:#e8efff;
+  --role:#e3edff; --role-line:#2f5fc4; --data:#e7f5ec; --data-line:#2f855a; --area:#f4f4f1; --area-line:#b8b5ad; --topic:#faf9f6; --topic-line:#8a877f;
+  --c1:#fdf1e3; --c1l:#c2410c; --c2:#e8efff; --c2l:#2563eb; --c3:#f1ebfd; --c3l:#7c3aed; --c4:#fbf3d5; --c4l:#b45309; --c5:#e3f6f8; --c5l:#0891b2;
+  --note:#fffdf5; --note-line:#e5d9a8; --warn:#b35c00; --badge:#fff3cd; --badge-ink:#7a5200; --badge-line:#f0d58c; --bad:#d6342c;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#18181a; --panel:#222225; --ink:#ecebe7; --ink-2:#b5b2ab; --ink-3:#85827b; --line:#3a3a3e; --accent:#7aa2ff; --accent-bg:#26314d;
+    --role:#243352; --role-line:#7aa2ff; --data:#1f3327; --data-line:#4ade80; --area:#1d1d20; --area-line:#4a4a50; --topic:#26262a; --topic-line:#85827b;
+    --c1:#3a2a1c; --c1l:#fb923c; --c2:#1f2a44; --c2l:#7aa2ff; --c3:#2d2342; --c3l:#c4b5fd; --c4:#3a3220; --c4l:#fbbf24; --c5:#1b3337; --c5l:#67e8f9;
+    --note:#2e2b1f; --note-line:#6b5f2e; --warn:#fb923c; --badge:#3a3220; --badge-ink:#fbbf24; --badge-line:#6b5f2e; --bad:#f87171;
+  }
+}
+/* 左边栏：流程那一行右边的红点，数字是这段流程还没答的条数 */
+nav a.sub .open,nav .gn .open{display:inline-block;min-width:8px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--bad);color:#fff;font-size:10.5px;font-weight:600;text-align:center;line-height:16px;vertical-align:1px}
+/* 左边栏的组：点组名折叠展开，默认折叠；折叠时流程组右边带红点 */
+nav .gn.fold{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+nav .gn.fold:hover{color:var(--ink-2)}
+nav .gn .tri{display:inline-block;width:12px;font-size:10px}
+nav .gn .open{margin-left:auto}
+h1{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+h1 a{color:var(--accent);text-decoration:none;font-size:14px;font-weight:400}
+h1 .sep{color:var(--ink-3);font-weight:400;font-size:16px}
+.badge{font-size:11px;padding:1px 7px;border-radius:9px;background:var(--badge);color:var(--badge-ink);border:1px solid var(--badge-line);font-weight:400}
+.badge.done{background:var(--data);color:var(--data-line);border-color:var(--data-line)}
+.act{font-size:12px;padding:2px 10px;border:1px solid var(--accent);color:var(--accent);background:var(--panel);border-radius:4px;cursor:pointer}
+.sub{color:var(--ink-2);margin:0 0 12px;max-width:960px}
+.diagram{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;overflow:auto}
+.row{display:flex;gap:16px;align-items:flex-start}
+.row .diagram{flex:1;min-width:0}
+.side{width:300px;flex:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--ink-2);position:sticky;top:12px}
+.side b{display:block;color:var(--ink);font-size:15px;margin-bottom:6px}
+.side .src{font-size:12px;color:var(--ink-3);margin-top:8px}
+svg{display:block;margin:0 auto}
+svg text{font:12px system-ui,"PingFang SC","Microsoft YaHei",sans-serif;fill:var(--ink);pointer-events:none}
+svg text.sub{font-size:11px;fill:var(--ink-3)}
+.tp rect{stroke-width:1.4}
+.tp text.t{fill:var(--ink)}
+.lb rect{fill:var(--panel);stroke:var(--line);stroke-width:1;rx:6}
+.lb text{font-size:11.5px;fill:var(--ink-2)}
+.lb path{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3;opacity:.75}
+.tp text.t{font-size:15px;font-weight:600}
+.tp text.c{font-size:11px;fill:var(--ink-3)}
+.tp text.d{font-size:12px;fill:var(--ink-2)}
+.tp{cursor:pointer}
+.grp rect{stroke-dasharray:2 4;stroke-width:1.2}
+.grp text{font-size:13px;fill:var(--ink-3);letter-spacing:1px}
+.nd rect{fill:var(--data);stroke:var(--data-line);stroke-width:1.2}
+.nd.sel rect{stroke-width:2.6}
+.nd{cursor:pointer}
+.stub rect{stroke-dasharray:4 3;stroke-width:1}
+.stub text{fill:var(--ink-2)}
+.stub text.sub{fill:var(--ink-3)}
+.stub{cursor:pointer}
+.rl rect{fill:var(--role);stroke:var(--role-line);stroke-width:1}
+.rl text{font-size:10.5px;fill:var(--role-line)}
+.ed path.vis{fill:none;stroke:var(--ink-2);stroke-width:1.3}
+.ed.tree path.vis{stroke:var(--ink-3);stroke-width:1}
+.ed path.hit{fill:none;stroke:transparent;stroke-width:14}
+/* 流程：时序图 */
+.flow text{font-size:13px}
+.head rect{fill:var(--role);stroke:var(--role-line);stroke-width:1.2}
+.head text{font-weight:600;text-anchor:middle}
+.head text.sub{font-weight:400;font-size:11px;fill:var(--ink-2)}
+.life{stroke:var(--line);stroke-width:1;stroke-dasharray:4 4}
+.msg path{fill:none;stroke:var(--ink-2);stroke-width:1.4}
+.msg text{text-anchor:middle}
+.msg text.date,.self text.date{font-size:11px;fill:var(--ink-3)}
+.self rect{fill:var(--panel);stroke:var(--ink-3);stroke-width:1;rx:4}
+.data rect{fill:var(--data);stroke:var(--data-line);stroke-width:1;rx:2}
+.data text{font-size:11px;text-anchor:middle}
+.note rect{fill:var(--note);stroke:var(--note-line);stroke-width:1;rx:3}
+.note text{font-size:12px;fill:var(--ink-2)}
+.due text{fill:var(--warn);font-size:11px}
+/* 流程：每步右边一个框，说明、规则、问题列成一张单子，一条虚线指回这一步。有待定的、没答的框红边红标题；全定了的灰框 */
+.qa rect.bg{fill:var(--panel);stroke:var(--line);stroke-width:1;rx:3}
+.qa text{font-size:12px;fill:var(--ink-2)}.qa text.h{font-weight:600}.qa text.s{font-size:11px;fill:var(--ink-3)}.qa text.id{font-size:10.5px;fill:var(--ink-3)}
+.qa path.lead{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:2 3}
+.qa.pending rect.bg{stroke:var(--bad);stroke-width:1.2}.qa.pending text.h{fill:var(--bad)}.qa.pending path.lead{stroke:var(--bad)}
+.qa.done rect.bg{fill:var(--area);stroke:var(--area-line)}.qa.done text.h{fill:var(--ink-3)}
+.qa .tog{cursor:pointer}.qa .tog rect{fill:transparent;stroke:none}.qa .tog:hover text.h{text-decoration:underline}
+.qa line.sep{stroke:var(--line);stroke-width:1}
+.qa .it text.mk{font-size:11px;font-weight:600}.qa .it.pending text.mk{fill:var(--bad)}.qa .it.done text.mk{fill:var(--ink-3)}
+.qa a.scr text{fill:var(--accent);pointer-events:auto;cursor:pointer}.qa a.scr:hover text{text-decoration:underline}
+.qa .btn{cursor:pointer}.qa .btn rect{fill:var(--panel);stroke:var(--line);stroke-width:1;rx:4}.qa .btn text{fill:var(--ink);font-size:11.5px}
+.qa .btn.b rect{stroke:var(--accent)}.qa .btn.b text{font-weight:600;fill:var(--accent)}
+/* 流程的图框不自己滚（让主区滚），顶上参与方那一排才能 sticky 贴在主区顶上；横着滚时两者一起走 */
+.flowbox{overflow:visible}
+.flowbox svg{margin:0}
+.flowbox .heads{position:sticky;top:0;z-index:5;height:50px;background:var(--panel);border-bottom:1px solid var(--line);margin-bottom:-1px}
+.flowbox .hd{position:absolute;top:5px;height:38px;border-radius:14px;background:var(--role);border:1.2px solid var(--role-line);text-align:center;font-size:13px;font-weight:600;line-height:17px;padding-top:2px;color:var(--ink)}
+.flowbox .hd.one{line-height:36px;padding-top:0}
+.flowbox .hd small{display:block;font-size:11px;font-weight:400;color:var(--ink-2)}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--ink-2);margin:10px 0 0}
+.legend .sw{display:inline-block;width:18px;height:12px;border:1px solid;border-radius:2px;vertical-align:middle;margin-right:5px}
+.legend .sw.round{border-radius:7px;width:14px;height:10px}
+.legend .sw.dash{border-style:dashed}
+.detail{position:fixed;z-index:20;max-width:380px;box-shadow:0 6px 24px rgba(0,0,0,.2);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13px}
+.detail[hidden]{display:none}
+.detail h4{margin:0 0 4px;font-size:13px;color:var(--ink-3);font-weight:400}
+.detail div{padding:2px 0}
+/* 上下文地图：项目级，一排上下文框、线上是事件或查询的小卡、底下共享内核 */
+.cxmap{--evt:#fdf6d5;--evt-line:#b45309;--cmd:#fdeee0;--cmd-line:#c2410c}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .cxmap{--evt:#3a3220;--evt-line:#fbbf24;--cmd:#3a2a1c;--cmd-line:#fb923c} }
+.cxmap .sp rect{stroke-width:1.5;rx:10}.cxmap .sp.sel rect{stroke-width:3}.cxmap .sp{cursor:pointer}
+.cxmap .sp text.n{font-size:15px;font-weight:600}.cxmap .sp text.d{font-size:11.5px;fill:var(--ink-2)}
+.cxmap .ed path{fill:none;stroke:var(--ink-2);stroke-width:1.3}
+.cxmap .lb rect{fill:var(--panel);stroke:var(--line)}.cxmap .lb text{font-size:11.5px}.cxmap .lb text.k{fill:var(--ink-3);font-size:10.5px}
+.cxmap .lb .evt rect{fill:var(--evt);stroke:var(--evt-line)}.cxmap .lb .qry rect{fill:var(--cmd);stroke:var(--cmd-line);stroke-dasharray:3 2}
+.cxmap .lb .use rect{fill:var(--area);stroke:var(--area-line)}.cxmap .lb .use text{fill:var(--ink-2)}
+.cxmap .kn rect{fill:var(--area);stroke:var(--area-line);stroke-dasharray:6 4;stroke-width:1.5}.cxmap .kn.sel rect{stroke-width:3}.cxmap .kn{cursor:pointer}
+.cxmap .kn text.n{font-size:14px;font-weight:600}.cxmap .kn text.d{font-size:11.5px;fill:var(--ink-2)}
+.cxmap .kd path{fill:none;stroke:var(--area-line);stroke-width:1.2;stroke-dasharray:4 3}
+.cxmap table.t{border-collapse:collapse;font-size:13px;width:100%}.cxmap table.t td{padding:6px 14px 6px 0;border-top:1px solid var(--line);vertical-align:top}
+.cxmap table.t tr.hd td{color:var(--ink-3);font-size:12px;border-top:0;white-space:nowrap}.cxmap table.t td.n{font-weight:600;white-space:nowrap}.cxmap table.t td.x{color:var(--ink-2)}
+.cxmap table.t tr.sel td{background:var(--accent-bg)}.cxmap table.t tr[data-cx]{cursor:pointer}
+.cxmap .st{display:inline-block;font-size:11.5px;padding:0 7px;border-radius:3px;border:1px solid var(--area-line);color:var(--ink-2);white-space:nowrap;margin-right:4px}
+.cxmap .st.s1{background:var(--accent-bg);border-color:var(--accent)}.cxmap .st.s3{background:var(--data);border-color:var(--data-line)}.cxmap .st small{color:var(--ink-3);margin-left:4px}
+.cxmap .cap{font-size:12px;color:var(--ink-3);letter-spacing:1px;margin-bottom:6px}
+</style>
+<link rel="stylesheet" href="../../lib/shell.css">
+<script src="../../lib/shell.js"></script>
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="wrap">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+<div class="detail" id="detail" hidden></div>
+
+<script>
+// 工作台起的时候 window.DATA 由 /data/<页>.js 先定义，下面每个常量都先取它；单开这份小样时 DATA 是空的，用写死的
+const DATA = (typeof window !== 'undefined' && window.DATA) || {}
+const LIVE = Object.keys(DATA).length > 0
+const post = (action, body) => fetch('api/' + action, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json()).then((o) => { if (o.ok) location.reload(); else alert(o.error) })
+// 业务这个角色的三份输出，一个上下文一套；数据写死在这里，真做时是 上下文/<名>/业务/ 下三种 JSON 文件。
+// 工作台注入 DATA.BIZ = { <上下文名>: { MAP, CONCEPTS, FLOWS } }，有业务的上下文各一项；单开时用下面写死的养老系统和排版系统。三份的形状：
+// 1. 全局图.json
+//    { topics: [{ id, title, c, x, y, does: [两句], concepts: [几样数据名] }],   c 是颜色号 1–5；x、y 是格子位置，从左到右、从上到下是发生的先后
+//      edges:  [{ from, to, label }] }                                          label 是主题之间主要的业务交流，人写的，「；」分句
+// 2. 概念/<主题>.json（一个主题一份，这里只写 g2 做例子）
+//    { topic, title, summary,
+//      concepts: [{ id, title, by: [角色], order, definition, source, nudge? }],  这一块自己的数据；先后（列）由线算出来，order 定同一列里的上下，nudge 是人手指定的上下挪动
+//      external: [{ id, title, topic, context? }],                                别的主题里连着的数据，画成虚框；只连进来的在左、其余在右，由线定
+//                                                                                 别的上下文的带 context（topic 是那边的主题号）；共享内核里的 topic 写「共享内核」
+//      edges:    [{ id, from, to, label, by?: [角色], source?, tree? }] }           线是关系，by 是做这件事的角色（骑在线上），tree 是上下层级
+// 3. 流程/<流程名>.json（一段流程一份）
+//    { file, title, summary, parties: [{ id, title, sub }],
+//      steps: [{ id, from, to, title, date, data?: [数据名], due?, source?, note?,
+//                rules?: [{ id, text, source?, status: '待定' | '定了', lean?, options?: [], answer?, answeredAt? }],   这一步守的规则；待定的就是问题
+//                asks?:  [{ id, q, lean?, options?: [], answer?, answeredAt?, by?, screen? }] }] }                       这一步上不是规则的问题；答了写 answer
+//                                                                    by 是别的角色问的（如「UI 设计」），screen 是它在界面页哪一屏问的「<需求编号>/<屏 id>」
+
+const SAMPLE_MAP = {
+  topics: [
+    { id: 'g1', title: '评估与分资金', c: 1, x: 0, y: 0,
+      does: ['评估代表上门评估，寄来决定通知书、支持计划', '老人排队，卫生部来信说分到资金'],
+      concepts: ['决定通知书', '支持计划', '分资金的信'] },
+    { id: 'g2', title: '参与者档案与她名下的钱', c: 2, x: 1, y: 0,
+      does: ['注册服务方从第一次联系起替她留档案', 'Services Australia 把钱开在她名下、替她保管'],
+      concepts: ['参与者档案', '她名下的基金', '基金账户'] },
+    { id: 'g5', title: '服务发生与申报', c: 5, x: 2, y: 0,
+      does: ['做一次服务记一条，附凭据', '服务方开票、注册服务方申报，一次一行'],
+      concepts: ['服务记录', '发票行', '申报行', '月结单'] },
+    { id: 'g3', title: '服务方与协议', c: 3, x: 0, y: 1,
+      does: ['老人跟注册服务方签服务协议、报入场', '照护伙伴替她写照护计划、排预算；服务方定价'],
+      concepts: ['服务协议', '照护计划与预算', '价目表'] },
+    { id: 'g4', title: '服务清单', c: 4, x: 1, y: 1,
+      does: ['政府定死的三层：服务组、服务类型、服务', '评估批到类型，排预算、记服务选到项'],
+      concepts: ['服务组', '服务类型', '服务'] } ],
+  edges: [
+    { from: 'g1', to: 'g2', label: '批了什么、什么时候分到钱，记进她的档案' },
+    { from: 'g1', to: 'g4', label: '支持计划批到服务类型这一层' },
+    { from: 'g3', to: 'g2', label: '签协议、入场记进档案；照护伙伴替她排照护计划与预算' },
+    { from: 'g4', to: 'g3', label: '协议上每项服务照清单写组和类型；服务方照清单定价' },
+    { from: 'g4', to: 'g5', label: '做一次服务记一条，按项报' },
+    { from: 'g5', to: 'g2', label: '申报行写她的编号，按它从她名下扣' } ] }
+
+const SAMPLE_CONCEPTS = {
+  g2: { topic: 'g2', title: '参与者档案与她名下的钱',
+    summary: '这一块管两件事：注册服务方替老人留的档案，和政府开在她名下、替她保管的钱。评估批了什么、她跟哪家签了协议、共付比例多少，都记在档案上；后面每一笔钱怎么花、怎么报都照着来。',
+    concepts: [
+      { id: 'file', title: '参与者档案', by: ['注册服务方'], order: 1,
+        definition: '注册服务方从老人第一次联系起替她留的一份记录：批了哪一级、哪条路径、允许的服务类型、共付比例、她在哪一段。',
+        source: '手册 v4.4 §3 Participant；§6.6 行 562–568' },
+      { id: 'fund', title: '她名下的基金', by: ['Services Australia'], order: 2,
+        definition: '政府开在老人名下、替她保管的钱。持续服务按分级每季一笔；批了辅助技术、家居改造、复健、临终的各多一笔。',
+        source: '§9.2 行 1290' },
+      { id: 'acct', title: '基金账户', order: 3,
+        definition: '一笔基金一个账户，只能买她批了的服务类型；申报行按她的编号从对应的账户扣。',
+        source: '§9.2 行 1290；申报格式 v1.14 第 4 节第 9 项' } ],
+    external: [
+      { id: 'notice', title: '决定通知书', topic: 'g1' },
+      { id: 'plan', title: '支持计划', topic: 'g1' },
+      { id: 'letter', title: '分资金的信', topic: 'g1' },
+      { id: 'agree', title: '服务协议', topic: 'g3' },
+      { id: 'cp', title: '照护计划与预算', topic: 'g3' },
+      { id: 'claim', title: '申报行', topic: 'g5' } ],
+    edges: [
+      { id: '1', from: 'notice', to: 'file', label: '写着她批了哪一级、哪条路径', by: ['照护伙伴'], source: '§6.6 行 563–568' },
+      { id: '2', from: 'plan', to: 'file', label: '批了她能用的服务类型', source: '§6.5 行 549–556' },
+      { id: '3', from: 'letter', to: 'fund', label: '分到资金那天起，钱开在她名下', source: '§6.8.1 行 597–624' },
+      { id: '4', from: 'agree', to: 'file', label: '签了协议、报了入场记进档案', by: ['注册服务方'], source: '§7.1 行 676' },
+      { id: '5', from: 'file', to: 'fund', label: '名下有几笔，通知书定的', by: ['Services Australia'], source: '§9.2 行 1290' },
+      { id: '6', from: 'fund', to: 'acct', label: '一笔一个账户' },
+      { id: '7', from: 'file', to: 'cp', label: '照护伙伴照档案替她排', by: ['照护伙伴'], source: '§8.5 行 992' },
+      { id: '8', from: 'claim', to: 'acct', label: '写她的编号，从账户扣', source: '申报格式 v1.14 第 4 节第 9 项' } ] } }
+
+const SAMPLE_FLOWS = [
+  { file: '01-老人注册', title: '老人注册：从通知书到签协议、分到资金',
+    summary: '一位举例的老人从头一次联系到资金到位：她 12/01/2026 头一次联系注册服务方，照护伙伴替她申请评估；02/03 评估批了，她拿到决定通知书和支持计划，进了政府的排队；05/03 把通知书交来，照护伙伴建档；04/05 还在排队就签了服务协议；01/07 卫生部来信分到全额资金。日子都是举的例子。',
+    parties: [
+      { id: 'old', title: '老人', sub: '和她登记的支持人' },
+      { id: 'rp', title: '注册服务方', sub: '照护伙伴替她办' },
+      { id: 'gov', title: '政府', sub: '评估代表、卫生部' } ],
+    steps: [
+      { id: '1', from: 'old', to: 'rp', title: '考虑申请居家养老，头一次联系', date: '12/01/2026' },
+      { id: '2', from: 'rp', to: 'gov', title: '替她在 My Aged Care 申请评估', date: '14/01/2026', source: '§6.1 行 506、§6.3 行 513–514' },
+      { id: '3', from: 'gov', to: 'old', title: '评估批了持续服务，发决定通知书和支持计划；她进政府的排队', date: '02/03/2026', data: ['决定通知书', '支持计划'], source: '§6.5 行 549–556、§6.6 行 562–568',
+        note: '通知书写她批了哪一级、哪条路径；支持计划写她批了哪些服务类型。从这天起她在政府那边按四档之一排队等资金。' },
+      { id: '4', from: 'old', to: 'rp', title: '把决定通知书交给注册服务方', date: '05/03/2026', data: ['决定通知书'] },
+      { id: '5', from: 'rp', to: 'rp', title: '照护伙伴建她的参与者档案，记下通知书上的分级与路径', date: '05/03/2026', data: ['参与者档案'],
+        note: '档案是以后一切的底：分级、路径、允许的服务类型、共付比例都从通知书和支持计划抄进来。',
+        rules: [
+          { id: 'r-1', text: '档案上的分级、路径照通知书抄，和通知书不一样的不能建', source: '§6.6 行 562–568', status: '待定', lean: '照通知书为准，不让手改', options: ['照通知书为准，不让手改', '允许手改，记下为什么'] },
+          { id: 'r-2', text: '一位老人只有一份档案，按 My Aged Care 编号认', source: '§3 Participant', status: '定了' } ],
+        asks: [{ id: 'a-1', q: '通知书还没交来、只是口头说批了，能先建档吗？', lean: '能，档案标「待核」，通知书到了再核', options: ['能，标待核', '不能，等通知书'] }] },
+      { id: '6', from: 'old', to: 'rp', title: '还在排队就签了正式的服务协议', date: '04/05/2026', data: ['服务协议'], due: '签后 14 天内、开始服务之前她还能退出', source: '§7.2.1 行 710',
+        asks: [{ id: 'a-2', q: '退出期内她退出了，协议怎么记？', answer: '协议记作废、留着不删，档案回到排队那一段', answeredAt: '2026-10-31T02:00:00.000Z' }] },
+      { id: '7', from: 'gov', to: 'old', title: '卫生部来信：她分到了全额资金', date: '01/07/2026', data: ['分资金的信'], source: '§6.8 行 592、§6.8.1.1 行 613–615' },
+      { id: '8', from: 'rp', to: 'rp', title: '照护伙伴记下分到资金那天、分到的是全额', date: '01/07/2026', due: '最晚 26/08/2026 开始服务', source: '§6.9 行 625',
+        note: '从分到资金那天起 56 天内要开始服务，不然资金收回、重新排队；申请延期到 84 天。' } ] } ]
+
+// 第二个上下文的样例：排版系统，一个主题、一段流程；概念图里连着养老系统的申报行、共享内核的老人
+const SAMPLE_LAYOUT = {
+  MAP: { topics: [
+    { id: 'p1', title: '申报表排版', c: 1, x: 0, y: 0,
+      does: ['照申报格式把这一季的申报行排成一张表', '排好的表能打印、能上传'],
+      concepts: ['版式', '申报表'] } ], edges: [] },
+  CONCEPTS: {
+    p1: { topic: 'p1', title: '申报表排版',
+      summary: '这一块只管把养老系统出的申报行排成版式：表头写老人是谁，一行一笔，只读不改。',
+      concepts: [
+        { id: 'layout', title: '版式', order: 1, definition: '申报表长什么样：表头几栏、一行几栏、每页几行。', source: '申报格式 v1.14 第 4 节' },
+        { id: 'form', title: '申报表', by: ['注册服务方'], order: 2, definition: '一季一张，照版式把申报行排进去，能打印、能上传。', source: '申报格式 v1.14 第 4 节' } ],
+      external: [
+        { id: 'claim', title: '申报行', topic: 'g5', context: '养老系统' },
+        { id: 'old', title: '老人', topic: '共享内核' } ],
+      edges: [
+        { id: '1', from: 'layout', to: 'form', label: '照版式排' },
+        { id: '2', from: 'claim', to: 'form', label: '一季的申报行排进一张表' },
+        { id: '3', from: 'old', to: 'form', label: '表头写她的名字和编号' } ] } },
+  FLOWS: [
+    { file: '01-排申报表', title: '排申报表：一季的申报行排成一张表',
+      summary: '一季结束，注册服务方把这一季的申报行排成一张表，上传给 Services Australia。日子是举的例子。',
+      parties: [{ id: 'rp', title: '注册服务方', sub: '照护伙伴替她办' }, { id: 'sa', title: 'Services Australia', sub: '收申报' }],
+      steps: [
+        { id: '1', from: 'rp', to: 'rp', title: '照版式把这一季的申报行排成一张表', date: '01/10/2026', data: ['申报表'],
+          asks: [{ id: 'a-1', q: '一季的行太多时分几页还是一张长表？', lean: '分页，每页表头重复', options: ['分页', '一张长表'], by: 'UI 设计', screen: 'N-09/form' }] },
+        { id: '2', from: 'rp', to: 'sa', title: '上传申报表', date: '02/10/2026', data: ['申报表'] } ] } ] }
+
+// 工作台给 BIZ；只给了 MAP/CONCEPTS/FLOWS 的旧数据当第一个上下文的；单开时用写死的两个上下文
+const BIZ = DATA.BIZ ?? (DATA.MAP ? { [(DATA.CONTEXTS ?? ['养老系统'])[0]]: { MAP: DATA.MAP, CONCEPTS: DATA.CONCEPTS ?? {}, FLOWS: DATA.FLOWS ?? [] } }
+  : { '养老系统': { MAP: SAMPLE_MAP, CONCEPTS: SAMPLE_CONCEPTS, FLOWS: SAMPLE_FLOWS }, '排版系统': SAMPLE_LAYOUT })
+// 界面页的屏名，键「<需求编号>/<屏 id>」：流程里别的角色在界面上问的问题（asks 带 screen）标屏名、链过去用；工作台从 上下文/<名>/界面/ 读
+const SCREENS = DATA.SCREENS ?? { 'N-01/new': { title: '建档', context: '养老系统' } }
+// 主区画的是当前上下文的这三样；render 一开头按 context 换
+let MAP, CONCEPTS, FLOWS, grpOf
+function useCx(cx) {
+  const b = BIZ[cx] ?? {}
+  MAP = b.MAP ?? { topics: [], edges: [] }; CONCEPTS = b.CONCEPTS ?? {}; FLOWS = b.FLOWS ?? []
+  grpOf = Object.fromEntries(MAP.topics.map((t) => [t.id, t]))
+}
+
+// 上下文地图：项目级，业务画。两份文件：
+// 项目.json：{ name, contexts: [{ id, name, role, c }], kernel: { concepts: [概念名] } }   role 一句话说它管什么；c 是颜色号；kernel 是共享内核里的概念
+// 上下文图.json：{ edges: [{ from, to, kind, name, note? }] }   kind 是「事件」「查询」：事件 from 发、to 听；查询 from 问、to 答（箭头都从 from 指向 to）
+// 哪个上下文用了共享内核的哪些概念、各上下文到哪一步，都是从文件夹里数出来的，这里写死
+const PROJECT = DATA.PROJECT ?? { name: 'AgedCareProvider', contexts: [
+  { id: 'chat', name: '聊天 app', role: '照护伙伴和老人、家属在手机上说话；知道她签了协议、开始服务，不管钱', c: 3 },
+  { id: 'care', name: '养老系统', role: '老人从注册到服务到申报的全流程；档案、基金、服务记录都在它这', c: 2 },
+  { id: 'layout', name: '排版系统', role: '把账单、申报表排成能打印、能上传的版式；只读账目，不改', c: 1 } ],
+  kernel: { concepts: ['老人', 'My Aged Care 编号', '照护伙伴', '服务类型'] } }
+const USES = DATA.USES ?? { care: ['老人', 'My Aged Care 编号', '照护伙伴', '服务类型'], chat: ['老人', '照护伙伴'], layout: ['老人', 'My Aged Care 编号', '服务类型'] }
+const EDGES = DATA.EDGES ?? [
+  { from: 'care', to: 'chat', kind: '事件', name: '协议已签', note: 'app 上给她开聊天' },
+  { from: 'care', to: 'chat', kind: '事件', name: '服务已开始' },
+  { from: 'chat', to: 'care', kind: '查询', name: '看她的档案', note: '聊天页顶上显示她在哪一段' },
+  { from: 'layout', to: 'care', kind: '查询', name: '看这一季的账目', note: '排申报表用' },
+  { from: 'care', to: 'layout', kind: '事件', name: '账单已出', note: '出了就排一版' } ]
+// 还没答的条数：待定的规则 + 没答的问题。工作台注入 DATA.OPEN（键 '<上下文>/<流程文件名>' → 条数）；单开时从写死的 FLOWS 数
+const openIn = (f) => (f.steps ?? []).reduce((t, s) => t + (s.rules ?? []).filter((r) => r.status !== '定了' && !r.answer).length + (s.asks ?? []).filter((a) => !a.answer).length, 0)
+const flowsOf = (cx) => BIZ[cx]?.FLOWS ?? []
+const openOf = (cx, file) => DATA.OPEN ? (DATA.OPEN[cx + '/' + file] ?? 0) : openIn(flowsOf(cx).find((f) => f.file === file) ?? { steps: [] })
+const openCx = (cx) => DATA.OPEN ? Object.entries(DATA.OPEN).reduce((t, [k, n]) => t + (k.startsWith(cx + '/') ? n : 0), 0) : flowsOf(cx).reduce((t, f) => t + openIn(f), 0)
+const PROGRESS = DATA.PROGRESS ?? {
+  care: { 功能: { total: 4, done: 1 }, 业务: { total: 5, done: 2, unit: '主题' }, 模型: { total: 2, done: 2, unit: '聚合' }, 编码: { total: 3, done: 1, unit: '份伪代码' } },
+  chat: { 功能: { total: 2, done: 0 }, 业务: { total: 0, done: 0, unit: '主题' }, 模型: { total: 0, done: 0, unit: '聚合' }, 编码: { total: 0, done: 0, unit: '份伪代码' } },
+  layout: { 功能: { total: 1, done: 0 }, 业务: { total: 1, done: 0, unit: '主题' }, 模型: { total: 0, done: 0, unit: '聚合' }, 编码: { total: 0, done: 0, unit: '份伪代码' } } }
+
+// ---------- 通用 ----------
+const W = 150, H = 50      // 概念图里一个数据框的宽高；主题框的宽高在 drawTop 里按主区宽度算
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+let view = 'map'       // 'map' | 'concepts/<主题>' | 'flow/<流程>' | 'kernel' | 'cxmap'；地址前面带上下文名
+// 上下文：左边栏第一层，折叠展开；地址第一段是上下文名
+const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统', '共享内核']
+// 第一个上下文：头一个有业务的；地址里没带上下文的旧写法（map、concepts/g1、flow/…）落到它
+const FIRST = CONTEXTS.find((c) => BIZ[c]) ?? CONTEXTS[0]
+let context = FIRST
+useCx(context)
+const parseHash = (dflt) => {
+  const h = decodeURIComponent(location.hash.slice(1)), i = h.indexOf('/'), cx = i > 0 ? h.slice(0, i) : ''
+  if (CONTEXTS.includes(cx)) return { cx, v: h.slice(i + 1) || dflt }
+  if (CONTEXTS.includes(h)) return { cx: h, v: dflt }
+  // cxmap 是项目级的，不换上下文
+  return { cx: h === 'cxmap' ? context : FIRST, v: h || dflt }
+}
+const go = (v) => { location.hash = context + '/' + v }
+// 左边栏的组（全局、概念、流程）：默认折叠，当前这页所在的组切过来时自动展开；点组名折叠展开，记在本机
+const NAV_KEY = 'dev-team-lite/业务/左边栏开着的组'
+const navFold = (() => { try { return JSON.parse(localStorage.getItem(NAV_KEY)) ?? {} } catch { return {} } })()
+let navAutoAt = null    // 上一次替哪一页自动展开过它的组
+const navSave = () => { try { localStorage.setItem(NAV_KEY, JSON.stringify(navFold)) } catch {} }
+// links: [{ v, html }]；badge 是折叠时组名右边的红点数
+function navGroup(cx, key, title, links, badge = 0) {
+  const k = cx + '/' + key, here = cx === context && links.some((l) => l.v === view)
+  if (here && navAutoAt !== context + '/' + view) { navFold[k] = true; navAutoAt = context + '/' + view }
+  const open = !!navFold[k]
+  return `<div class="gn fold" data-g="${esc(k)}"><span class="tri">${open ? '▾' : '▸'}</span>${esc(title)}${!open && badge ? `<i class="open">${badge}</i>` : ''}</div><div class="gb"${open ? '' : ' hidden'}>${links.map((l) => l.html).join('')}</div>`
+}
+if (typeof document !== 'undefined') document.getElementById('nav')?.addEventListener('click', (ev) => {
+  const g = ev.target.closest && ev.target.closest('.gn.fold[data-g]'); if (!g) return
+  navFold[g.dataset.g] = !navFold[g.dataset.g]; navSave(); Shell.nav()
+})
+// 左边栏：框架画上下文那一层；这页交顶上「上下文地图」一条，和各上下文展开后的链接（链接都带上下文名）
+Shell.init({ contexts: CONTEXTS, page: {
+  top: () => [{ href: '#cxmap', text: '上下文地图', on: view.split('/')[0] === 'cxmap' }],
+  badge: (cx) => cx === '共享内核' ? '共用的概念' : openCx(cx) ? openCx(cx) + ' 条没答' : '',
+  items: (cx) => {
+    const href = (v) => '#' + cx + '/' + v, on = (v) => cx === context && view === v
+    const L = (v, text) => ({ v, html: Shell.link(href(v), text, on(v)) })
+    if (cx === '共享内核') return navGroup(cx, 'concepts', '概念', [L('kernel', PROJECT.kernel.concepts.join('、'))])
+    const b = BIZ[cx]
+    if (!b) return Shell.line('业务还没画', true)
+    const flows = b.FLOWS ?? []
+    return navGroup(cx, 'map', '全局', [L('map', '全局图')])
+      + navGroup(cx, 'concepts', '概念 · 按主题', (b.MAP?.topics ?? []).map((t) => L('concepts/' + t.id, t.title)))
+      // 流程那一行右边：还没答的条数，红点；组折叠时组名右边是合计
+      + navGroup(cx, 'flows', '流程', flows.map((f) => { const n = openOf(cx, f.file), v = 'flow/' + f.file; return { v, html: `<a href="${esc(href(v))}" class="sub${on(v) ? ' on' : ''}">${esc(String(f.title ?? f.file).split('：')[0])}${n ? `<i class="open">${n}</i>` : ''}</a>` } }), flows.reduce((a, f) => a + openOf(cx, f.file), 0))
+  },
+  // 换到别的上下文：主题号、流程名各上下文不通用，回到它的全局图（上下文地图那页不动）
+  pick: (cx) => { if (cx !== context) { context = cx; if (typeof selected !== 'undefined') selected = null; if (view !== 'cxmap') view = cx === '共享内核' ? 'kernel' : 'map' } go(view); render() } },
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '建模', '编码'], current: '业务', live: !!DATA.WB } })
+function bindContexts(dflt) {
+  // 页里的链接都写成 #<视图>，点的时候补上上下文
+  document.addEventListener('click', (ev) => { const a = ev.target.closest && ev.target.closest('a[href^="#"]'); if (!a) return; const v = decodeURIComponent(a.getAttribute('href').slice(1)); if (v.indexOf('/') > 0 && CONTEXTS.includes(v.slice(0, v.indexOf('/')))) return; ev.preventDefault(); go(v) })
+  window.addEventListener('hashchange', () => { const { cx, v } = parseHash(dflt); if (cx !== context || v !== view) { context = cx; Shell.show(cx); view = v; if (typeof selected !== 'undefined') selected = null; render() } })
+}
+let selected = null    // 概念页上点中的概念
+
+/** 三次贝塞尔上 t 处的点 */
+const bez = (p0, p1, p2, p3, t) => { const m = 1 - t; return { x: m ** 3 * p0.x + 3 * m * m * t * p1.x + 3 * m * t * t * p2.x + t ** 3 * p3.x, y: m ** 3 * p0.y + 3 * m * m * t * p1.y + 3 * m * t * t * p2.y + t ** 3 * p3.y } }
+/** 线的几何：目标在右边就从右边出、左边进；往回的从左边出、右边进；上下的从底边出、顶边进 */
+function curve(a, b) {
+  const ax2 = a.x + a.w, bx1 = b.x
+  let p0, p1, p2, p3
+  if (bx1 - ax2 >= 40) { const y1 = a.y + a.h / 2, y2 = b.y + b.h / 2, dx = (bx1 - ax2) * 0.5; p0 = { x: ax2, y: y1 }; p1 = { x: ax2 + dx, y: y1 }; p2 = { x: bx1 - dx, y: y2 }; p3 = { x: bx1 - 2, y: y2 } }
+  else if (a.x - (b.x + b.w) >= 40) { const y1 = a.y + a.h / 2, y2 = b.y + b.h / 2, dx = (a.x - b.x - b.w) * 0.5; p0 = { x: a.x, y: y1 }; p1 = { x: a.x - dx, y: y1 }; p2 = { x: b.x + b.w + dx, y: y2 }; p3 = { x: b.x + b.w + 2, y: y2 } }
+  else { const down = b.y > a.y; const x1 = a.x + a.w / 2, x2 = b.x + b.w / 2, y1 = down ? a.y + a.h : a.y, y2 = down ? b.y - 2 : b.y + b.h + 2, dy = (y2 - y1) * 0.5; p0 = { x: x1, y: y1 }; p1 = { x: x1, y: y1 + dy }; p2 = { x: x2, y: y2 - dy }; p3 = { x: x2, y: y2 } }
+  return { d: `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y}, ${p2.x} ${p2.y}, ${p3.x} ${p3.y}`, at: (t) => bez(p0, p1, p2, p3, t) }
+}
+const MARK = `<defs><marker id="la" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-3)"/></marker>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker></defs>`
+const tint = (g) => `fill:var(--c${g.c});stroke:var(--c${g.c}l)`
+/** 一段字按 12px 量有多宽：汉字、全角标点 12，英文数字 6.4 */
+const textW = (s) => [...String(s ?? '')].reduce((t, c) => t + (/[^\x00-\xff]/.test(c) ? 12 : 6.4), 0)
+/** 按宽度折行：一行不超过 maxW 像素（字号 px）。英文单词、数字、金额算一个整体不从中间断；
+ *  先算要几行，再让每行差不多长，断点尽量落在标点、空格后面，这样不会最后一行只剩一两个字 */
+function wrapW(text, maxW, px = 12) {
+  const s = String(text ?? '').trim(), tw = (t) => textW(t) * px / 12
+  if (!s) return []
+  if (tw(s) <= maxW) return [s]
+  const toks = s.match(/[A-Za-z0-9$%.,:'’\-+=/]+|./gs) ?? []
+  const lines = []
+  let i = 0, left = tw(s), need = Math.ceil(left / maxW)
+  while (i < toks.length) {
+    const target = Math.min(maxW, left / need)
+    let cur = '', w = 0, j = i, punct = -1
+    while (j < toks.length) {
+      const t = toks[j], ww = tw(t), closing = /^[，、；：。,;:）)]$/.test(t)
+      // 收尾的标点不能开头，宁可这一行长一点也带上它；宽度比较留半个像素，别让浮点误差多断一行
+      if (cur && !closing && (w + ww > target + 0.5 || w + ww > maxW + 0.5)) break
+      cur += t; w += ww; j++
+      if (closing || /\s$/.test(t)) punct = j
+    }
+    // 后面还有字、这一行靠后有标点，就在标点后面断
+    if (j < toks.length && punct > i && tw(toks.slice(i, punct).join('')) >= target * 0.6) j = punct
+    const line = toks.slice(i, j).join('')
+    lines.push(line.trim()); left -= tw(line); i = j
+    // 剩下的按剩多宽重算要几行，免得最后一行只剩一个字
+    need = Math.max(1, need - 1, Math.ceil(left / maxW - 0.02))
+  }
+  return lines
+}
+/** 文字框：中心在 (cx, cy)，几行字；roles 给了就在字的上面摆一排角色标签，标签和字算一个框、一起挪；给了 anchor 就画一条短虚线指过去。返回 svg 和它占的矩形 */
+function labelBox(cx, cy, lines0, anchor, roles) {
+  const lines = lines0.flatMap((l) => wrapW(l, 138, 11.5))      // 小卡一行最宽 138，整卡不超过 156，列间 190 放得下
+  const tw = Math.max(...lines.map((l) => textW(l) * 11.5 / 12)) + 18, th = lines.length * 16 + 8
+  const rw = roles?.length ? roles.reduce((t, r) => t + pill(r, 0, 0).w + 4, -4) : 0, rh = rw ? 24 : 0
+  const w = Math.max(tw, rw), hh = th + rh
+  const x = cx - w / 2, y = cy - hh / 2, bx = cx - tw / 2, by = y + rh
+  let s = '', lead = null
+  if (anchor) {
+    const ex = Math.max(x, Math.min(anchor.x, x + w)), ey = Math.max(y, Math.min(anchor.y, y + hh))
+    lead = { x: ex, y: ey }
+    s += `<path d="M ${ex} ${ey} L ${anchor.x} ${anchor.y}" marker-end="url(#la)"/>`
+  }
+  s += `<rect x="${bx}" y="${by}" width="${tw}" height="${th}" rx="6"/>` + lines.map((l, i) => `<text x="${cx}" y="${by + 16 + i * 16}" text-anchor="middle">${esc(l)}</text>`).join('')
+  if (rw) s += pills(roles, cx - rw / 2, y)
+  return { svg: `<g class="lb">${s}</g>`, box: { x, y, w, h: hh }, lead, anchor }
+}
+const overlaps = (a, b) => !(a.x + a.w < b.x - 8 || b.x + b.w < a.x - 8 || a.y + a.h < b.y - 8 || b.y + b.h < a.y - 8)
+/** 画布按内容算大小：把画上去的每个矩形都框进来，整体平移到留出 pad 的位置，谁都不会出画布。
+ *  给了 maxW、画出来又比它宽：整张等比缩到 maxW 宽（viewBox 还是原大小），不截、不出横向滚动条 */
+function canvas(s, boxes, pad = 20, maxW = Infinity) {
+  const bs = boxes.filter((b) => b && Number.isFinite(b.x) && Number.isFinite(b.y))
+  const x1 = Math.min(0, ...bs.map((b) => b.x)), y1 = Math.min(0, ...bs.map((b) => b.y))
+  const x2 = Math.max(...bs.map((b) => b.x + b.w)), y2 = Math.max(...bs.map((b) => b.y + b.h))
+  const w = Math.ceil(x2 - x1 + pad * 2), h = Math.ceil(y2 - y1 + pad * 2)
+  const size = w > maxW ? `width="${Math.floor(maxW)}" height="${Math.ceil(h * maxW / w)}" viewBox="0 0 ${w} ${h}"` : `width="${w}" height="${h}"`
+  return `<svg ${size}><g transform="translate(${(pad - x1).toFixed(1)} ${(pad - y1).toFixed(1)})">${s}</g></svg>`
+}
+/** 主区里图框能用的宽：主区宽减左右 padding 28×2、图框边框与 padding */
+const availW = () => { const main = typeof document !== 'undefined' && document.getElementById('main'); return ((main && main.clientWidth) || 1240) - 76 }
+// 骑在线上的位置：先中点，再往两头挪；几条线汇到一个框的，往来源那头挪就分开了
+const TRIES_ON = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.2, 0.8, 0.12, 0.88]
+// 线旁边、离线不远的位置（最远 160）：概念图用，小卡别飘出主题框太远
+const TRIES_NEAR = [0.5, 0.35, 0.65, 0.2, 0.8, 0.1, 0.9].flatMap((t) => [[0, -50], [0, 50], [-90, 0], [90, 0], [-90, -50], [90, -50], [-90, 50], [90, 50], [0, -90], [0, 90], [-150, 0], [150, 0], [-150, -60], [150, -60], [-150, 60], [150, 60], [0, -130], [0, 130]].map(([dx, dy]) => [t, dx, dy]))
+// 线旁边的位置：字不压在线上，有虚线指着，上下左右哪儿空放哪儿
+const TRIES_AROUND = [[0.5, -90, -44], [0.5, 90, -44], [0.5, -90, 44], [0.5, 90, 44], [0.35, -90, -44], [0.65, 90, -44], [0.35, -90, 44], [0.65, 90, 44], [0.5, -140, -60], [0.5, 140, -60], [0.5, -140, 60], [0.5, 140, 60], [0.2, -90, -44], [0.8, 90, -44], [0.2, -90, 44], [0.8, 90, 44], [0.5, 0, -80], [0.5, 0, 80]]
+/** 这一点是不是贴着别的线（交叉处附近） */
+function nearOther(p, others, dist = 26) {
+  for (const o of others ?? []) for (let t = 0.05; t < 1; t += 0.05) { const q = o.at(t); if (Math.hypot(q.x - p.x, q.y - p.y) < dist) return true }
+  return false
+}
+/** 框有没有被哪条线穿过 */
+function lineHits(box, curves) {
+  const b = { x: box.x - 6, y: box.y - 6, w: box.w + 12, h: box.h + 12 }
+  for (const c of curves ?? []) for (let t = 0.02; t < 1; t += 0.03) { const q = c.at(t); if (q.x >= b.x && q.x <= b.x + b.w && q.y >= b.y && q.y <= b.y + b.h) return true }
+  return false
+}
+const RINGS = [[-90, -50], [90, -50], [-90, 50], [90, 50], [0, -60], [0, 60], [-140, 0], [140, 0], [-150, -80], [150, -80], [-150, 80], [150, 80], [0, -110], [0, 110], [-220, 0], [220, 0], [-220, -100], [220, -100], [-220, 100], [220, 100], [0, -170], [0, 170], [-300, 0], [300, 0], [-300, -140], [300, -140], [-300, 140], [300, 140], [0, -230], [0, 230], [-150, -200], [150, -200], [-150, 200], [150, 200]]
+const TS = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]
+/** 线上离这个框最近、又不挨着别的线的那一点：虚线就连到这儿 */
+function nearestAnchor(cv, box, others) {
+  const cx = box.x + box.w / 2, cy = box.y + box.h / 2
+  let best = null
+  for (let t = 0.12; t <= 0.88; t += 0.04) {
+    const p = cv.at(t)
+    if (nearOther(p, others)) continue
+    const d = Math.hypot(p.x - cx, p.y - cy)
+    if (!best || d < best.d) best = { p, d }
+  }
+  return best?.p ?? cv.at(0.5)
+}
+/** 虚线这一段有没有穿过别的线 */
+function leaderCrosses(a, b, others) {
+  const dx = b.x - a.x, dy = b.y - a.y, len2 = dx * dx + dy * dy || 1
+  for (const c of others ?? []) for (let t = 0.02; t < 1; t += 0.03) {
+    const q = c.at(t), u = Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.y - a.y) * dy) / len2))
+    if (Math.hypot(q.x - (a.x + u * dx), q.y - (a.y + u * dy)) < 9) return true
+  }
+  return false
+}
+/** 给一条线挑文字框的位置。先让框骑在线上（中点附近，框盖住线的这一小段，一看就是这条线的话）；
+ *  骑哪儿都压着框或别的线，就挪到线旁边、拉一条虚线指过去，先试 around 给的几处，再围着线一圈圈往外找；
+ *  都不干净就按压框、穿线、虚线穿线打分挑最轻的；taken 里标了 hard 的（数据框、虚框、框头的角色标签）压上一个就重一百，宁可挪远也不盖框；
+ *  cardW 是压上一张已经放好的卡算多重（默认跟压别的框一样 10）。挑中的矩形记进 taken，后面的框绕开它 */
+function placeLabel(cv, lines, taken, { roles, others = [], onLine = TRIES_ON, around = TRIES_AROUND, rings = true, inside = null, cardW = 10 } = {}) {
+  // inside 给了主题框：自己人之间那条线的卡要留在框里，出了框算一分
+  const outside = (b) => inside && (b.x < inside.x || b.y < inside.y || b.x + b.w > inside.x + inside.w || b.y + b.h > inside.y + inside.h) ? 2 : 0
+  let best = null
+  // 第二遍时 hard 的只算真压上（留 2 的缝）；别的都照旧留 8 的空
+  const touch = (b, box) => !(b.x + b.w < box.x - 2 || box.x + box.w < b.x - 2 || b.y + b.h < box.y - 2 || box.y + box.h < b.y - 2)
+  const press = (box, tight) => taken.reduce((t, b) => t + ((b.hard && tight ? touch(b, box) : overlaps(b, box)) ? (b.hard ? 100 : b.card ? cardW : 10) : 0), 0)
+  const keep = (lb) => { taken.push({ ...lb.box, card: true }); return lb }
+  // 线太短、整条都会被卡盖住的，不骑，挪到旁边拉虚线指过去，不然看不出卡说的是哪条线
+  const probe0 = labelBox(0, 0, lines, null, roles)
+  let len = 0; for (let t = 0.05; t <= 1; t += 0.05) { const a = cv.at(t - 0.05), b = cv.at(t); len += Math.hypot(b.x - a.x, b.y - a.y) }
+  if (len < probe0.box.w * 1.6) onLine = []
+  // rings 是数字就只往外找到这个半径为止（概念图不让卡飘太远）
+  const cands = [...around]
+  if (rings) for (const [dx, dy] of RINGS) if (rings === true || Math.hypot(dx, dy) <= rings) for (const t of TS) cands.push([t, dx, dy])
+  for (const tight of [false, true]) {
+    for (const t of onLine) {
+      const p = cv.at(t)
+      const lb = labelBox(p.x, p.y, lines, null, roles)
+      const boxes = press(lb.box, tight), hits = lineHits(lb.box, others) ? 1 : 0, out = outside(lb.box)
+      if (!boxes && !hits && !out) return keep(lb)
+      const score = boxes + hits * 4 + out + Math.abs(t - 0.5) * 2
+      if (!best || score < best.score) best = { lb, score }
+    }
+    for (const [t, dx, dy] of cands) {
+      const p = cv.at(t)
+      const probe = labelBox(p.x + dx, p.y + dy, lines, null, roles)
+      const lb = labelBox(p.x + dx, p.y + dy, lines, nearestAnchor(cv, probe.box, others), roles)
+      const boxes = press(lb.box, tight)
+      const hits = lineHits(lb.box, [cv, ...others]) ? 1 : 0
+      const cross = lb.lead && leaderCrosses(lb.lead, lb.anchor, others) ? 1 : 0
+      const out = outside(lb.box)
+      if (!boxes && !hits && !cross && !out) return keep(lb)
+      const score = 1 + boxes + hits * 4 + cross * 3 + out + Math.hypot(dx, dy) / 100
+      if (!best || score < best.score) best = { lb, score }
+    }
+    // 没有 hard 的（全局图、上下文地图）第二遍跟第一遍一样，不用再跑
+    if (!taken.some((b) => b.hard)) break
+  }
+  return keep(best.lb)
+}
+
+// ---------- 上一层：主题之间 ----------
+function drawTop() {
+  // 主题框的列宽照主区宽度算：几列塞得下就塞，框不窄过 300。框里的字按列宽折行，框高按最长的那个
+  // 格子位置照人排的 x、y（P 里，不改 MAP）；只有一排、主区放不下的，蛇形折行：第一行从左往右，下一行从右往左接着，先后挨着的主题还挨着
+  // 折完（或人排了好几排）还是比主区宽的，整张等比缩到主区宽：不截、不横着滚
+  const avail = availW(), PAD = 20
+  const GX = 190, GY = 210, MIN_TW = 300                        // 列间放得下一张小卡（最宽 138）；行间放得下四行字的小卡
+  const P = Object.fromEntries(MAP.topics.map((t) => [t.id, { x: t.x, y: t.y }]))
+  let cols = Math.max(...MAP.topics.map((t) => t.x)) + 1, rowsN = Math.max(...MAP.topics.map((t) => t.y)) + 1
+  const fitCols = Math.max(1, Math.floor((avail - PAD * 2 + GX) / (MIN_TW + GX)))
+  if (rowsN === 1 && cols > fitCols) {
+    const order = [...MAP.topics].sort((a, b) => a.x - b.x)
+    order.forEach((t, i) => { const r = Math.floor(i / fitCols), c = i % fitCols; P[t.id] = { x: r % 2 ? fitCols - 1 - c : c, y: r } })
+    cols = Math.min(fitCols, order.length); rowsN = Math.ceil(order.length / fitCols)
+  }
+  const pos = (id) => P[id] ?? { x: 0, y: 0 }
+  const TW = Math.max(MIN_TW, Math.min(380, Math.floor((avail - PAD * 2 - (cols - 1) * GX) / cols)))
+  const body = Object.fromEntries(MAP.topics.map((g) => [g.id, { does: g.does.map((d) => wrapW(d, TW - 48, 12)), concepts: wrapW(g.concepts.join('、'), TW - 36, 11) }]))
+  const TH = Math.max(...MAP.topics.map((g) => { const b = body[g.id]; return 76 + b.does.reduce((t, l) => t + l.length, 0) * 18 + b.concepts.length * 15 }))
+  for (const t of MAP.topics) { t.tx = pos(t.id).x * (TW + GX); t.ty = pos(t.id).y * (TH + GY) }
+  const rect = (g) => ({ x: g.tx, y: g.ty, w: TW, h: TH })
+  let s = MARK
+  const taken = MAP.topics.map(rect)
+  // 线：同一行隔着别的主题的，从顶上绕过去（最后一行从底下绕），几条一起绕的一条比一条高；其余的照 curve 走边到边
+  const lifts = {}
+  const geo = MAP.edges.map((t) => {
+    const A = pos(t.from), B = pos(t.to), a = rect(grpOf[t.from]), b = rect(grpOf[t.to])
+    if (A.y !== B.y || Math.abs(A.x - B.x) < 2) return curve(a, b)
+    const below = rowsN > 1 && A.y === rowsN - 1, key = A.y + (below ? 'b' : 't')
+    const lift = 60 + (lifts[key] = (lifts[key] ?? -1) + 1) * 70, fwd = B.x > A.x
+    const x1 = a.x + a.w * (fwd ? 0.75 : 0.25), x2 = b.x + b.w * (fwd ? 0.25 : 0.75)
+    const y1 = below ? a.y + a.h : a.y, y2 = below ? b.y + b.h + 2 : b.y - 2, yc = y1 + (below ? 1 : -1) * lift * 1.33
+    const p0 = { x: x1, y: y1 }, p1 = { x: x1, y: yc }, p2 = { x: x2, y: yc }, p3 = { x: x2, y: y2 }
+    return { d: `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y}, ${p2.x} ${p2.y}, ${p3.x} ${p3.y}`, at: (tt) => bez(p0, p1, p2, p3, tt) }
+  })
+  let labels = ''
+  MAP.edges.forEach((t, i) => {
+    const cv = geo[i], k = t.from + '>' + t.to, others = geo.filter((_, j) => j !== i)
+    s += `<g class="ed" data-t="${k}"><path class="vis" d="${cv.d}" marker-end="url(#a)"/><path class="hit" d="${cv.d}"/></g>`
+    const A = rect(grpOf[t.from]), B = rect(grpOf[t.to])
+    const horizontal = Math.abs(A.y - B.y) < 100, vertical = Math.abs(A.x - B.x) < 100
+    // 小卡先骑在线的中点上；骑不上去再挪到线旁边：横线的上下、竖线的左右、斜线的两侧
+    const around = horizontal ? [[0.5, 0, -50], [0.5, 0, 50], [0.3, 0, -50], [0.7, 0, -50], [0.3, 0, 50], [0.7, 0, 50], [0.5, 0, -100], [0.5, 0, 100], [0.3, 0, 100], [0.7, 0, 100], [0.3, 0, -100], [0.7, 0, -100]]
+      : vertical ? [[0.5, -130, 0], [0.5, 130, 0], [0.3, -130, 0], [0.7, -130, 0], [0.3, 130, 0], [0.7, 130, 0], [0.5, -220, 0], [0.5, 220, 0]]
+      : [[0.25, -150, 0], [0.25, 150, 0], [0.75, -150, 0], [0.75, 150, 0], [0.2, 0, -70], [0.8, 0, 70], [0.25, -220, 0], [0.25, 220, 0], [0.75, -220, 0], [0.75, 220, 0], [0.5, -260, 0], [0.5, 260, 0]]
+    labels += placeLabel(cv, t.label.split('；'), taken, { others, around }).svg
+  })
+  for (const g of MAP.topics) {
+    const b = body[g.id]
+    let y = g.ty + 56, lines = ''
+    for (const d of b.does) d.forEach((l, i) => { lines += `<text class="d" x="${g.tx + 18 + (i ? 12 : 0)}" y="${y}">${i ? '' : '· '}${esc(l)}</text>`; y += 18 })
+    const cy = g.ty + TH - 14 - (b.concepts.length - 1) * 15
+    s += `<g class="tp" data-g="${g.id}"><rect x="${g.tx}" y="${g.ty}" width="${TW}" height="${TH}" rx="10" style="${tint(g)}"/>
+      <text class="t" x="${g.tx + 18}" y="${g.ty + 34}">${esc(g.title)}</text>${lines}
+      ${b.concepts.map((l, i) => `<text class="c" x="${g.tx + 18}" y="${cy + i * 15}">${esc(l)}</text>`).join('')}</g>`
+  }
+  s += labels
+  return canvas(s, taken, PAD, avail)
+}
+/** 两个主题之间底下那几条细线：从各主题的概念页里找 */
+function fineEdges(a, b) {
+  const out = []
+  for (const c of Object.values(CONCEPTS)) {
+    const node = (id) => (c.concepts ?? []).find((n) => n.id === id) ?? (c.external ?? []).find((n) => n.id === id)
+    // 别的上下文、共享内核里的虚框不算本上下文的主题
+    const topicOf = (id) => { if ((c.concepts ?? []).some((n) => n.id === id)) return c.topic; const n = node(id); return n && !crossOf(n) ? n.topic : null }
+    for (const e of c.edges ?? []) {
+      const x = topicOf(e.from), y = topicOf(e.to)
+      if ((x === a && y === b) || (x === b && y === a)) out.push(`${node(e.from).title} → ${node(e.to).title}：${e.label}`)
+    }
+  }
+  return out
+}
+
+// ---------- 下一层：一个主题里面 ----------
+function pill(role, x, y) {
+  const w = role.replace(/[^\x00-\xff]/g, 'xx').length * 5.6 + 14
+  return { w, svg: `<g class="rl" data-r="${esc(role)}"><rect x="${x}" y="${y}" width="${w}" height="20" rx="10"/><text x="${x + w / 2}" y="${y + 14}" text-anchor="middle">${esc(role)}</text></g>` }
+}
+function pills(roles, x, y) {
+  let out = '', cx = x
+  for (const r of roles ?? []) { const p = pill(r, cx, y); out += p.svg; cx += p.w + 4 }
+  return out
+}
+/** 虚框出自哪个别的上下文：共享内核的（topic 写「共享内核」）、带 context 且不是当前上下文的；本上下文的给 null */
+const crossOf = (n) => n.topic === '共享内核' ? '共享内核' : n.context && n.context !== context ? n.context : null
+/** 概念页的数据换成画图用的形状：自己的数据带 g＝本主题，别的主题的带它自己的 topic；
+ *  别的上下文的 g 前面加上下文名，免得主题号跟本上下文的撞上被当成自己的，cx 记它出自哪个上下文 */
+function localData(c) {
+  const nodes = [...(c.concepts ?? []).map((n) => ({ ...n, g: c.topic })),
+    ...(c.external ?? []).map((n) => { const cx = crossOf(n); return { ...n, g: cx ? cx + '/' + n.topic : n.topic, cx } })]
+  return { nodes, edges: c.edges ?? [], byId: Object.fromEntries(nodes.map((n) => [n.id, n])) }
+}
+/** 虚框底下那行小字和颜色：本上下文的写主题名、用主题的颜色；别的上下文的写「上下文 · 主题号」、用那边主题的颜色；共享内核的写「共享内核」、灰的。找不到主题就灰框、写主题号，不抛错 */
+function stubFrom(n) {
+  const grey = 'fill:var(--area);stroke:var(--area-line)'
+  if (n.cx === '共享内核') return { text: '共享内核', style: grey }
+  if (n.cx) { const t = BIZ[n.cx]?.MAP?.topics?.find((x) => x.id === n.topic); return { text: n.cx + ' · ' + n.topic, style: t ? tint(t) : grey } }
+  const t = grpOf[n.topic]
+  return { text: t?.title ?? n.topic, style: t ? tint(t) : grey }
+}
+/** 点虚框：本上下文的跳那个主题的概念图；别的上下文的跳那个上下文的那张概念图；共享内核的跳共享内核那页 */
+function openStub(d) {
+  if (d.cx === '共享内核') location.hash = '共享内核/kernel'
+  else if (d.cx) { if (CONTEXTS.includes(d.cx)) location.hash = d.cx + '/concepts/' + d.g }
+  else go('concepts/' + d.g)
+}
+function drawLocal(g, c) {
+  const { nodes, edges, byId } = localData(c)
+  const mine = nodes.filter((n) => n.g === g.id)
+  const inG = (id) => byId[id].g === g.id
+  // 行高 130（框 50、行间 80 放线旁的小卡）；列距 90：小卡骑在线上、放不下就挪到行间，不另占列宽；虚框那两列离主题框 110，进出框的线和卡有地方放；折行后两行之间 130 走回头的线
+  const ROW = 130, COLW = W + 90, TROW = 150, GAP = 110, BAND_GAP = 130, Y0 = 110
+  const pos = {}
+  const place = (id, x, y, k, band, stub) => { pos[id] = { x, y, w: W, h: stub ? 40 : H, stub, k, band } }
+
+  // 一、主题里上下层级的（tree 线连着的）画成树：上一层在上、下一层在下，同一层横着排
+  const treeEdges = edges.filter((e) => e.tree && inG(e.from) && inG(e.to))
+  const treeIds = new Set(treeEdges.flatMap((e) => [e.from, e.to]))
+  const level = {}
+  const roots = [...treeIds].filter((id) => !treeEdges.some((e) => e.to === id))
+  const walk = (id, l) => { level[id] = Math.max(level[id] ?? 0, l); treeEdges.filter((e) => e.from === id).forEach((e) => walk(e.to, l + 1)) }
+  roots.forEach((r) => walk(r, 0))
+  const rows = []
+  for (const id of treeIds) (rows[level[id]] ??= []).push(id)
+  const treeW = rows.length ? Math.max(...rows.map((r) => r.length)) * (W + 40) - 40 : 0
+  const treeH = rows.length ? rows.length * TROW - (TROW - H) : 0
+
+  // 二、别的数据按先后分层：谁在谁前面由线定，一层一列
+  const rest = mine.filter((n) => !treeIds.has(n.id))
+  const depth = {}
+  const dep = (id, seen = new Set()) => {
+    if (depth[id] !== undefined) return depth[id]
+    if (seen.has(id)) return 0
+    seen.add(id)
+    const preds = edges.filter((e) => e.to === id && inG(e.from) && !treeIds.has(e.from)).map((e) => e.from)
+    return (depth[id] = preds.length ? Math.max(...preds.map((p) => dep(p, seen) + 1)) : 0)
+  }
+  rest.forEach((n) => dep(n.id))
+  const cols = []
+  for (const n of rest) (cols[depth[n.id]] ??= []).push(n.id)
+  cols.forEach((col) => col.sort((a, b) => (byId[a].order ?? 0) - (byId[b].order ?? 0)))
+
+  // 三、别的主题里连着的（虚框）：分左右两边，每边再按先后分几列，离主题框最近的是第 1 列。
+  //    虚框之间的上下层级（tree）算一组：上一层在上、下一层紧贴在下面，同一列。
+  //    左边：直接连进主题框、自己没有进线的一组在左 1 列；只往左边虚框送的再往左一列。
+  //    其余都在右边：按先后排列，进线全来自主题框或左边的在右 1 列，从右边虚框来的比它晚一列。这样虚框挨着它连的那一头、线都往右走，少交叉
+  const outside = [...new Set(edges.flatMap((e) => [e.from, e.to]).filter((id) => !inG(id)))]
+  const isOut = new Set(outside)
+  const parentOf = {}
+  for (const e of edges) if (e.tree && isOut.has(e.from) && isOut.has(e.to) && e.from !== e.to) parentOf[e.to] ??= e.from
+  // 别的上下文（含共享内核）的虚框，同一出处的也算一组：上下挨着放，不散到几列里去
+  const uf = {}
+  const find = (id) => (uf[id] && uf[id] !== id ? (uf[id] = find(uf[id])) : id)
+  const join = (a, b) => { const x = find(a), y = find(b); if (x !== y) uf[y] = x }
+  for (const [c, p] of Object.entries(parentOf)) join(p, c)
+  const firstOf = {}
+  for (const id of outside) if (byId[id].cx) { const k = byId[id].g; if (firstOf[k]) join(firstOf[k], id); else firstOf[k] = id }
+  const parts = new Map()
+  for (const id of outside) { const k = find(id); if (!parts.has(k)) parts.set(k, []); parts.get(k).push(id) }
+  // 一组的成员：根在前，下层按层级往下；同一出处并起来的，按组里的线排先后（谁指向谁谁在上），没有先后的照原来的次序
+  const members = {}, rootIdx = {}, groupRoots = []
+  for (const ids of parts.values()) {
+    let list
+    if (ids.length > 1 && ids.some((id) => byId[id].cx)) {
+      const inner = edges.filter((e) => e.from !== e.to && ids.includes(e.from) && ids.includes(e.to))
+      const left = [...ids]
+      list = []
+      while (left.length) { const i = left.findIndex((id) => !inner.some((e) => e.to === id && left.includes(e.from))); list.push(...left.splice(Math.max(0, i), 1)) }
+    } else {
+      list = [ids.find((id) => !parentOf[id]) ?? ids[0]]
+      for (let i = 0; i < list.length; i++) for (const e of edges) if (e.tree && e.from === list[i] && parentOf[e.to] === list[i] && !list.includes(e.to)) list.push(e.to)
+      for (const id of ids) if (!list.includes(id)) list.push(id)
+    }
+    members[list[0]] = list; groupRoots.push(list[0])
+    for (const id of list) rootIdx[id] = list[0]
+  }
+  const rootOf = (id) => rootIdx[id] ?? id
+  const inner = (r, id) => isOut.has(id) && rootOf(id) === r
+  const insOf = (r) => edges.filter((e) => members[r].includes(e.to) && !inner(r, e.from))
+  const outsOf = (r) => edges.filter((e) => members[r].includes(e.from) && !inner(r, e.to))
+  const side = {}, stubCol = {}
+  for (const r of groupRoots) if (!insOf(r).length && outsOf(r).some((e) => inG(e.to))) { side[r] = 'L'; stubCol[r] = 1 }
+  for (let grew = true; grew;) {
+    grew = false
+    for (const r of groupRoots) {
+      if (side[r] || insOf(r).length) continue
+      const outs = outsOf(r)
+      if (outs.length && outs.every((e) => isOut.has(e.to) && side[rootOf(e.to)] === 'L')) { side[r] = 'L'; stubCol[r] = 1 + Math.max(...outs.map((e) => stubCol[rootOf(e.to)])); grew = true }
+    }
+  }
+  const rightRoots = groupRoots.filter((r) => !side[r])
+  for (const r of rightRoots) { side[r] = 'R'; stubCol[r] = 1 }
+  for (let k = 0; k < rightRoots.length; k++) for (const r of rightRoots) {
+    const from = insOf(r).filter((e) => isOut.has(e.from) && side[rootOf(e.from)] === 'R').map((e) => stubCol[rootOf(e.from)])
+    stubCol[r] = Math.min(rightRoots.length, Math.max(1, ...from.map((c) => c + 1)))
+  }
+  const sideCols = (sd) => { const out = []; for (const r of groupRoots) if (side[r] === sd) (out[stubCol[r] - 1] ??= []).push(r); return out.map((c) => c ?? []) }
+  const leftCols = sideCols('L'), rightCols = sideCols('R')
+  const leftIds = outside.filter((id) => side[rootOf(id)] === 'L'), rightIds = outside.filter((id) => side[rootOf(id)] === 'R')
+
+  // 四、摆：左虚框几列 | 树块、各层像文字一样从左往右放，主区宽度放不下才折到下一行接着 | 右边的虚框几列贴着主题框右边。画布比主区宽就整张缩
+  const avail = availW() - (selected ? 316 : 0)
+  // 右边虚框列与列之间：线多（超过两条）就放宽，线上的小卡才骑得上去，不被挤到远处
+  const colOf = {}
+  rightCols.forEach((rs, i) => rs.forEach((r) => members[r].forEach((id) => { colOf[id] = i + 1 })))
+  const extraGap = rightCols.map((_, i) => i === 0 ? 0 : Math.min(200, Math.max(0, edges.filter((e) => !e.tree && [colOf[e.from], colOf[e.to]].sort().join() === [i, i + 1].join()).length - 2) * 30))
+  const rightOff = (c) => (c - 1) * (W + GAP) + extraGap.slice(0, c).reduce((a, b) => a + b, 0)
+  const leftW = leftCols.length * (W + GAP), rightW = rightCols.length * (W + GAP) + extraGap.reduce((a, b) => a + b, 0)
+  const innerAvail = Math.max(W, avail - leftW - rightW - 98)
+  const items = []
+  if (rows.length) items.push({ kind: 'tree', w: treeW, rows })
+  cols.forEach((ids) => items.push({ kind: 'col', ids: [...ids], w: W }))
+  // 一行放几块：宽度放得下的前提下，块数开方取整（4 块排 2×2、5–9 块排 3 列），主题框近方形
+  const perBand = Math.max(1, Math.ceil(Math.sqrt(items.length)))
+  let cx = 0, band = 0, inBand = 0
+  items.forEach((it, i) => {
+    if (cx > 0 && (cx + it.w > innerAvail || inBand >= perBand)) { cx = 0; band++; inBand = 0 }
+    inBand++
+    it.x = cx; it.band = band; it.k = i + 1
+    cx += it.w + (COLW - W)
+  })
+  const nBands = items.length ? band + 1 : 1, X_IN = 40 + leftW
+  // 行号：一列里的节点落在离它连着的那些框最近的那一行，占了就往下挤；虚框也一样按它指着的框对齐
+  const row = {}
+  items.forEach((it) => { if (it.kind === 'col') it.ids.forEach((id, i) => { row[id] = i }) })
+  for (const colRoots of [...leftCols, ...rightCols]) { let i = 0; for (const r of colRoots) for (const id of members[r]) row[id] = i++ }
+  const bandTop = [], bandH = []
+  let frame = null
+  const layout = () => {
+    let y = Y0
+    for (let b = 0; b < nBands; b++) {
+      const its = items.filter((it) => it.band === b)
+      const h = Math.max(H, ...its.map((it) => it.kind === 'tree' ? treeH : (Math.max(...it.ids.map((id) => row[id])) + 1) * ROW - (ROW - H)))
+      bandTop[b] = y; bandH[b] = h; y += h + BAND_GAP
+    }
+    for (const it of items) {
+      if (it.kind === 'tree') it.rows.forEach((r, l) => { const rw = r.length * (W + 40) - 40, x0 = X_IN + it.x + (it.w - rw) / 2; r.forEach((id, i) => place(id, x0 + i * (W + 40), bandTop[it.band] + l * TROW, it.k, it.band, false)) })
+      // nudge：人手指定的上下挪动（像素数）；写成文字的 nudge 是备注，不参与排
+      else it.ids.forEach((id) => place(id, X_IN + it.x, bandTop[it.band] + row[id] * ROW + (typeof byId[id].nudge === 'number' ? byId[id].nudge : 0), it.k, it.band, false))
+    }
+    const own = mine.map((n) => pos[n.id]).filter(Boolean)
+    const bx1 = Math.min(...own.map((p) => p.x)), by1 = Math.min(...own.map((p) => p.y)), bx2 = Math.max(...own.map((p) => p.x + p.w)), by2 = Math.max(...own.map((p) => p.y + p.h))
+    // 主题框只包住自己的数据：左右留 44，顶上留 120（主题名、角色标签、线上的卡都在框里），底下留 110
+    frame = { x: bx1 - 44, y: by1 - 120, w: bx2 - bx1 + 88, h: by2 - by1 + 230 }
+    // 左边第 1 列贴着主题框，越往外列号越大；k 照从左到右的顺序
+    leftIds.forEach((id) => { const c = stubCol[rootOf(id)]; place(id, 40 + (leftCols.length - c) * (W + GAP), Y0 + row[id] * ROW + 5, -c, null, true) })
+    rightIds.forEach((id) => { const c = stubCol[rootOf(id)]; place(id, frame.x + frame.w + GAP + rightOff(c), Y0 + row[id] * ROW + 5, items.length + c, null, true) })
+  }
+  // 重心法：一列里按连着的对端的平均高度排，来回扫几遍，交叉就少了
+  const cy = (id) => (pos[id] ? pos[id].y + pos[id].h / 2 : null)
+  const bary = (id) => { const ys = edges.filter((e) => e.from === id || e.to === id).map((e) => cy(e.from === id ? e.to : e.from)).filter((v) => v != null); return ys.length ? ys.reduce((a, b) => a + b, 0) / ys.length : null }
+  // 自己的列从本行顶上排起（行号减到从 0 起）；虚框那一列的行号是整张图的，不减，这样它就跟它指着的框对齐
+  const assignRows = (ids, base, global) => {
+    if (!ids.length) return
+    const want = ids.map((id) => { const b = bary(id); return { id, r: b == null ? row[id] : (b - base) / ROW } }).sort((p, q) => p.r - q.r || (byId[p.id].order ?? 0) - (byId[q.id].order ?? 0))
+    let last = -1
+    // 挨着的两个最多空一行（虚框那一列最多空两行），别为了对齐把一列拉得老长
+    for (const w of want) { const r = Math.min(Math.max(last + 1, Math.round(w.r)), last + (global ? 3 : 2)); row[w.id] = r; last = r }
+    if (global) return
+    const min = Math.min(...want.map((w) => row[w.id]))
+    for (const w of want) row[w.id] -= min
+  }
+  // 虚框的一列：一组一组按重心排（组的重心是组里各框连到组外的平均高度），组里的框挨着往下排；行号是整张图的，跟它连着的框对齐
+  const assignStubRows = (colRoots, base) => {
+    const want = colRoots.map((r) => {
+      const ys = edges.filter((e) => members[r].includes(e.from) !== members[r].includes(e.to)).map((e) => cy(members[r].includes(e.from) ? e.to : e.from)).filter((v) => v != null)
+      return { r, at: ys.length ? (ys.reduce((a, b) => a + b, 0) / ys.length - base) / ROW : row[r] }
+    }).sort((p, q) => p.at - q.at)
+    let last = -1
+    for (const w of want) {
+      // 第一组直接对齐到它连着的框；后面的挨着前一组，最多空两行，别为了对齐把一列拉得老长
+      const n = members[w.r].length, want0 = Math.max(last + 1, Math.round(w.at - (n - 1) / 2)), start = last < 0 ? want0 : Math.min(want0, last + 3)
+      members[w.r].forEach((id, i) => { row[id] = start + i })
+      last = start + n - 1
+    }
+  }
+  // 树的一层里谁左谁右：按它连着的框（别的层、虚框、别的列）的平均横坐标排，连着左边的放左边，线就不用横穿同一层的别的框
+  const cxOf = (id) => (pos[id] ? pos[id].x + pos[id].w / 2 : null)
+  const orderTreeRows = () => rows.forEach((r) => {
+    const at = new Map(r.map((id, i) => { const xs = edges.filter((e) => e.from === id || e.to === id).map((e) => (e.from === id ? e.to : e.from)).filter((o) => !r.includes(o)).map(cxOf).filter((v) => v != null)
+      return [id, { i, x: xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null }] }))
+    const keep = r.map((id) => at.get(id).x ?? cxOf(id))
+    r.sort((p, q) => (at.get(p).x ?? keep[at.get(p).i]) - (at.get(q).x ?? keep[at.get(q).i]) || at.get(p).i - at.get(q).i)
+  })
+  layout()
+  const colItems = items.filter((it) => it.kind === 'col')
+  for (let pass = 0; pass < 3; pass++) {
+    const order = pass % 2 ? [...colItems].reverse() : colItems
+    if (rows.length) { orderTreeRows(); layout() }
+    for (const it of order) { assignRows(it.ids, bandTop[it.band] + H / 2); layout() }
+    for (const colRoots of [...leftCols, ...rightCols]) { assignStubRows(colRoots, Y0 + H / 2); layout() }
+  }
+  // 收尾：虚框先一整侧、再一列一列往上收几行，挑线竖着拉得最短的那个（比原来短才挪），免得一侧整片吊在主题框下面
+  const vlen = () => edges.reduce((t, e) => t + Math.abs(cy(e.from) - cy(e.to)), 0)
+  const sides = [leftCols, rightCols].map((cs) => cs.flat()).filter((rs) => rs.length)
+  for (let pass = 0; pass < 2; pass++) for (const colRoots of [...sides, ...leftCols, ...rightCols]) {
+    const ids = colRoots.flatMap((r) => members[r]), min = Math.min(...ids.map((id) => row[id]))
+    let best = 0, bestLen = vlen()
+    for (let k = 1; k <= min; k++) { ids.forEach((id) => { row[id]-- }); layout(); const L = vlen(); if (L < bestLen) { best = k; bestLen = L } }
+    ids.forEach((id) => { row[id] += min - best }); layout()
+  }
+  // 框的正下方、正上方有没有别的自己的框（折行的线想从底边出、顶边进时要看）
+  const clearBelow = (p) => !mine.some((n) => { const q = pos[n.id]; return q !== p && q.y > p.y && q.x < p.x + p.w && q.x + q.w > p.x })
+  const clearAbove = (p) => !mine.some((n) => { const q = pos[n.id]; return q !== p && q.y < p.y && q.x < p.x + p.w && q.x + q.w > p.x })
+
+  // 几条线汇到同一个框、或从同一个框分出去，端点在框的边上错开：按对面那头的高低，从上到下占这条边上的位置
+  const inTo = {}
+  for (const e of edges) (inTo[e.to] ??= []).push(e)
+  for (const list of Object.values(inTo)) list.sort((a, b) => pos[a.from].y - pos[b.from].y)
+  const fwd = (e) => { const a = pos[e.from], b = pos[e.to]; return a.band != null && b.band != null && a.band !== b.band ? b.band > a.band : b.x > a.x }
+  const sideOf = (e, id) => (e.from === id ? (fwd(e) ? 'r' : 'l') : (fwd(e) ? 'l' : 'r'))
+  const farY = (e, id) => pos[e.from === id ? e.to : e.from].y
+  const onSide = {}
+  const stubColumn = (e) => !inG(e.from) && !inG(e.to) && Math.abs(pos[e.from].x - pos[e.to].x) < 1
+  for (const e of edges) if (!e.tree && !stubColumn(e)) for (const id of [e.from, e.to]) (onSide[id + sideOf(e, id)] ??= []).push(e)
+  for (const [key, list] of Object.entries(onSide)) list.sort((a, b) => farY(a, key.slice(0, -1)) - farY(b, key.slice(0, -1)))
+  const slot = (e, id, p) => { const list = onSide[id + sideOf(e, id)]; return list?.length > 1 ? p.y + p.h * (list.indexOf(e) + 1) / (list.length + 1) : p.y + p.h / 2 }
+  /** 折线：d 是路径，at(t) 按长度取线上的点 */
+  const poly = (pts) => {
+    const segs = []; let L = 0
+    for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); segs.push({ a: pts[i - 1], b: pts[i], l }); L += l }
+    return { d: 'M ' + pts.map((p) => `${p.x} ${p.y}`).join(' L '), at: (t) => { let d = t * L; for (const s of segs) { if (d <= s.l || s === segs[segs.length - 1]) { const u = s.l ? Math.min(1, d / s.l) : 0; return { x: s.a.x + (s.b.x - s.a.x) * u, y: s.a.y + (s.b.y - s.a.y) * u } } d -= s.l } return pts[pts.length - 1] } }
+  }
+  let s = MARK
+  s += `<g class="grp"><rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="12" style="${tint(g)};fill-opacity:.45"/><text x="${frame.x + 14}" y="${frame.y + 20}">${esc(g.title)}</text></g>`
+  // 小卡要绕开的：所有数据框、虚框，和数据框上方那一排角色标签
+  const taken = mine.map((n) => pos[n.id]).concat(outside.map((id) => pos[id])).map((p) => ({ x: p.x, y: p.y, w: p.w, h: p.h, hard: true }))
+  for (const n of mine) if (n.by?.length) taken.push({ x: pos[n.id].x, y: pos[n.id].y - 28, w: W, h: 28, hard: true })
+  taken.push({ x: frame.x, y: frame.y, w: textW(g.title) * 13 / 12 + 28, h: 30, hard: true })   // 主题框左上角写名字的地方：字，不许盖
+  // 主题框的四条边各算一条窄带：卡不许压在框边上（要么整张在框里，要么整张在框外）
+  taken.push({ x: frame.x, y: frame.y - 2, w: frame.w, h: 4 }, { x: frame.x, y: frame.y + frame.h - 2, w: frame.w, h: 4 }, { x: frame.x - 2, y: frame.y, w: 4, h: frame.h }, { x: frame.x + frame.w - 2, y: frame.y, w: 4, h: frame.h })
+  let labels = ''
+  const geo = [], laneUse = {}, gapUse = {}
+  // 一条线隔着别的列：走行与行之间的空当（目标那一行的上方，目标在上面就走它下方），几条走同一条空当的错开 12
+  const useLane = (y0) => { const key = Math.round(y0 / 10); laneUse[key] = (laneUse[key] ?? 0) + 1; return y0 - (laneUse[key] - 1) * 12 }
+  const skipped = (a, b) => { // a 在 b 左边；中间隔着自己的列没有
+    const bd = a.band ?? b.band; if (bd == null) return false
+    return items.some((it) => it.band === bd && it.k > a.k && it.k < b.k)
+  }
+  // 线不许穿过两端以外的框：取线上的点，落进别的框（往里缩 3）就算穿了一个
+  const idOfPos = new Map(Object.entries(pos).map(([id, p]) => [p, id]))
+  const hitsOf = (cv, a, b) => Object.values(pos).filter((q) => q !== a && q !== b).filter((q) => { for (let t = 0; t <= 1.0001; t += 0.01) { const p = cv.at(t); if (p.x > q.x + 3 && p.x < q.x + q.w - 3 && p.y > q.y + 3 && p.y < q.y + q.h - 3) return true } return false }).length
+  const lenOf = (pts) => pts.slice(1).reduce((t, p, i) => t + Math.abs(p.x - pts[i].x) + Math.abs(p.y - pts[i].y), 0)
+  // 穿了框的线改走直角：从这一头出来，走两行之间（下面或上面）的空当横过去，从侧边或底边进那一头；挑不穿框、最短的那条
+  const detour = (a, b, y1, y2) => {
+    const right = b.x + b.w / 2 >= a.x + a.w / 2, sg = right ? 1 : -1
+    const lo = Math.max(a.y + a.h, b.y + b.h), hi = Math.min(a.y, b.y), lys = []
+    for (let k = 0; k < 4; k++) lys.push(lo + 22 + k * 14, hi - 44 - k * 14)
+    let best = null
+    for (const ly of lys) for (const sb of [false, true]) for (const eb of [false, true]) {
+      const pts = []
+      if (sb) { const sx = right ? a.x + a.w - 18 : a.x + 18; pts.push({ x: sx, y: ly > a.y ? a.y + a.h : a.y }, { x: sx, y: ly }) }
+      else { const x1 = right ? a.x + a.w : a.x; pts.push({ x: x1, y: y1 }, { x: x1 + sg * 20, y: y1 }, { x: x1 + sg * 20, y: ly }) }
+      if (eb) { const ex = right ? b.x + 18 : b.x + b.w - 18; pts.push({ x: ex, y: ly }, { x: ex, y: ly > b.y ? b.y + b.h + 2 : b.y - 2 }) }
+      else { const x2 = right ? b.x - 2 : b.x + b.w + 2; pts.push({ x: x2 - sg * 20, y: ly }, { x: x2 - sg * 20, y: y2 }, { x: x2, y: y2 }) }
+      // 从顶边进、框上有角色标签的，线会压标签，往后挑
+      const pill = eb && ly < b.y && byId[idOfPos.get(b)]?.by?.length ? 200 : 0
+      const cv = poly(pts), n = hitsOf(cv, a, b), score = n * 1e6 + lenOf(pts) + (sb ? 40 : 0) + (eb ? 40 : 0) + pill
+      if (!best || score < best.score) best = { cv, n, score }
+    }
+    return best
+  }
+  // 树的连线隔着一层：横杠下来以后换一条竖着的通道（别的框的左右两边），绕开中间那一层的框
+  const treeDetour = (a, b) => {
+    const x1 = a.x + a.w / 2, y1 = a.y + a.h, x2 = b.x + b.w / 2, y2 = b.y - 2, ym = y2 - 36, yd = y1 + 18
+    const chans = [x1, x2]
+    for (const q of Object.values(pos)) if (q !== a && q !== b && q.y < y2 && q.y + q.h > y1) chans.push(q.x - 20, q.x + q.w + 20)
+    let best = null
+    for (const c of chans) {
+      const pts = [{ x: x1, y: y1 }, { x: x1, y: yd }, { x: c, y: yd }, { x: c, y: ym }, { x: x2, y: ym }, { x: x2, y: y2 }]
+      const cv = poly(pts), n = hitsOf(cv, a, b), score = n * 1e6 + lenOf(pts)
+      if (!best || score < best.score) best = { cv, n, score }
+    }
+    return best
+  }
+  for (const e of edges) {
+    const a = pos[e.from], b = pos[e.to]
+    let d, cv
+    if (e.tree) {
+      // 树的连线：从上一层底边中间直下，横杠放在下一层顶上 36 处（离别的线远），再直下进下一层顶边中间
+      const x1 = a.x + a.w / 2, y1 = a.y + a.h, x2 = b.x + b.w / 2, y2 = b.y - 2, ym = y2 - 36
+      cv = poly([{ x: x1, y: y1 }, { x: x1, y: ym }, { x: x2, y: ym }, { x: x2, y: y2 }]); d = cv.d
+    } else {
+      const y1 = slot(e, e.from, a), y2 = slot(e, e.to, b)
+      if (a.band != null && b.band != null && a.band !== b.band) {
+        // 折到下一行的线：从右边出去、下到两行之间的空当、横着走到目标那一列左边、再进目标；往回的镜像从上面绕
+        const down = b.band > a.band, key = (down ? 'd' : 'u') + a.band
+        const n = (gapUse[key] = (gapUse[key] ?? 0) + 1)
+        const gy = down ? bandTop[a.band] + bandH[a.band] + BAND_GAP / 2 + (n - 1) * 16 : bandTop[a.band] - BAND_GAP / 2 - (n - 1) * 16
+        // 出口：底下没别的框就从底边中间直接下去，有就从右边出去绕；入口同理，顶上没框就从顶边进
+        const ax = a.x + a.w / 2 + (n - 1) * 14, bx = b.x + b.w / 2 - (n - 1) * 14
+        const pts = down
+          ? [...(clearBelow(a) ? [{ x: ax, y: a.y + a.h }, { x: ax, y: gy }] : [{ x: a.x + a.w, y: y1 }, { x: a.x + a.w + 40, y: y1 }, { x: a.x + a.w + 40, y: gy }]),
+            ...(clearAbove(b) ? [{ x: bx, y: gy }, { x: bx, y: b.y - 2 }] : [{ x: b.x - 40, y: gy }, { x: b.x - 40, y: y2 }, { x: b.x - 2, y: y2 }])]
+          : [...(clearAbove(a) ? [{ x: ax, y: a.y }, { x: ax, y: gy }] : [{ x: a.x, y: y1 }, { x: a.x - 40, y: y1 }, { x: a.x - 40, y: gy }]),
+            ...(clearBelow(b) ? [{ x: bx, y: gy }, { x: bx, y: b.y + b.h + 2 }] : [{ x: b.x + b.w + 40, y: gy }, { x: b.x + b.w + 40, y: y2 }, { x: b.x + b.w + 2, y: y2 }])]
+        cv = poly(pts); d = cv.d
+      } else if (stubColumn(e)) {
+        // 同一列的两个虚框：中间没别的框就从上面那个的底边直下（或直上）进另一个；隔着框就从右边绕过去
+        const lo = Math.min(a.y, b.y), hi = Math.max(a.y, b.y), down = b.y > a.y, x = a.x + a.w / 2
+        const blocked = Object.values(pos).some((q) => q !== a && q !== b && Math.abs(q.x - a.x) < 1 && q.y > lo && q.y < hi)
+        const pts = blocked
+          ? [{ x: a.x + a.w, y: a.y + a.h / 2 }, { x: a.x + a.w + 36, y: a.y + a.h / 2 }, { x: a.x + a.w + 36, y: b.y + b.h / 2 }, { x: b.x + b.w + 2, y: b.y + b.h / 2 }]
+          : [{ x, y: down ? a.y + a.h : a.y }, { x, y: down ? b.y - 2 : b.y + b.h + 2 }]
+        cv = poly(pts); d = cv.d
+      } else if (b.x > a.x) {
+        const x1 = a.x + a.w, x2 = b.x - 2
+        if (skipped(a, b)) {
+          // 隔着列：沿空当走，两头各拐一下
+          const far = b.band != null ? b : a
+          const ly = useLane(y2 >= y1 || far === a ? far.y - (ROW - H) / 2 : far.y + far.h + (ROW - H) / 2)
+          const pts = [{ x: x1, y: y1 }, { x: x1 + 50, y: y1 }, { x: x1 + 95, y: ly }, { x: x2 - 95, y: ly }, { x: x2 - 50, y: y2 }, { x: x2, y: y2 }]
+          cv = poly(pts)
+          d = `M ${x1} ${y1} C ${x1 + 70} ${y1}, ${x1 + 30} ${ly}, ${x1 + 95} ${ly} L ${x2 - 95} ${ly} C ${x2 - 30} ${ly}, ${x2 - 70} ${y2}, ${x2} ${y2}`
+        } else {
+          const dx = (x2 - x1) * 0.5
+          const p0 = { x: x1, y: y1 }, p1 = { x: x1 + dx, y: y1 }, p2 = { x: x2 - dx, y: y2 }, p3 = { x: x2, y: y2 }
+          d = `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y}, ${p2.x} ${p2.y}, ${p3.x} ${p3.y}`
+          cv = { at: (t) => bez(p0, p1, p2, p3, t) }
+        }
+      } else {
+        // 往回走的线往上拱一下，跟往右走的分开
+        const x1 = a.x, x2 = b.x + b.w + 2, dx = (x1 - x2) * 0.5, bulge = -60
+        const p0 = { x: x1, y: y1 }, p1 = { x: x1 - dx, y: y1 + bulge }, p2 = { x: x2 + dx, y: y2 + bulge }, p3 = { x: x2, y: y2 }
+        d = `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y}, ${p2.x} ${p2.y}, ${p3.x} ${p3.y}`
+        cv = { at: (t) => bez(p0, p1, p2, p3, t) }
+      }
+    }
+    const n0 = hitsOf(cv, a, b)
+    if (n0) { const alt = e.tree ? treeDetour(a, b) : detour(a, b, slot(e, e.from, a), slot(e, e.to, b)); if (alt && alt.n < n0) { cv = alt.cv; d = cv.d } }
+    s += `<g class="ed${e.tree ? ' tree' : ''}" data-e="${geo.length}"><path class="vis" d="${d}" marker-end="url(#a)"/><path class="hit" d="${d}"/></g>`
+    geo.push({ e, cv })
+  }
+  // 每条线一张小卡：做这件事的角色在卡顶上、说明在底下，整张骑在线上；骑不上就先在近处、再一圈圈往外（最远 300）找个不压框、不被别的线穿过的地方，拉虚线指过去。树的连线是直角，小卡放在横杠旁边
+  geo.forEach(({ e, cv }, i) => {
+    const others = geo.filter((x) => x.e !== e).map((x) => x.cv)
+    labels += `<g data-e="${i}">` + placeLabel(cv, [e.label], taken, e.tree ? { roles: e.by, others, onLine: [], around: [[0.5, 110, 0], [0.5, -110, 0], [0.5, 130, 0], ...TRIES_NEAR], rings: true, inside: inG(e.from) && inG(e.to) ? frame : null, cardW: 30 } : { roles: e.by, others, around: TRIES_NEAR, rings: true, inside: inG(e.from) && inG(e.to) ? frame : null, cardW: 30 }).svg + '</g>'
+  })
+  // 画布的包围盒把线也算进去（往回拱的线、绕空当的线会伸出框外）
+  const extents = []
+  for (const { cv } of geo) for (let t = 0; t <= 1; t += 0.05) { const p = cv.at(t); extents.push({ x: p.x - 4, y: p.y - 4, w: 8, h: 8 }) }
+  for (const n of mine) {
+    const p = pos[n.id]
+    s += `<g class="nd${n.id === selected ? ' sel' : ''}" data-n="${n.id}"><rect x="${p.x}" y="${p.y}" width="${W}" height="${H}" rx="3"/>
+      <text x="${p.x + W / 2}" y="${p.y + 30}" text-anchor="middle">${esc(n.title)}</text></g>`
+    // 角色标签一排放在框上方，不压框线
+    if (n.by?.length) s += pills(n.by, p.x + 6, p.y - 26)
+  }
+  for (const id of outside) {
+    const p = pos[id], n = byId[id], from = stubFrom(n)
+    s += `<g class="stub" data-g="${esc(n.topic)}"${n.cx ? ` data-cx="${esc(n.cx)}"` : ''} data-n="${esc(id)}"><rect x="${p.x}" y="${p.y}" width="${W}" height="${p.h}" rx="3" style="${from.style};fill-opacity:.5"/>
+      <text x="${p.x + W / 2}" y="${p.y + 17}" text-anchor="middle">${esc(n.title)}</text><text class="sub" x="${p.x + W / 2}" y="${p.y + 32}" text-anchor="middle">${esc(from.text)} ›</text></g>`
+  }
+  s += labels
+  return canvas(s, [frame, ...taken, ...extents], 20, avail)
+}
+
+// ---------- 流程：时序图 ----------
+function drawFlow(st) {
+  const tw = (t, px) => textW(String(t ?? '')) * px / 12       // textW 按 12px 量的，换成别的字号
+  const HEAD_H = 46, NOTE_GAP = 36, STEP_GAP = 22
+  const nLanes = st.parties.length
+  // 右边那一列框的宽度：按最长的一句自适应，280 起、最宽 360，再长就折行；单子里每条左边一列编号、右边一个标记，宽度里算上
+  // 答过的问题不画（再有问题再问）；答过的规则当定了的画
+  const asksOf = (p) => (p.asks ?? []).filter((a) => !a.answer)
+  const qa = st.steps.flatMap((p) => [...(p.rules ?? []).map((r) => r.text), ...asksOf(p).map((a) => a.q), ...(p.rules ?? []).flatMap((r) => r.options ?? []), ...asksOf(p).flatMap((a) => a.options ?? [])])
+  const NOTE_W = Math.max(280, Math.min(360, ...qa.length ? [Math.max(...qa.map((t) => tw(t, 12) + 96))] : []))
+  const idx = (id) => st.parties.findIndex((p) => p.id === id)
+  // 各方的名牌按字宽算；泳道间距先按最宽的名牌放宽（LANE 在下面算）
+  const headW = Math.max(140, ...st.parties.map((p) => Math.max(tw(p.title, 13), tw(p.sub, 11)) + 28))
+  const selfLines = (p) => wrapW(p.title, 220, 13)
+  const selfW = (p) => Math.max(...selfLines(p).map((l) => tw(l, 13))) + 24
+  const cardW = (d) => tw(d, 11) + 14
+  // 第一条泳道左边要放得下「自己对自己」的框和它左边堆的数据卡；最后一条右边要放得下框和框底下的期限，再放说明卡
+  const selfAt = (i) => st.steps.filter((p) => idx(p.from) === i && idx(p.to) === i)
+  const leftNeed = Math.max(headW / 2 + 10, ...selfAt(0).map((p) => Math.max(selfW(p) / 2 + 8 + Math.max(0, ...(p.data ?? []).map(cardW)) + 10, tw(p.due, 11) / 2 + 24)))
+  const rightNeed = Math.max(headW / 2 + 10, 80, ...selfAt(nLanes - 1).map((p) => Math.max(selfW(p) / 2 + 12, tw(p.due, 11) / 2 + 24)))
+  const X0 = Math.max(90, Math.ceil(leftNeed))
+  const hasSide = st.steps.some((p) => p.note || p.rules?.length || asksOf(p).length)
+  // 泳道间距：平时 300 起；参与方多、主区放不下时先收窄泳道（最窄是名牌宽加 20、不窄过 200），说明栏宽度不动（卡上的选项按钮要完整）；
+  // 收到最窄还放不下，最后整张等比缩（见 return）
+  const avail = availW(), fixedW = X0 + rightNeed + (hasSide ? NOTE_GAP + NOTE_W : 0) + 20
+  const LANE0 = Math.max(300, headW + 40), fitLane = nLanes > 1 ? Math.floor((avail - fixedW) / (nLanes - 1)) : LANE0
+  const LANE = Math.max(Math.max(headW + 20, 200), Math.min(LANE0, fitLane))
+  const lx = (i) => X0 + i * LANE
+  const noteX = lx(nLanes - 1) + rightNeed + NOTE_GAP
+  const width = Math.ceil(hasSide ? noteX + NOTE_W + 20 : lx(nLanes - 1) + rightNeed + 20)
+  const card = (d, x, y) => { const w = cardW(d); return `<g class="data"><rect x="${x}" y="${y}" width="${w}" height="18"/><text x="${x + w / 2}" y="${y + 13}">${esc(d)}</text></g>` }
+  // 一步一行；每一步先算自己要占多高（标题几行、日子、期限、数据卡几张、右边几张说明卡），下一步从这一步最低的那张卡底下开始
+  let y = HEAD_H + 34, s = ''
+  for (const p of st.steps) {
+    const a = idx(p.from), b = idx(p.to), data = p.data ?? []
+    let bottom, lineEnd
+    if (a === b) {
+      // 自己对自己：生命线上一个框，从这一行往下长；日子、期限在框底下；数据卡在框左边一张张往下堆
+      const x = lx(a), lines = selfLines(p), w = selfW(p), h = lines.length * 18 + 12
+      s += `<g class="self" data-id="${p.id}"><rect x="${x - w / 2}" y="${y - 10}" width="${w}" height="${h}"/>${lines.map((l, k) => `<text x="${x}" y="${y + 10 + k * 18}" text-anchor="middle">${esc(l)}</text>`).join('')}
+        ${p.date ? `<text class="date" x="${x}" y="${y - 10 + h + 14}" text-anchor="middle">${esc(p.date)}</text>` : ''}</g>`
+      let ty = y - 10 + h + (p.date ? 18 : 4)
+      if (p.due) { s += `<g class="due"><text x="${x}" y="${ty + 10}" text-anchor="middle">⏱ ${esc(p.due)}</text></g>`; ty += 16 }
+      data.forEach((d, i) => { s += card(d, x - w / 2 - 8 - cardW(d), y - 10 + i * 24) })
+      bottom = Math.max(ty, y - 10 + data.length * 24)
+      lineEnd = x + w / 2 + 8
+    } else {
+      // 横着的箭头：标题按两条泳道的距离折行、摞在箭头上方；日子、期限在箭头下方；数据卡在箭头指着的那一头底下一张张往下堆
+      const x1 = lx(a), x2 = lx(b), dir = x2 > x1 ? 1 : -1, mx = (x1 + x2) / 2
+      const lines = wrapW(p.title, Math.abs(x2 - x1) - 24, 13)
+      y += (lines.length - 1) * 17
+      s += `<g class="msg" data-id="${p.id}"><path d="M ${x1} ${y} L ${x2 - dir * 3} ${y}" marker-end="url(#a)"/>${lines.map((l, k) => `<text x="${mx}" y="${y - 8 - (lines.length - 1 - k) * 17}">${esc(l)}</text>`).join('')}
+        ${p.date ? `<text class="date" x="${mx}" y="${y + 16}">${esc(p.date)}</text>` : ''}</g>`
+      let ty = y + 22
+      if (p.due) { s += `<g class="due"><text x="${mx}" y="${ty + 10}" text-anchor="middle">⏱ ${esc(p.due)}</text></g>`; ty += 16 }
+      data.forEach((d, i) => { s += card(d, dir > 0 ? x2 - 10 - cardW(d) : x2 + 10, ty + 2 + i * 24) })
+      bottom = data.length ? ty + 2 + data.length * 24 - 6 : ty
+      lineEnd = Math.max(x1, x2) + 8
+    }
+    // 右边一步一个框：说明、规则、问题列成一张单子，一条虚线带箭头指回这一步那条横线；框多高这一步就占多高，下一步从它底下开始
+    if (p.note || p.rules?.length || asksOf(p).length) {
+      const c = sideBox({ p, asks: asksOf(p), flow: st.file, x: noteX, top: y - 12, w: NOTE_W, lineEnd, y })
+      s += c.svg; bottom = Math.max(bottom, y - 12 + c.h)
+    }
+    y = bottom + STEP_GAP + 25      // 下一步的箭头线：留出它标题的第一行
+  }
+  const height = y - STEP_GAP - 25 + 24
+  // 各方的名牌单独一排 html，sticky 贴在主区顶上，往下滚也看得见是谁；横坐标和下面 svg 的泳道对齐。生命线在 svg 里照常跟着内容滚
+  const heads = st.parties.map((p, i) => `<div class="hd${p.sub ? '' : ' one'}" style="left:${lx(i) - headW / 2}px;width:${headW}px">${esc(p.title)}${p.sub ? `<small>${esc(p.sub)}</small>` : ''}</div>`).join('')
+  const lives = st.parties.map((p, i) => `<line class="life" x1="${lx(i)}" y1="0" x2="${lx(i)}" y2="${height - 10}"/>`).join('')
+  // 比主区宽就整张等比缩：svg 用 viewBox 缩，顶上钉住的名牌那一排用同一个比例缩，列位跟 svg 对齐
+  const k = width > avail ? avail / width : 1
+  if (k === 1) return `<div class="heads" style="width:${width}px">${heads}</div><svg width="${width}" height="${height - HEAD_H}" viewBox="0 ${HEAD_H} ${width} ${height - HEAD_H}">${MARK}<g class="flow">${lives}${s}</g></svg>`
+  return `<div class="heads" style="width:${Math.floor(width * k)}px;height:${Math.ceil(50 * k)}px"><div class="hds" style="position:relative;width:${width}px;height:50px;transform:scale(${k.toFixed(4)});transform-origin:0 0">${heads}</div></div><svg width="${Math.floor(width * k)}" height="${Math.ceil((height - HEAD_H) * k)}" viewBox="0 ${HEAD_H} ${width} ${height - HEAD_H}">${MARK}<g class="flow">${lives}${s}</g></svg>`
+}
+
+// 右边框展开没有：人点过的记下来（内存里一份，localStorage 再记一份，读写不成就只在内存）；没点过的按有没有要答的。
+// 记的时候连带当时有没有要答的：要答的从有变没有、从没有变有，记的就不作数，回到默认（要答的不藏，全定了就折）
+const SIDE_KEY = 'dev-team-lite/业务/右边框'
+const sideOpen = (() => { try { return JSON.parse(localStorage.getItem(SIDE_KEY) ?? '{}') ?? {} } catch { return {} } })()
+const sideKey = (flow, step) => context + '/' + flow + '/' + step
+function isSideOpen(flow, step, pend) { const v = sideOpen[sideKey(flow, step)]; return v && v.pend === pend ? v.open : pend }
+/** 点框的标题：展开的折起来、折着的展开，记下来、重画 */
+function toggleSide(d) {
+  sideOpen[sideKey(d.flow, d.step)] = { open: d.open !== '1', pend: d.pend === '1' }
+  try { localStorage.setItem(SIDE_KEY, JSON.stringify(sideOpen)) } catch {}
+  render()
+}
+
+/** 一步右边的一个框：标题一行「▾ 说明 · 规则 n 条 · 待定 k · 问 m」，点它展开、折叠；展开是一张单子：说明在最上（便签底色），
+ *  规则一条一行（左边编号小字、右边「定了」「待定」），问题一条一行（右边「问」）。来源、谁在哪一屏问的小字跟在那条底下；
+ *  待定的、没答的再列偏向和一排按钮（options 各一个，第一个加粗是偏向；「另说」自己输）。只有说明的不折、没有标题。
+ *  框顶边在 top，虚线从框左边标题那一行指到这一步那条横线的右端。返回 svg 和框高 */
+function sideBox({ p, asks, flow, x, top, w, lineEnd, y }) {
+  const rules = p.rules ?? [], step = p.id
+  const openRule = (r) => r.status !== '定了' && !r.answer
+  const nPend = rules.filter(openRule).length, pend = nPend + asks.length > 0
+  const list = rules.length + asks.length > 0
+  const open = !list || isSideOpen(flow, step, pend)
+  const HEAD = list ? 26 : 0
+  const small = (t, wd) => wrapW(t, wd, 11)
+  let cur = top + HEAD, body = ''
+  if (list && open) body += `<line class="sep" x1="${x + 6}" y1="${cur}" x2="${x + w - 6}" y2="${cur}"/>`
+  // 说明：便签底色一块，在单子最上
+  if (open && p.note) {
+    const lines = wrapW(p.note, w - (list ? 32 : 20), 12), nx = list ? x + 6 : x, nw = list ? w - 12 : w, ny = list ? cur + 6 : cur, nh = lines.length * 17 + 12
+    body += `<g class="note"><rect x="${nx}" y="${ny}" width="${nw}" height="${nh}"/>${lines.map((l, k) => `<text x="${nx + 10}" y="${ny + 18 + k * 17}">${esc(l)}</text>`).join('')}</g>`
+    cur = ny + nh + (list ? 2 : 0)
+  }
+  if (list && open) {
+    const items = [...rules.map((r) => ({ kind: 'rule', item: r, open: openRule(r) })), ...asks.map((q) => ({ kind: 'ask', item: q, open: true }))]
+    const idW = Math.max(26, ...items.map((t) => textW(String(t.item.id)) * 10.5 / 12)) + 12, MK = 34
+    const tx = x + 10 + idW, colW = x + w - 10 - tx
+    items.forEach(({ kind, item, open: o }, n) => {
+      if (n > 0 || p.note) body += `<line class="sep" x1="${x + 10}" y1="${cur + 3}" x2="${x + w - 10}" y2="${cur + 3}"/>`
+      const it0 = cur + 6, rule = kind === 'rule'
+      const rows = wrapW(rule ? item.text : item.q, colW - MK, 12).map((l) => ({ l, cls: '', lh: 17 }))
+      // 别的角色在界面上问的（by 谁问、screen 哪一屏）：小字标「UI 设计问 · N-01 屏名」，点它去界面页那一屏
+      if (!rule && (item.by || item.screen)) {
+        const sc = item.screen ? screenOf(item.screen) : null
+        const text = [item.by ? item.by + '问' : '', sc ? sc.label : ''].filter(Boolean).join(' · ')
+        rows.push(...small(text, colW).map((l) => ({ l, cls: 's', lh: 15, href: sc?.href, by: true })))
+      }
+      if (item.source) rows.push(...small('来源：' + item.source, colW).map((l) => ({ l, cls: 's', lh: 15 })))
+      if (o && item.lean) rows.push(...wrapW('偏向：' + item.lean, colW, 12).map((l) => ({ l, cls: '', lh: 17 })))
+      let h = 0, txt = ''
+      for (const r of rows) {
+        h += r.lh
+        const t = `<text class="${r.cls}${r.by ? ' by' : ''}" x="${tx}" y="${it0 + h - 4}">${esc(r.l)}</text>`
+        txt += r.href ? `<a class="scr" href="${esc(r.href)}">${t}</a>` : t
+      }
+      const mk = rule ? (o ? '待定' : '定了') : '问'
+      let btns = '', end = it0 + h
+      // 按钮：短的几个排一排，长的一个占一整行、字在按钮里折行，不会被框裁掉
+      if (o) {
+        const opts = [...(item.options ?? []).map((t, i) => ({ t, b: i === 0 })), { t: '另说', other: true }]
+        let bx = tx, by = it0 + h + 4, rowH = 0
+        for (const op of opts) {
+          const lines = wrapW(op.t, colW - 16, 11.5), bw = lines.length > 1 ? colW : Math.min(colW, Math.max(...lines.map((l) => textW(l) * 11.5 / 12)) + 16), bh = lines.length * 15 + 8
+          if (bx > tx && bx + bw > tx + colW) { bx = tx; by += rowH + 6; rowH = 0 }
+          btns += `<g class="btn${op.b ? ' b' : ''}" data-flow="${esc(flow)}" data-step="${esc(step)}" data-kind="${kind}" data-id="${esc(item.id)}"${op.other ? ' data-other="1"' : ` data-opt="${esc(op.t)}"`}><rect x="${bx}" y="${by}" width="${bw}" height="${bh}"/>${lines.map((l, i) => `<text x="${bx + 8}" y="${by + 15 + i * 15}">${esc(l)}</text>`).join('')}</g>`
+          bx += bw + 6; rowH = Math.max(rowH, bh)
+        }
+        end = by + rowH
+      }
+      body += `<g class="it ${kind} ${o ? 'pending' : 'done'}" data-id="${esc(item.id)}"><text class="id" x="${x + 10}" y="${it0 + 13}">${esc(item.id)}</text><text class="mk" x="${x + w - 10}" y="${it0 + 13}" text-anchor="end">${mk}</text>${txt}${btns}</g>`
+      cur = end + 4
+    })
+    cur += 4
+  }
+  const h = cur - top
+  const sum = [p.note ? '说明' : '', rules.length ? `规则 ${rules.length} 条` : '', nPend ? `待定 ${nPend}` : '', asks.length ? `问 ${asks.length}` : ''].filter(Boolean).join(' · ')
+  const head = list ? `<g class="tog" data-flow="${esc(flow)}" data-step="${esc(step)}" data-open="${open ? 1 : 0}" data-pend="${pend ? 1 : 0}"><rect x="${x}" y="${top}" width="${w}" height="${HEAD}"/><text class="h" x="${x + 10}" y="${top + 17}">${open ? '▾' : '▸'} ${esc(sum)}</text></g>` : ''
+  const ly = list ? top + 13 : y
+  const svg = `<g class="qa side ${list ? (open ? 'open' : 'shut') : 'only'} ${pend ? 'pending' : 'done'}" data-step="${esc(step)}"><path class="lead" d="M ${x} ${ly} L ${lineEnd} ${y}" marker-end="url(#la)"/>${list ? `<rect class="bg" x="${x}" y="${top}" width="${w}" height="${h}"/>` : ''}${head}${body}</g>`
+  return { svg, h }
+}
+/** 问题挂在哪一屏：screen 是「<需求编号>/<屏 id>」。label 是「N-01 屏名」（屏名找不到就照 screen 原文）；
+ *  href 指界面页那一屏：工作台里是 <项目>/界面#<上下文>/<需求编号>/<屏 id>，单开时指旁边界面那份小样 */
+function screenOf(screen) {
+  const hit = SCREENS[screen], i = screen.indexOf('/'), req = i > 0 ? screen.slice(0, i) : screen
+  const label = hit?.title ? req + ' ' + hit.title : screen
+  const hash = (hit?.context ?? context) + '/' + screen
+  const href = DATA.WB ? `${DATA.WB.base ?? ''}/${encodeURIComponent('界面')}#${hash}` : `../2026-11-02-界面/小样.html#${hash}`
+  return { label, href }
+}
+/** 答一条待定的规则或问题：工作台上发给后端写进流程文件、重载；单开时只改内存里的那条、重画 */
+function answerQa(d) {
+  const text = d.other ? (typeof prompt === 'function' ? prompt('另说：') : '') : d.opt
+  if (!text) return
+  if (LIVE) return post('答', { flow: d.flow, context, step: d.step, [d.kind]: d.id, text })
+  const st = FLOWS.find((f) => f.file === d.flow)?.steps.find((s) => s.id === d.step)
+  const item = (d.kind === 'rule' ? st?.rules : st?.asks)?.find((r) => r.id === d.id)
+  if (!item) return
+  item.answer = text; item.answeredAt = new Date().toISOString()
+  if (d.kind === 'rule') item.status = '定了'
+  render()
+}
+
+// ---------- 上下文地图 ----------
+// 上下文排一排，框高跟着「管什么」那句撑开、字不截。
+// 相邻两个上下文之间的来往一条一条横线，间距 30（卡高 22，上下至少留 8）：事件在上、查询在下，同类里先排往右的；
+// 每条线一张卡，放在自己那条线正中；两个框之间的横向距离按最宽的卡放宽，卡两边还看得见线和箭头。
+// 框高至少盖住所有线的出入点。隔着别的上下文的线从框顶上绕过去，一条一层。整张比主区宽就等比缩，不截、不横滚
+function drawCxMap() {
+  const CW = 240, X0 = 30, LH = 30, PADV = 22, n = PROJECT.contexts.length
+  const idx = {}
+  PROJECT.contexts.forEach((p, i) => { idx[p.id] = i })
+  const cardW = (e) => Math.ceil(36 + textW(e.name) * 11.5 / 12 + 12)
+  const sortLines = (list) => list.map((e, i) => ({ e, i })).sort((p, q) => (p.e.kind === '事件' ? 0 : 1) - (q.e.kind === '事件' ? 0 : 1) || idx[p.e.from] - idx[q.e.from] || p.i - q.i).map((x) => x.e)
+  const pairs = {}, far = []
+  for (const e of EDGES) {
+    if (idx[e.from] == null || idx[e.to] == null || e.from === e.to) continue
+    const lo = Math.min(idx[e.from], idx[e.to]), hi = Math.max(idx[e.from], idx[e.to])
+    if (hi - lo === 1) (pairs[lo] ??= []).push(e); else far.push(e)
+  }
+  for (const k of Object.keys(pairs)) pairs[k] = sortLines(pairs[k])
+  // 框：名字一行，「管什么」照框宽折行全写上
+  const roleLines = Object.fromEntries(PROJECT.contexts.map((p) => [p.id, wrapW(p.role, CW - 28, 11.5)]))
+  const textH = Math.max(...PROJECT.contexts.map((p) => 50 + roleLines[p.id].length * 16))
+  const most = Math.max(0, ...Object.values(pairs).map((l) => l.length))
+  const CH = Math.max(86, textH, most ? PADV * 2 + (most - 1) * LH : 0)
+  const gapOf = (i) => Math.max(160, ...(pairs[i] ?? []).map((e) => cardW(e) + 80))
+  const xs = []
+  PROJECT.contexts.forEach((p, i) => { xs[i] = i ? xs[i - 1] + CW + gapOf(i - 1) : X0 })
+  const Y0 = 30 + (far.length ? far.length * LH + 20 : 0)
+  const pos = {}
+  PROJECT.contexts.forEach((p, i) => { pos[p.id] = { x: xs[i], y: Y0 } })
+  let s = `<defs><marker id="cxa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker></defs>`, labels = ''
+  const card = (e, mx, my) => {
+    const lw = cardW(e), lh = 22
+    return `<g class="lb"><g class="${e.kind === '事件' ? 'evt' : 'qry'}"><rect x="${mx - lw / 2}" y="${my - lh / 2}" width="${lw}" height="${lh}" rx="4"/><text class="k" x="${mx - lw / 2 + 8}" y="${my + 4}">${esc(e.kind)}</text><text x="${mx - lw / 2 + 36}" y="${my + 4}">${esc(e.name)}</text></g></g>`
+  }
+  // 相邻的：在两个框之间、框高里竖着居中排开
+  for (const [k, list] of Object.entries(pairs)) {
+    const L = PROJECT.contexts[+k].id, R = PROJECT.contexts[+k + 1].id
+    const xl = pos[L].x + CW, xr = pos[R].x, top = Y0 + (CH - (list.length - 1) * LH) / 2
+    list.forEach((e, i) => {
+      const y = top + i * LH, rightward = e.from === L
+      const x1 = rightward ? xl : xr, x2 = rightward ? xr - 2 : xl + 2
+      s += `<g class="ed"><path d="M ${x1} ${y} L ${x2} ${y}" marker-end="url(#cxa)"/></g>`
+      labels += card(e, (xl + xr) / 2, y)
+    })
+  }
+  // 隔着别的上下文的：从框顶上出去、横着走一层、再下到对面框顶；一条一层
+  far.forEach((e, k) => {
+    const a = pos[e.from], b = pos[e.to], y = Y0 - 20 - k * LH
+    const ax = a.x + CW / 2 + (b.x > a.x ? 1 : -1) * (30 + k * 14), bx = b.x + CW / 2 + (b.x > a.x ? -1 : 1) * (30 + k * 14)
+    s += `<g class="ed"><path d="M ${ax} ${Y0} L ${ax} ${y} L ${bx} ${y} L ${bx} ${Y0 - 2}" marker-end="url(#cxa)"/></g>`
+    labels += card(e, (ax + bx) / 2, y)
+  })
+  for (const p of PROJECT.contexts) {
+    const q = pos[p.id]
+    s += `<g class="sp${selected === p.id ? ' sel' : ''}" data-cx="${p.id}"><rect x="${q.x}" y="${q.y}" width="${CW}" height="${CH}" style="fill:var(--c${p.c});stroke:var(--c${p.c}l)"/>
+      <text class="n" x="${q.x + 14}" y="${q.y + 28}">${esc(p.name)}</text>
+      ${roleLines[p.id].map((ln, i) => `<text class="d" x="${q.x + 14}" y="${q.y + 50 + i * 16}">${esc(ln)}</text>`).join('')}</g>`
+  }
+  // 共享内核：底下一条虚线框，每个上下文一条虚线下去，线上写用了哪几个概念
+  const K = { x: X0 + CW / 2, y: Y0 + CH + 110, w: Math.max(CW, xs[n - 1] - X0), h: 44 }
+  s += `<g class="kn${selected === 'kernel' ? ' sel' : ''}" data-cx="kernel"><rect x="${K.x}" y="${K.y}" width="${K.w}" height="${K.h}" rx="8"/><text class="n" x="${K.x + 14}" y="${K.y + 20}">共享内核</text><text class="d" x="${K.x + 14}" y="${K.y + 36}">${esc(PROJECT.kernel.concepts.join('、'))}</text></g>`
+  for (const p of PROJECT.contexts) {
+    const q = pos[p.id], cx = q.x + CW / 2, y1 = q.y + CH, y2 = K.y - 2
+    s += `<g class="kd"><path d="M ${cx} ${y1} L ${cx} ${y2}"/></g>`
+    const used = USES[p.id] ?? [], t = used.length ? '用 ' + used.join('、') : '还没用', lw = Math.ceil(textW(t) * 11.5 / 12 + 16), my = (y1 + y2) / 2
+    labels += `<g class="lb"><g class="use"><rect x="${cx - lw / 2}" y="${my - 11}" width="${lw}" height="22" rx="4"/><text x="${cx - lw / 2 + 8}" y="${my + 4}">${esc(t)}</text></g></g>`
+  }
+  const w = Math.ceil(Math.max(xs[n - 1] + CW + X0, K.x + K.w + X0)), h = K.y + K.h + 24, avail = availW()
+  const size = w > avail ? `width="${Math.floor(avail)}" height="${Math.ceil(h * avail / w)}"` : `width="${w}" height="${h}"`
+  return `<svg ${size} viewBox="0 0 ${w} ${h}">${s}${labels}</svg>`
+}
+function cxTable() {
+  const cell = (p) => { const cls = !p || p.total === 0 ? '' : p.done === p.total ? 's3' : p.done ? 's1' : ''; return `<span class="st ${cls}">${p?.done ?? 0} / ${p?.total ?? 0}<small>${esc(p?.unit ?? '')}</small></span>` }
+  const cxName = (id) => PROJECT.contexts.find((q) => q.id === id)?.name ?? id
+  return `<table class="t"><tr class="hd"><td>上下文</td><td>管什么</td><td>功能</td><td>业务</td><td>模型</td><td>编码</td><td>来往</td></tr>
+    ${PROJECT.contexts.map((p) => { const g = PROGRESS[p.id] ?? {}; const io = EDGES.filter((e) => e.from === p.id || e.to === p.id)
+      return `<tr class="${selected === p.id ? 'sel' : ''}" data-cx="${p.id}"><td class="n">${esc(p.name)}</td><td class="x">${esc(p.role)}</td><td>${cell(g.功能)}</td><td>${cell(g.业务)}</td><td>${cell(g.模型)}</td><td>${cell(g.编码)}</td><td class="x">${io.map((e) => e.from === p.id ? `${e.kind === '事件' ? '发' : '问'} ${esc(e.name)} → ${esc(cxName(e.to))}` : `${e.kind === '事件' ? '听' : '答'} ${esc(e.name)} ← ${esc(cxName(e.from))}`).join('<br>')}</td></tr>` }).join('')}
+    <tr class="${selected === 'kernel' ? 'sel' : ''}" data-cx="kernel"><td class="n">共享内核</td><td class="x">几个上下文都用的概念，只在这里写一遍，各上下文的概念图引它</td><td></td><td><span class="st s3">${PROJECT.kernel.concepts.length}<small>概念</small></span></td><td></td><td></td><td class="x">${PROJECT.contexts.map((p) => `${esc(p.name)} 用 ${(USES[p.id] ?? []).length} 个`).join('<br>')}</td></tr></table>`
+}
+
+// ---------- 页面 ----------
+// 标题旁：定过的写哪天定的；没定的写未定，现场等他定的正是这一页才给「定下」按钮（单开小样时照旧给）
+const DECIDE = DATA.DECIDE ?? null
+const gate = (obj) => obj?.decidedAt ? `<span class="badge done">定了 ${obj.decidedAt.slice(5)}</span>` : `<span class="badge">未定</span>${!LIVE || DECIDE?.hash === context + '/' + view ? '<button class="act">定下</button>' : ''}`
+const LEG = {
+  role: `<span><span class="sw round" style="background:var(--role);border-color:var(--role-line)"></span>角色</span>`,
+  data: `<span><span class="sw" style="background:var(--data);border-color:var(--data-line)"></span>数据</span>`,
+  stub: `<span><span class="sw dash" style="border-color:var(--topic-line)"></span>别的主题、别的上下文里的数据（小字是出处，点它过去）</span>`,
+  note: `<span><span class="sw" style="background:var(--note);border-color:var(--note-line)"></span>关键一步的说明</span>`,
+  qa: `<span><span class="sw" style="background:var(--note);border-color:var(--bad)"></span>每步右边一个框：点标题展开、折叠，有待定的规则、没答的问题就展开，点一个答法就是答了</span><span><span class="sw" style="background:var(--area);border-color:var(--area-line)"></span>全定了的，默认折起来</span>`,
+}
+function render() {
+  const [kind, id] = view.split('/')
+  useCx(context)
+  Shell.current = context; Shell.nav()
+  const main = document.getElementById('main')
+  document.getElementById('detail').hidden = true
+  if (kind === 'cxmap') {
+    main.innerHTML = `<h1>上下文地图 <span class="kind">· ${esc(PROJECT.name)} · ${PROJECT.contexts.length} 个上下文 + 共享内核</span></h1>
+      <p class="sub">项目下面一层是上下文，各有自己的业务、模型、代码。上下文之间只靠事件和查询来往，线上写的就是谁把什么给谁；几个上下文都用的概念放共享内核，各自引它。</p>
+      <div class="diagram cxmap">${drawCxMap()}</div>
+      <div class="legend"><span><span class="sw" style="background:#fdf6d5;border-color:#b45309"></span>事件：箭头从发的指向听的</span><span><span class="sw dash" style="background:#fdeee0;border-color:#c2410c"></span>查询：箭头从问的指向答的</span></div>
+      <div class="diagram cxmap" style="margin-top:12px;padding:14px 18px"><div class="cap">各上下文到哪一步 · 从各自文件夹里数出来</div>${cxTable()}</div>`
+    return
+  }
+  if (context === '共享内核' || !BIZ[context]) {
+    main.innerHTML = `<h1><span class="kind">上下文</span><span class="sep">›</span>${esc(context)}</h1><p class="sub">${context === '共享内核' ? '几个上下文都用的概念只在这里写一遍，各上下文的概念图引它：' + esc(PROJECT.kernel.concepts.join('、')) + '。' : `还没画。这个上下文的业务还没整理；业务的每一步都带着在哪个上下文做，产物落 上下文/${esc(context)}/业务/。`}</p>`
+    return
+  }
+  // 地址里的主题号、流程名在这个上下文里没有：说一句，不抛错
+  const missing = (what) => { main.innerHTML = `<h1><a href="#map">全局图</a><span class="sep">›</span>${esc(id)}</h1><p class="sub">${esc(context)} 里没有${what} ${esc(id)}。</p>` }
+  if (kind === 'concepts') {
+    const t = grpOf[id], c = CONCEPTS[id]
+    if (!t) return missing('主题')
+    const h1 = `<h1><a href="#map">全局图</a><span class="sep">›</span>${esc(t.title)} ${gate(c)}</h1>`
+    if (!c) { main.innerHTML = `${h1}<p class="sub">还没写。</p>`; return }
+    const sel = c.concepts.find((n) => n.id === selected)
+    main.innerHTML = `${h1}
+      <p class="sub">${esc(c.summary)}</p>
+      <div class="row"><div class="diagram">${drawLocal(t, c)}</div>${sel ? `<div class="side"><b>${esc(sel.title)}</b>${esc(sel.definition)}<div class="src">出处：${esc(sel.source)}</div></div>` : ''}</div>
+      <div class="legend">${LEG.role}${LEG.data}${LEG.stub}</div>`
+  } else if (kind === 'flow') {
+    const f = FLOWS.find((x) => x.file === id)
+    if (!f) return missing('流程')
+    main.innerHTML = `<h1>${esc(f.title)} ${gate(f)}</h1>
+      <p class="sub">${esc(f.summary)}</p>
+      <div class="diagram flowbox">${drawFlow(f)}</div>
+      <div class="legend">${LEG.role}${LEG.data}${LEG.note}${LEG.qa}</div>`
+  } else {
+    main.innerHTML = MAP.topics.length ? `<h1>全局图 <span class="kind">· ${esc(context)}</span> ${gate(MAP)}</h1>
+      <div class="diagram">${drawTop()}</div>` : `<h1>全局图 <span class="kind">· ${esc(context)}</span></h1><p class="sub">全局图还没画。</p>`
+  }
+}
+// go 在上面：补上上下文写进地址，hashchange 再 render
+
+// ---------- 指着、点 ----------
+function bind() {
+  const main = document.getElementById('main'), pop = document.getElementById('detail')
+  const show = (html, x, y) => {
+    pop.innerHTML = html; pop.hidden = false
+    let px = x + 16; if (px + pop.offsetWidth > innerWidth - 8) px = x - pop.offsetWidth - 16
+    pop.style.left = Math.max(8, px) + 'px'; pop.style.top = Math.max(8, Math.min(y - 20, innerHeight - pop.offsetHeight - 8)) + 'px'
+  }
+  main.addEventListener('mousemove', (ev) => {
+    const [kind] = view.split('/')
+    const ed = ev.target.closest('.ed[data-t]')
+    if (kind === 'map' && ed) {
+      const [a, b] = ed.dataset.t.split('>'), items = fineEdges(a, b)
+      if (items.length) { show(`<h4>${esc(grpOf[a].title)} ↔ ${esc(grpOf[b].title)}</h4>` + items.map((t) => `<div>${esc(t)}</div>`).join(''), ev.clientX, ev.clientY); return }
+    }
+    const st = ev.target.closest('.msg,.self')
+    if (kind === 'flow' && st) {
+      const f = FLOWS.find((x) => x.file === view.split('/')[1]), p = f.steps.find((x) => x.id === st.dataset.id)
+      const who = (i) => f.parties.find((x) => x.id === i).title
+      show(`<h4>${esc(p.id)}. ${esc(p.title)}</h4><div>${esc(who(p.from))}${p.from !== p.to ? ' → ' + esc(who(p.to)) : ''}</div>${p.date ? `<div>例子 ${esc(p.date)}</div>` : ''}${p.due ? `<div>期限 ${esc(p.due)}</div>` : ''}${p.source ? `<div>出处 ${esc(p.source)}</div>` : ''}<div>编号 ${esc(f.title.split('：')[0])} #${esc(p.id)}</div>`, ev.clientX, ev.clientY)
+      return
+    }
+    pop.hidden = true
+  })
+  main.addEventListener('mouseleave', () => { pop.hidden = true })
+  main.addEventListener('click', (ev) => {
+    if (ev.target.closest('h1 button.act')) { if (LIVE) post('定下', {}); return }
+    const btn = ev.target.closest('.qa .btn')
+    if (btn) { answerQa(btn.dataset); return }
+    const tog = ev.target.closest('.qa .tog')
+    if (tog) { toggleSide(tog.dataset); return }
+    if (ev.target.closest('a[href]')) return
+    const cxEl = ev.target.closest('.cxmap [data-cx]')
+    if (cxEl) { selected = selected === cxEl.dataset.cx ? null : cxEl.dataset.cx; render(); return }
+    const tp = ev.target.closest('.tp'), stub = ev.target.closest('.stub'), nd = ev.target.closest('.nd')
+    if (tp) { go('concepts/' + tp.dataset.g); return }
+    if (stub) { openStub(stub.dataset); return }
+    if (nd) { selected = selected === nd.dataset.n ? null : nd.dataset.n; render() }
+  })
+  bindContexts('map')
+}
+;({ cx: context, v: view } = parseHash('map')); Shell.show(context)
+render(); bind()
+</script>
+</body>
+</html>

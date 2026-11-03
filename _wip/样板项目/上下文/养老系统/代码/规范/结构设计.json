@@ -1,0 +1,109 @@
+{
+  "decidedAt": "2026-11-01",
+  "layers": [
+    {
+      "name": "外壳",
+      "holds": "HTTP 路由、内存仓储、入口"
+    },
+    {
+      "name": "应用",
+      "holds": "命令、查询、事件处理器"
+    },
+    {
+      "name": "领域",
+      "holds": "聚合、领域服务、事件、仓储接口"
+    }
+  ],
+  "deps": [
+    [
+      "外壳",
+      "应用"
+    ],
+    [
+      "应用",
+      "领域"
+    ],
+    [
+      "外壳",
+      "领域"
+    ]
+  ],
+  "between": "一个主题一个模块；模块之间只靠事件和查询，不互相 import",
+  "outside": [
+    {
+      "name": "政府门户",
+      "how": "端口在领域，适配器在外壳；原型先给假实现"
+    },
+    {
+      "name": "银行",
+      "how": "付款走端口，适配器在外壳；原型只记一笔不真付"
+    }
+  ],
+  "sample": [
+    {
+      "line": "src/"
+    },
+    {
+      "line": "  participant-file/",
+      "note": "一个主题一个模块，层在模块里面"
+    },
+    {
+      "line": "    participant-file.ts",
+      "layer": "领域",
+      "note": "聚合根"
+    },
+    {
+      "line": "    level-and-pathway.ts",
+      "layer": "领域",
+      "note": "值对象"
+    },
+    {
+      "line": "    events.ts",
+      "layer": "领域",
+      "note": "这个聚合的事件"
+    },
+    {
+      "line": "    participant-file-repository.ts",
+      "layer": "领域",
+      "note": "仓储接口"
+    },
+    {
+      "line": "    participant-registration.ts",
+      "layer": "领域",
+      "note": "领域服务"
+    },
+    {
+      "line": "    register.ts",
+      "layer": "应用",
+      "note": "命令"
+    },
+    {
+      "line": "    view-file.ts",
+      "layer": "应用",
+      "note": "查询"
+    },
+    {
+      "line": "    in-memory-participant-file-repository.ts",
+      "layer": "外壳",
+      "note": "内存仓储"
+    },
+    {
+      "line": "    participant-file.test.ts",
+      "note": "测试挨着源文件"
+    },
+    {
+      "line": "  fund/",
+      "note": "另一个模块，同样的摆法"
+    },
+    {
+      "line": "    open-fund-on-allocation.ts",
+      "layer": "应用",
+      "note": "事件处理器，听 participant-file 的事件"
+    },
+    {
+      "line": "  app.ts",
+      "layer": "外壳",
+      "note": "入口：命令、查询接到路由上，处理器订阅事件"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "_": "技术选型的问题与默认答案：来自旧 dev-team。软件工程师拿着问题来，改了答案就定了；定下的存 上下文/<名>/代码/规范/技术选型.json { decidedAt, answers: { 问题: 答案 }, asks? }，没答的按这里",
+  "questions": [
+    { "q": "语言", "a": "TypeScript，后端与前端同一门" },
+    { "q": "运行", "a": "Node；领域层只用 node 自带的包" },
+    { "q": "HTTP", "a": "Express，口读 PORT、HOST" },
+    { "q": "仓储", "a": "原型阶段内存（Map），正式化换 Prisma，只换适配器那一层" },
+    { "q": "事件", "a": "进程内发布订阅；正式化再看" },
+    { "q": "测试", "a": "node:test + node:assert/strict，不引第三方" },
+    { "q": "前端", "a": "React + Vite，界面用 Ant Design，自成一个工程放 frontend/；开发时 /api 转给后端" }
+  ]
+}

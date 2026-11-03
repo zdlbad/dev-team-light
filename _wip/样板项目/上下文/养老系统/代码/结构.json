@@ -1,0 +1,168 @@
+{
+  "lang": "TypeScript",
+  "root": "src",
+  "files": [
+    {
+      "path": "src/participant-file/participant-file.ts",
+      "kind": "聚合根",
+      "model": {
+        "aggregate": "file",
+        "member": "root"
+      }
+    },
+    {
+      "path": "src/participant-file/level-and-pathway.ts",
+      "kind": "值对象",
+      "model": {
+        "aggregate": "file",
+        "member": "level"
+      }
+    },
+    {
+      "path": "src/participant-file/copay-rate.ts",
+      "kind": "值对象",
+      "model": {
+        "aggregate": "file",
+        "member": "copay"
+      }
+    },
+    {
+      "path": "src/participant-file/events.ts",
+      "kind": "事件",
+      "model": {
+        "event": [
+          "档案已建",
+          "协议已签",
+          "资金已分到",
+          "服务已开始"
+        ]
+      }
+    },
+    {
+      "path": "src/participant-file/participant-file-repository.ts",
+      "kind": "仓储接口",
+      "model": {
+        "aggregate": "file"
+      }
+    },
+    {
+      "path": "src/participant-file/in-memory-participant-file-repository.ts",
+      "kind": "内存仓储",
+      "model": {
+        "aggregate": "file"
+      }
+    },
+    {
+      "path": "src/participant-file/participant-registration.ts",
+      "kind": "领域服务",
+      "model": {
+        "service": "参与者登记"
+      }
+    },
+    {
+      "path": "src/participant-file/register.ts",
+      "kind": "命令",
+      "model": {
+        "item": "register"
+      }
+    },
+    {
+      "path": "src/participant-file/record-agreement.ts",
+      "kind": "命令",
+      "model": {
+        "item": "sign"
+      }
+    },
+    {
+      "path": "src/participant-file/record-allocation.ts",
+      "kind": "命令",
+      "model": {
+        "item": "allocate"
+      }
+    },
+    {
+      "path": "src/participant-file/view-file.ts",
+      "kind": "查询",
+      "model": {
+        "item": "view-file"
+      }
+    },
+    {
+      "path": "src/participant-file/participant-file.test.ts",
+      "kind": "测试",
+      "tests": [
+        "agg/file/root/建档",
+        "agg/file/root/记签协议",
+        "agg/file/root/记分到资金"
+      ]
+    },
+    {
+      "path": "src/participant-file/register.test.ts",
+      "kind": "测试",
+      "tests": [
+        "item/register",
+        "service/参与者登记"
+      ]
+    },
+    {
+      "path": "src/fund/fund.ts",
+      "kind": "聚合根",
+      "model": {
+        "aggregate": "fund",
+        "member": "root"
+      }
+    },
+    {
+      "path": "src/fund/fund-account.ts",
+      "kind": "实体",
+      "model": {
+        "aggregate": "fund",
+        "member": "acct"
+      }
+    },
+    {
+      "path": "src/fund/events.ts",
+      "kind": "事件",
+      "model": {
+        "event": [
+          "基金已开",
+          "基金已关",
+          "已扣款"
+        ]
+      }
+    },
+    {
+      "path": "src/fund/fund-repository.ts",
+      "kind": "仓储接口",
+      "model": {
+        "aggregate": "fund"
+      }
+    },
+    {
+      "path": "src/fund/in-memory-fund-repository.ts",
+      "kind": "内存仓储",
+      "model": {
+        "aggregate": "fund"
+      }
+    },
+    {
+      "path": "src/fund/open-fund-on-allocation.ts",
+      "kind": "事件处理器",
+      "model": {
+        "item": "open-fund"
+      }
+    },
+    {
+      "path": "src/fund/fund.test.ts",
+      "kind": "测试",
+      "tests": [
+        "agg/fund/root/开立"
+      ]
+    },
+    {
+      "path": "src/app.ts",
+      "kind": "入口",
+      "note": "把命令、查询、处理器接到路由上；处理器订阅事件"
+    }
+  ]
+}
