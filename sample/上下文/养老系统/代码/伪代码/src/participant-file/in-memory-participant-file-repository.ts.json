@@ -1,0 +1,46 @@
+{
+  "file": "src/participant-file/in-memory-participant-file-repository.ts",
+  "blocks": [
+    {
+      "name": "按编号找",
+      "params": [
+        "编号"
+      ],
+      "steps": [
+        "从内存里那张表照编号取",
+        "取到的抄一份返回；没有就返回 空"
+      ],
+      "tests": [
+        {
+          "name": "没存过",
+          "given": "仓储空",
+          "when": "按编号找",
+          "then": "返回 空"
+        }
+      ]
+    },
+    {
+      "name": "存",
+      "params": [
+        "档案"
+      ],
+      "steps": [
+        "抄一份，照编号放进内存里那张表；原来有的换掉"
+      ],
+      "tests": [
+        {
+          "name": "存了找得到",
+          "given": "存了一份档案",
+          "when": "按编号找",
+          "then": "返回的档案每一栏都和存的一样"
+        },
+        {
+          "name": "存的是抄的一份",
+          "given": "存了一份档案，再改外面那一份",
+          "when": "按编号找",
+          "then": "返回的还是存的时候的样子"
+        }
+      ]
+    }
+  ]
+}

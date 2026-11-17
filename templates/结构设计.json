@@ -32,7 +32,7 @@
   ],
   "sample": [
     { "line": "src/" },
-    { "line": "  contexts/orders/", "note": "一个主题一个模块" },
+    { "line": "  modules/orders/", "note": "一个主题一个模块" },
     { "line": "    domain/", "layer": "领域" },
     { "line": "      order/", "note": "一个聚合一个文件夹" },
     { "line": "        aggregate-root.OrderAggregateRoot.ts", "note": "聚合根" },
@@ -68,6 +68,6 @@
     { "line": "    event-bus/cross-module-event-bus.ts", "note": "模块间事件总线，整个后端一条" },
     { "line": "    clock/system-clock.ts", "note": "取当前时间；测试里换成固定时间" },
     { "line": "    id/uuid-generator.ts", "note": "发编号" },
-    { "line": "tests/contexts/orders/", "note": "测试单独一棵，镜像 src/contexts/" }
+    { "line": "tests/modules/orders/", "note": "测试单独一棵，镜像 src/modules/" }
   ]
 }

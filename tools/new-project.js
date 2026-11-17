@@ -9,7 +9,7 @@ const w = (rel, data) => { const p = path.join(P, rel); fs.mkdirSync(path.dirnam
 if (fs.existsSync(path.join(P, '项目.json'))) { console.error('已经有项目了：' + P); process.exit(1) }
 w('项目.json', { name, contexts: [{ id: 'c1', name: cx, role: '', c: 2 }], kernel: { concepts: [] } })
 w('上下文图.json', { edges: [] })
-w('现场.json', { now: [], decide: null, waiting: [] })
+w('现场.json', { now: [], waiting: [] })
 for (const d of ['项目管理', '日志', '派工', path.join('上下文', cx), '共享内核']) fs.mkdirSync(path.join(P, d), { recursive: true })
 if (raw) { fs.cpSync(path.resolve(raw), path.join(P, '原料'), { recursive: true }); console.log('原料复制自', raw) }
 fs.writeFileSync(path.join(P, '.gitignore'), '原料/\n')

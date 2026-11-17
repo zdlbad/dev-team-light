@@ -1,7 +1,8 @@
 // 指挥的眼睛：把工作台的一页无头截成 png，出图之后自己看一遍有没有遮挡、重叠、裁掉。
 // 用法：node tools/shot.js <地址> <输出.png> [--w 1600] [--h 1000] [--wait 800]
 //   地址可以带 #hash（页面里的视图），中文不用自己编码。
-// 用机器上的 Edge（没有就找 Chrome）无头跑；--wait 是等页面画完的毫秒数。
+// 用机器上的 Chrome 或 Edge 不开窗口地跑（Windows、macOS、Linux 都找，找法在 tools/browser.js）；
+// 装在不常见的位置的，用环境变量 DEV_TEAM_BROWSER 写明浏览器可执行文件的完整路径。--wait 是等页面画完的毫秒数。
 const { execFileSync } = require('node:child_process')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -12,13 +13,8 @@ const opt = (f, d) => (args.indexOf(f) >= 0 ? args[args.indexOf(f) + 1] : d)
 const [url, out] = pos
 if (!url || !out) { console.error('用法：node tools/shot.js <地址> <输出.png> [--w 1600] [--h 1000] [--wait 800]'); process.exit(1) }
 
-const BROWSERS = [
-  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
-  'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe' ]
-const exe = BROWSERS.find((p) => fs.existsSync(p))
-if (!exe) { console.error('没找到 Edge 或 Chrome'); process.exit(1) }
+const { exe, why } = require('./browser.js').findBrowser()
+if (!exe) { console.error(why); process.exit(1) }
 
 // 无头截图时地址里的 # 带不到页面，改成 ?view=<hash>，工作台会在页面脚本跑之前写进 location.hash
 const u = new URL(url)

@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>编码 · 小样</title>
+<style>
+:root{
+  --bg:#f7f6f3; --panel:#ffffff; --ink:#1d1d1b; --ink-2:#55534e; --ink-3:#8a877f; --line:#dedbd3; --accent:#2563eb; --accent-bg:#e8efff;
+  --role:#e3edff; --role-line:#2f5fc4; --data:#e7f5ec; --data-line:#2f855a; --area:#f4f4f1; --area-line:#b8b5ad;
+  --badge:#fff3cd; --badge-ink:#7a5200; --badge-line:#f0d58c; --red:#cf222e;
+  --cmd:#fdeee0; --cmd-line:#c2410c; --evt:#fdf6d5; --evt-line:#b45309; --svc:#f1ebfd; --svc-line:#7c3aed; --hdl:#e3f6f8; --hdl-line:#0891b2;
+  /* 四种状态：未写 灰空心、已写 蓝、有测试 黄、跑过 绿 */
+  --s0:transparent; --s0l:#b8b5ad; --s1:#dbe7ff; --s1l:#2563eb; --s2:#fdf6d5; --s2l:#b45309; --s3:#e7f5ec; --s3l:#2f855a;
+  --code:#f4f4f1; --kw:#7c3aed; --str:#2f855a; --cm:#8a877f;
+  /* 全局结构：一个上下文一种颜色（线色、底色），用的人沙色 */
+  --g0:#3e6b34; --g0s:#e6efe2; --g1:#3f5f8a; --g1s:#e4ebf4; --g2:#b0642c; --g2s:#f6e9db; --g3:#6b4fa0; --g3s:#ece6f6; --gu:#efe8da;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#18181a; --panel:#222225; --ink:#ecebe7; --ink-2:#b5b2ab; --ink-3:#85827b; --line:#3a3a3e; --accent:#7aa2ff; --accent-bg:#26314d;
+    --role:#243352; --role-line:#7aa2ff; --data:#1f3327; --data-line:#4ade80; --area:#1d1d20; --area-line:#4a4a50;
+    --badge:#3a3220; --badge-ink:#fbbf24; --badge-line:#6b5f2e; --red:#ff6b6b;
+    --cmd:#3a2a1c; --cmd-line:#fb923c; --evt:#3a3220; --evt-line:#fbbf24; --svc:#2d2342; --svc-line:#c4b5fd; --hdl:#1b3337; --hdl-line:#67e8f9;
+    --s0:transparent; --s0l:#4a4a50; --s1:#1f2a44; --s1l:#7aa2ff; --s2:#3a3220; --s2l:#fbbf24; --s3:#1f3327; --s3l:#4ade80;
+    --code:#1d1d20; --kw:#c4b5fd; --str:#4ade80; --cm:#85827b;
+    --g0:#8db97f; --g0s:#2a3a26; --g1:#8fb0dc; --g1s:#273242; --g2:#d9985f; --g2s:#3d2d20; --g3:#b9a3e3; --g3s:#2f2840; --gu:#2f2c25;
+  }
+}
+h1{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+h1 .sep{color:var(--ink-3);font-weight:400;font-size:16px}
+h1 .kind{color:var(--ink-3);font-weight:400;font-size:14px}
+h1 a.up{color:var(--ink-2);text-decoration:none}
+.badge{font-size:11px;padding:1px 7px;border-radius:9px;background:var(--badge);color:var(--badge-ink);border:1px solid var(--badge-line);font-weight:400}
+.sub{color:var(--ink-2);margin:0 0 12px;max-width:960px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:12px}
+.cap{font-size:12px;color:var(--ink-3);letter-spacing:1px;margin-bottom:6px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--ink-2);margin:10px 0 0}
+.legend .sw{display:inline-block;width:18px;height:12px;border:1px solid;border-radius:2px;vertical-align:middle;margin-right:5px}
+/* 状态点：四档 */
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1.5px solid var(--s0l);background:var(--s0);flex:none}
+.dot.s1{background:var(--s1l);border-color:var(--s1l)}
+.dot.s2{background:var(--s2l);border-color:var(--s2l)}
+.dot.s3{background:var(--s3l);border-color:var(--s3l)}
+.st{font-size:11.5px;padding:0 7px;border-radius:3px;border:1px solid var(--s0l);color:var(--ink-2);white-space:nowrap}
+.st.s1{background:var(--s1);border-color:var(--s1l)}
+.st.s2{background:var(--s2);border-color:var(--s2l)}
+.st.s3{background:var(--s3);border-color:var(--s3l)}
+/* 代码结构：目录树 */
+.tree{font:13px/1.6 ui-monospace,Menlo,Consolas,monospace}
+.tree .cnt{font:12px system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink-3);padding:0 6px 6px}
+.tree .dr{display:flex;align-items:baseline;gap:4px;padding:1px 6px 1px calc(var(--d) * 14px + 6px);border-radius:4px;cursor:pointer;color:var(--ink-2);user-select:none}
+.tree .dr:hover{background:var(--accent-bg)}
+.tree .dr .tri{flex:none;width:12px;font-size:11px;color:var(--ink-3)}
+.tree .dr .n{min-width:0;overflow-wrap:anywhere}
+.tree .dr .c{flex:none;margin-left:auto;padding-left:8px;font:11px system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink-3)}
+.tree .f{display:block;padding:2px 6px 2px calc(var(--d) * 14px + 22px);border-radius:4px;cursor:pointer}
+.tree .f:hover{background:var(--accent-bg)}
+.tree .f.on{background:var(--accent-bg)}
+.tree .f .p{display:block;word-break:break-all}
+.tree .f .m{display:block;font:11.5px/1.4 system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink-3)}
+.tree .f .m .k{margin-right:6px}
+.tree .f.none .p{color:var(--ink-3)}
+/* 树栏：跟着页面停在上面，高度不超过一屏，超出在栏里滚 */
+.row2>.l.tree-col{width:400px;position:sticky;top:0;transition:width .18s ease}
+/* 树栏像侧边导航一样整栏收起：收起后只剩一条窄边，点它再展开 */
+.row2>.l.tree-col.hide{width:32px}
+.tree-col.hide .tree-box{display:none}
+.tree-col .rail{display:none}
+.tree-col.hide .rail{display:flex;flex-direction:column;align-items:center;gap:8px;width:32px;box-sizing:border-box;padding:10px 0;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink-2);font:12px system-ui,"PingFang SC","Microsoft YaHei",sans-serif;cursor:pointer}
+.tree-col .rail:hover{border-color:var(--accent);color:var(--accent)}
+.tree-col .rail .w{writing-mode:vertical-rl;letter-spacing:2px}
+.tree .cnt{display:flex;align-items:center}
+.tree .cnt .tree-hide{margin-left:auto;border:1px solid var(--line);background:none;color:var(--ink-3);border-radius:4px;font-size:11px;line-height:1;padding:3px 6px;cursor:pointer}
+.tree .cnt .tree-hide:hover{color:var(--accent);border-color:var(--accent)}
+.tree-col .tree-box{position:relative;max-height:calc(100vh - 190px);overflow:auto;padding:10px 8px;margin-bottom:0}
+.row2>.r .card{margin-bottom:0}
+.tree .f .m b{font-weight:600;color:var(--ink)}
+/* 模型一条 → 代码 */
+.files{display:grid;grid-template-columns:1fr;gap:6px}
+.file{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+.file:hover,.file.on{border-color:var(--accent);background:var(--accent-bg)}
+.file code{font:12.5px ui-monospace,Menlo,Consolas,monospace}
+.file .k{color:var(--ink-3);font-size:12px}
+.file .st{margin-left:auto}
+pre.code{margin:0;background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font:12.5px/1.6 ui-monospace,Menlo,Consolas,monospace;overflow:auto;white-space:pre}
+pre.code .kw{color:var(--kw)}pre.code .str{color:var(--str)}pre.code .cm{color:var(--cm)}
+pre.code .hl{background:var(--accent-bg);display:inline-block;width:100%}
+.row2{display:flex;gap:16px;align-items:flex-start}
+.row2>.l{width:380px;flex:none}
+.row2>.r{flex:1;min-width:0}
+table.t{border-collapse:collapse;font-size:13px;width:100%}
+table.t td{padding:4px 12px 4px 0;border-top:1px solid var(--line);vertical-align:top}
+table.t tr:first-child td{border-top:0}
+table.t td.n{font-weight:600;white-space:nowrap}
+table.t td.x{color:var(--ink-3)}
+table.t tr.hd td{color:var(--ink-3);font-size:12px;border-top:0;white-space:nowrap}
+/* 走通一段：一步一行，四个格子各自点亮 */
+.walk{display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr;gap:8px 12px;align-items:stretch;font-size:13px}
+.walk .h{color:var(--ink-3);font-size:12px}
+.walk .n{color:var(--ink-3);font-size:12px;padding-top:8px}
+.walk .cell{border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:8px;min-height:38px}
+.walk .cell.cmd{background:var(--cmd);border-color:var(--cmd-line)}
+.walk .cell.qry{background:var(--cmd);border-color:var(--cmd-line);border-style:dashed}
+.walk .cell.hdl{background:var(--hdl);border-color:var(--hdl-line)}
+.walk .cell.svc{background:var(--svc);border-color:var(--svc-line)}
+.walk .cell.agg{background:var(--data);border-color:var(--data-line)}
+.walk .cell.evt{background:var(--evt);border-color:var(--evt-line)}
+.walk .cell .st{margin-left:auto}
+.walk .cell.none{border-style:dashed;color:var(--ink-3);background:transparent}
+.walk .cell small{color:var(--ink-3);font-size:11px}
+.done{display:inline-block;font-size:12px;padding:1px 8px;border-radius:9px;background:var(--s3);border:1px solid var(--s3l);color:var(--ink)}
+.todo{display:inline-block;font-size:12px;padding:1px 8px;border-radius:9px;background:var(--badge);border:1px solid var(--badge-line);color:var(--badge-ink)}
+p.none{color:var(--ink-3);margin:0}
+/* 规范页：模板挑一份，右边是定下的那份 */
+svg.arch{display:block;max-width:100%;height:auto}
+/* 一行：文件名在它的缩进上；种类、导出、说明跟在后面，放不下就整块折到下一行，比文件名再缩 4 格（悬挂缩进），说明自己也折行，不出卡片 */
+pre.tree-sample{margin:0;white-space:normal;overflow:visible;font-size:14px}
+pre.tree-sample .ln{position:relative;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 10px;padding-left:calc(var(--ind) * 1.5 + 4ch)}
+pre.tree-sample .g{position:absolute;top:0;bottom:0;left:calc(var(--k) * 3ch + 1ch);border-left:1px solid var(--ink-3)}
+pre.tree-sample .g.end{bottom:auto;height:.8em}
+pre.tree-sample .g.tee::after,pre.tree-sample .g.end::after{content:'';position:absolute;left:0;top:.8em;width:1.6ch;border-top:1px solid var(--ink-3)}
+pre.tree-sample .p{margin-left:-4ch;min-width:0;overflow-wrap:anywhere}
+pre.tree-sample .mt{flex:1 1 240px;min-width:0;overflow-wrap:anywhere}
+pre.tree-sample .mt>span{margin-right:8px}
+pre.tree-sample .lay{font-size:12px;padding:0 6px;border-radius:8px;border:1px solid var(--line);color:var(--ink-2);font-family:inherit;white-space:nowrap}
+pre.tree-sample .ex{font-size:13px;color:var(--ink-2)}
+pre.tree-sample .nt{font-size:13px;color:var(--ink-3)}
+/* 结构图：照文件结构画的 SVG。框分两种：容器（src/、modules/、模块、infras/、events/）只是围起来，线可以穿过它的边；里面的格子是叶子，线只能连到它的边上 */
+svg.struct{display:block;max-width:100%;height:auto}
+svg.struct text{fill:var(--ink);font:13px system-ui,"PingFang SC","Microsoft YaHei",sans-serif}
+svg.struct text.tt{font:600 14px ui-monospace,Menlo,Consolas,monospace}
+svg.struct text.mo{font:13px ui-monospace,Menlo,Consolas,monospace}
+svg.struct text.fl{font:12px ui-monospace,Menlo,Consolas,monospace;fill:var(--ink-2)}
+svg.struct text.ho,svg.struct text.sm,svg.struct text.tag{fill:var(--ink-2)}
+svg.struct text.sm,svg.struct text.tag,svg.struct text.lt{font-size:12px}
+svg.struct text.mt{font-weight:600;font-size:14px}
+svg.struct rect.fr{fill:none;stroke:var(--ink-3);stroke-width:1.3}
+svg.struct rect.fr.ctx{stroke:var(--area-line);stroke-dasharray:5 4}
+svg.struct rect.fr.mod,svg.struct rect.fr.ev{fill:var(--panel)}
+svg.struct rect.b{fill:var(--panel);stroke:var(--line)}
+svg.struct rect.b.boot{fill:var(--badge);stroke:var(--badge-line)}
+svg.struct rect.b.bus{fill:var(--evt);stroke:var(--evt-line);stroke-width:1.3}
+svg.struct rect.b.rest{fill:none;stroke:var(--ink-3);stroke-dasharray:5 4}
+svg.struct rect.b.out{fill:none;stroke:var(--area-line);stroke-dasharray:5 4;stroke-width:1.3}
+svg.struct path.e{fill:none;stroke:var(--ink-2);stroke-width:1.3}
+svg.struct path.e.x{stroke-dasharray:5 4}
+svg.struct rect.lb{fill:var(--panel);stroke:var(--line)}
+.notes{font-size:13px;color:var(--ink-2);margin:10px 0 0;padding-left:18px}
+.notes li{margin:3px 0}
+.notes b{color:var(--ink);font-weight:600}
+.notes code{font:12.5px ui-monospace,Menlo,Consolas,monospace}
+/* 全局结构：整个项目一份 */
+svg.glob{display:block;max-width:100%;height:auto}
+svg.glob text{fill:var(--ink)}
+svg.glob .n rect{stroke-width:1.2}
+svg.glob .n.tn rect.b{fill:var(--panel);stroke:var(--ink-3)}
+svg.glob .n.tu rect.b{fill:var(--gu);stroke:var(--line)}
+svg.glob .n.t0 rect.b{fill:var(--g0s);stroke:var(--g0)} svg.glob .n.t1 rect.b{fill:var(--g1s);stroke:var(--g1)} svg.glob .n.t2 rect.b{fill:var(--g2s);stroke:var(--g2)} svg.glob .n.t3 rect.b{fill:var(--g3s);stroke:var(--g3)}
+svg.glob .n.dash rect.b{stroke-dasharray:5 4}
+svg.glob .n.dash.tn rect.b{fill:var(--panel);stroke:var(--ink-3)}
+svg.glob .n.kid rect.c{fill:var(--panel);stroke:var(--ink-3);stroke-dasharray:4 3}
+svg.glob .n.kid.t0 rect.c{fill:var(--g0s);stroke:var(--g0)} svg.glob .n.kid.t1 rect.c{fill:var(--g1s);stroke:var(--g1)} svg.glob .n.kid.t2 rect.c{fill:var(--g2s);stroke:var(--g2)} svg.glob .n.kid.t3 rect.c{fill:var(--g3s);stroke:var(--g3)}
+svg.glob .n text.nm{font-weight:700}
+svg.glob .n.kid.t0 text.nm{fill:var(--g0)} svg.glob .n.kid.t1 text.nm{fill:var(--g1)} svg.glob .n.kid.t2 text.nm{fill:var(--g2)} svg.glob .n.kid.t3 text.nm{fill:var(--g3)}
+svg.glob .n text.ho{fill:var(--ink-2)}
+svg.glob .n text.la{fill:var(--badge-ink)}
+svg.glob path.e{fill:none;stroke:var(--ink-3);stroke-width:1.4}
+svg.glob path.e.t0{stroke:var(--g0)} svg.glob path.e.t1{stroke:var(--g1)} svg.glob path.e.t2{stroke:var(--g2)} svg.glob path.e.t3{stroke:var(--g3)}
+svg.glob path.e.dash{stroke-dasharray:5 4}
+svg.glob path.mk{fill:var(--ink-3)} svg.glob path.mk.t0{fill:var(--g0)} svg.glob path.mk.t1{fill:var(--g1)} svg.glob path.mk.t2{fill:var(--g2)} svg.glob path.mk.t3{fill:var(--g3)}
+svg.glob path.hit{fill:none;stroke:transparent;stroke-width:10}
+svg.glob g.eg:hover path.e{stroke-width:2.4}
+svg.glob g.n,svg.glob g.el,svg.glob g.eg{cursor:help}
+svg.glob rect.lb{fill:var(--panel);opacity:.94}
+svg.glob text.lt{font-size:11.5px;fill:var(--ink)}
+svg.glob text.rw{font-size:11.5px;fill:var(--ink-3);letter-spacing:.12em}
+.glob-legend{margin:0 0 8px}
+.glob-legend .sw{width:12px;border-radius:3px;border-color:var(--ink-3)}
+.glob-legend .sw.t0{background:var(--g0s);border-color:var(--g0)} .glob-legend .sw.t1{background:var(--g1s);border-color:var(--g1)} .glob-legend .sw.t2{background:var(--g2s);border-color:var(--g2)} .glob-legend .sw.t3{background:var(--g3s);border-color:var(--g3)}
+.glob-legend .sw.tu{background:var(--gu);border-color:var(--line)} .glob-legend .sw.dash{border-style:dashed}
+.glob-legend .hint{color:var(--ink-3)}
+table.qa td.q{font-weight:600;white-space:nowrap;width:1%}
+.qa .dflt{font-size:12px;color:var(--ink-3);margin-top:2px}
+.ask{font-size:12px;margin-top:4px;padding:4px 8px;border-radius:4px;background:var(--badge);border:1px solid var(--badge-line);color:var(--badge-ink)}
+.qa .chip{font-size:11px;color:var(--accent);margin-left:6px}
+/* 伪代码：一个方法一块，步骤编号 */
+pre.code.ps{font-size:13px;line-height:1.7;white-space:normal}
+.ps .ln{white-space:pre-wrap;word-break:break-word;padding-left:var(--ind);text-indent:calc(var(--ind) * -1)}
+.psrow{display:flex;gap:12px;align-items:stretch;margin-bottom:12px}
+.psrow>pre{flex:1;min-width:0;margin:0}
+.psrow>pre.tests{flex:1.1;border-style:dashed}
+.psrow>pre.tests.none{color:var(--ink-3)}
+/* 软件工程师挂在伪代码块上的问题：红框的卡，跟在它说的那一块下面，底下一排选项 */
+.lock{margin:0 0 10px;padding:7px 12px;border:1px solid var(--badge-line);background:var(--badge);color:var(--badge-ink);border-radius:8px}
+.asks{margin:-4px 0 14px}
+.ask{border:1.2px solid var(--red);background:var(--panel);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:5px}
+.ask + .ask{margin-top:8px}
+.ask .wh{font-size:12px;color:var(--ink-3)}
+.ask .q{font-size:13.5px;font-weight:600;color:var(--ink)}
+.ask .lean{font-size:12.5px;color:var(--ink-2);border-left:3px solid var(--red);padding-left:8px}
+.ask .lean b{color:var(--ink)}
+.ask .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.ask .opt{font:inherit;font-size:12px;text-align:left;padding:3px 9px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);cursor:pointer}
+.ask .opt.b{border-color:var(--accent);color:var(--accent);font-weight:600}
+.ask .opt[disabled]{opacity:.5;cursor:default}
+i.open{display:inline-block;min-width:8px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--red);color:#fff;font-style:normal;font-size:10.5px;font-weight:600;text-align:center;line-height:16px;vertical-align:1px}
+.qlist a{display:block;margin:2px 0}
+.ps .g{color:var(--s2l)}.ps .e{color:var(--evt-line)}.ps .w{color:var(--accent)}
+.ps .fn{font-weight:700}.ps .kw{color:var(--kw)}.ps .cm{color:var(--cm)}
+.ps .tn{color:var(--ink-3)}
+</style>
+<link rel="stylesheet" href="../../lib/shell.css">
+<script src="../../lib/shell.js"></script>
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="wrap">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+// 工作台起的时候 window.DATA 由 /data/<页>.js 先定义，下面每个常量都先取它；单开这份小样时 DATA 是空的，用写死的
+const DATA = (typeof window !== 'undefined' && window.DATA) || {}
+const LIVE = Object.keys(DATA).length > 0
+const post = (action, body) => fetch('api/' + action, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json()).then((o) => { if (o.ok) location.reload(); else alert(o.error) })
+// 软件工程师这个角色的输出，数据写死在这里。一页：定规范（结构设计、文件命名、技术选型）→ 文件结构＋伪代码；代码照伪代码写，进度归项目管理。各份的形状：
+// 1. 代码/结构.json：目录树，一个文件一条，标它对应模型里哪一条——这就是代码与模型的对照
+//    { lang, root, files: [{ path, kind, model?: { aggregate?, member?, behaviors?, item?, service?, event? }, tests?: [被测的行为或清单项] }] }
+//      kind：聚合根 | 实体 | 值对象 | 事件 | 领域服务 | 命令 | 查询 | 事件处理器 | 仓储接口 | 内存仓储 | 测试 | 入口
+//      model 指回模型：aggregate＋member 指成员（根、实体、值对象），item 指清单里的一条，service 指领域服务名，event 指事件名
+// 2. 进度不归这里：任务到了哪一步在项目管理的日程里（三个阶段的日期）
+// 页面从 模型/ 读聚合、清单、流程（这里只抄了用得到的几栏），把每一条和结构.json 里的文件对上
+
+let MODEL = DATA.MODEL ?? {
+  topics: { g2: '参与者档案与她名下的钱', g4: '老人名下的基金' },
+  aggs: [
+    { id: 'file', title: '参与者档案', topic: 'g2', members: [
+      { id: 'root', name: '参与者档案', kind: '根', behaviors: ['建档', '记签协议', '记分到资金', '开始服务'] },
+      { id: 'level', name: '分级与路径', kind: '值对象' },
+      { id: 'copay', name: '共付比例', kind: '值对象' } ],
+      services: ['参与者登记'] },
+    { id: 'fund', title: '她名下的基金', topic: 'g2', members: [
+      { id: 'root', name: '基金', kind: '根', behaviors: ['开立', '季度结束'] },
+      { id: 'acct', name: '基金账户', kind: '实体', behaviors: ['扣'] } ],
+      services: [] } ],
+  items: [
+    { id: 'register', kind: '命令', name: '建档', aggregate: '参与者档案', behavior: '建档', via: '参与者登记', out: '档案已建' },
+    { id: 'sign', kind: '命令', name: '记签协议', aggregate: '参与者档案', behavior: '记签协议', out: '协议已签' },
+    { id: 'allocate', kind: '命令', name: '记分到资金', aggregate: '参与者档案', behavior: '记分到资金', out: '资金已分到' },
+    { id: 'open-fund', kind: '事件处理器', name: '资金到了开基金', on: '资金已分到', aggregate: '基金', behavior: '开立', out: '基金已开' },
+    { id: 'view-file', kind: '查询', name: '看她的档案', aggregate: '参与者档案', read: true, out: '档案、分级与路径、她在哪一段' } ],
+  flows: [ { file: '01-老人注册', title: '老人注册', topic: 'g2', rows: ['register', 'sign', 'allocate', 'open-fund', 'view-file'] } ] }
+
+let STRUCT = DATA.STRUCT ?? { lang: 'TypeScript', root: 'src', files: [
+  // 一个主题一个模块，一个聚合一个文件夹；文件名是模型名字的英文，模型名在 model 里
+  { path: 'src/participant-file/participant-file.ts', kind: '聚合根', model: { aggregate: 'file', member: 'root' } },
+  { path: 'src/participant-file/level-and-pathway.ts', kind: '值对象', model: { aggregate: 'file', member: 'level' } },
+  { path: 'src/participant-file/copay-rate.ts', kind: '值对象', model: { aggregate: 'file', member: 'copay' } },
+  { path: 'src/participant-file/events.ts', kind: '事件', model: { event: ['档案已建', '协议已签', '资金已分到', '服务已开始'] } },
+  { path: 'src/participant-file/participant-file-repository.ts', kind: '仓储接口', model: { aggregate: 'file' } },
+  { path: 'src/participant-file/in-memory-participant-file-repository.ts', kind: '内存仓储', model: { aggregate: 'file' } },
+  { path: 'src/participant-file/participant-registration.ts', kind: '领域服务', model: { service: '参与者登记' } },
+  { path: 'src/participant-file/register.ts', kind: '命令', model: { item: 'register' } },
+  { path: 'src/participant-file/record-agreement.ts', kind: '命令', model: { item: 'sign' } },
+  { path: 'src/participant-file/record-allocation.ts', kind: '命令', model: { item: 'allocate' } },
+  { path: 'src/participant-file/view-file.ts', kind: '查询', model: { item: 'view-file' } },
+  { path: 'src/participant-file/participant-file.test.ts', kind: '测试', tests: ['agg/file/root/建档', 'agg/file/root/记签协议', 'agg/file/root/记分到资金'] },
+  { path: 'src/participant-file/register.test.ts', kind: '测试', tests: ['item/register', 'service/参与者登记'] },
+  { path: 'src/fund/fund.ts', kind: '聚合根', model: { aggregate: 'fund', member: 'root' } },
+  { path: 'src/fund/fund-account.ts', kind: '实体', model: { aggregate: 'fund', member: 'acct' } },
+  { path: 'src/fund/events.ts', kind: '事件', model: { event: ['基金已开', '基金已关', '已扣款'] } },
+  { path: 'src/fund/fund-repository.ts', kind: '仓储接口', model: { aggregate: 'fund' } },
+  { path: 'src/fund/in-memory-fund-repository.ts', kind: '内存仓储', model: { aggregate: 'fund' } },
+  { path: 'src/fund/open-fund-on-allocation.ts', kind: '事件处理器', model: { item: 'open-fund' } },
+  { path: 'src/fund/fund.test.ts', kind: '测试', tests: ['agg/fund/root/开立'] },
+  { path: 'src/app.ts', kind: '入口', note: '把命令、查询、处理器接到路由上；处理器订阅事件' } ] }
+
+let PROGRESS = DATA.PROGRESS ?? { updatedAt: '2026-11-01 16:40', status: {
+  'agg/file/root': '跑过', 'agg/file/root/建档': '跑过', 'agg/file/root/记签协议': '跑过', 'agg/file/root/记分到资金': '有测试', 'agg/file/root/开始服务': '已写',
+  'agg/file/level': '跑过', 'agg/file/copay': '已写',
+  'service/参与者登记': '跑过',
+  'item/register': '跑过', 'item/sign': '已写', 'item/allocate': '已写', 'item/view-file': '已写',
+  'agg/fund/root': '已写', 'agg/fund/root/开立': '有测试', 'agg/fund/root/季度结束': '未写',
+  'agg/fund/acct': '已写', 'agg/fund/acct/扣': '未写',
+  'item/open-fund': '未写' },
+  runs: [ { file: 'src/participant-file/participant-file.test.ts', passed: 5, failed: 1, at: '2026-11-01 16:38' }, { file: 'src/participant-file/register.test.ts', passed: 3, failed: 0, at: '2026-11-01 16:38' }, { file: 'src/fund/fund.test.ts', passed: 0, failed: 2, at: '2026-11-01 16:38' } ] }
+
+// 3. 代码/规范/技术选型.json：几个问题；问题与默认答案是 dev-team 的（templates/技术选型.md），答案是这个上下文的
+//    { decidedAt?: '日期', answers: { 问题: 答案 }, asks?: [{ q: 问题, text: 拿不准的地方和自己的偏向 }] }   没答的问题按模板默认；一个上下文定一次
+//    代码/规范/结构设计.json 是一张关系图加一份文件结构小样：{ decidedAt?, layers: [{ name, holds }], deps: [[谁, 引谁]], between: 模块之间怎么来往, outside: [{ name, how }],
+//      modules: [{ topic, dir }], parts: [{ dir, layer?, holds }], top: [{ dir, holds }], buses: [{ name, scope: 模块内 | 模块间, holds, where }], sample: [{ line, layer?, note? }] }
+//      modules 一个主题一个模块（topic 是业务全局图的主题 id，dir 是 modules/ 下的文件夹；不属于哪个主题的技术模块也放这里、topic 不写）；parts 是每个模块里都一样的几块；top 是 src/ 下模块以外的；buses 是两条事件总线。没有 modules 的旧数据画成三层图
+//    代码/规范/全局结构.json（项目根下，整个项目一份）：{ decidedAt?, nodes: [{ id, name, kind: 用户 | 前端 | 后端 | 数据库 | 存储 | 外部, context?, in?, holds, tech?, later? }], edges: [{ from, to, label, note? }] }
+//      in 是父节点 id，画在父框里面的虚线小框（只嵌一层）；label 几个字写在线上，长的说明放 note，停上去看
+//      later 是原型阶段还没有的，一句话说什么时候才有，画虚框；项目里还没有这份时用 templates/全局结构.json，fromTemplate 标着
+//    代码/规范/文件命名.json 也是一份文件结构小样，每种东西一行：{ decidedAt?, sample: [{ line, kind?, exports?, note? }] }
+// 4. 代码/伪代码/<文件路径>.json：一个文件一份，不带语言和库；一个方法一块，步骤编号到能照着写的粒度
+//    { file, blocks: [{ name, params?, steps: [字符串或 { text, sub: [] }], tests?: [{ name, given, when, then }], asks?: [{ id, q, lean, options?, answer?, answeredAt? }] }] }
+//    asks 是软件工程师拿不准的问题，挂在它说的那一块上：id 在一份伪代码里不重复，options 第一个是偏向。页面只摆没答的，跟在那一块下面；
+//    点一个选项或「另说」= post('答', { context, pseudo: 代码文件的路径, ask: 问题 id, text, sig })，写回伪代码文件里那一条。
+//    sig 是工作台给每条没答的问题带出来的「这一版的记号」；这份伪代码的 locked 是角色正在改它，这时候先答不了。软件工程师照答案改好伪代码，就把这条问题删掉
+
+// dev-team 的：每类几个问题，各带模板的默认答案（templates/<类>.md）
+const QUESTIONS = DATA.QUESTIONS ?? {
+  '技术选型': [
+    { q: '语言', a: 'TypeScript' },
+    { q: '运行', a: 'Node' },
+    { q: 'HTTP', a: 'Express' },
+    { q: '仓储', a: '原型阶段内存（Map），正式化换 Prisma' },
+    { q: '事件', a: '进程内发布订阅' },
+    { q: '测试', a: 'node:test + node:assert/strict' },
+    { q: '前端', a: 'React + Vite，界面用 Ant Design' } ] }
+// 结构设计：层、谁引谁、模块之间、外面的东西，画成图；再给一份文件结构小样看每样东西放哪
+const STRUCTURE = DATA.STRUCTURE ?? { decidedAt: '2026-11-01',
+  layers: [
+    { name: '外壳', holds: 'HTTP 路由、内存仓储、入口' },
+    { name: '应用', holds: '命令、查询、事件处理器' },
+    { name: '领域', holds: '聚合、领域服务、事件、仓储接口' } ],
+  deps: [['外壳', '应用'], ['应用', '领域'], ['外壳', '领域']],
+  between: '一个主题一个模块；模块之间只靠事件和查询，不互相 import',
+  outside: [ { name: '政府门户', how: '端口在领域，适配器在外壳；原型先给假实现' }, { name: '银行', how: '付款走端口，适配器在外壳；原型只记一笔不真付' } ],
+  modules: [ { topic: 'g2', dir: 'participant-file' }, { topic: 'g4', dir: 'fund' } ],
+  parts: [ { dir: 'adapters/', layer: '外壳', holds: '内存仓储、入站路由' }, { dir: 'application/', layer: '应用', holds: '命令、查询、事件处理器' }, { dir: 'domain/', layer: '领域', holds: '聚合、领域服务、事件、仓储接口' }, { dir: 'ports/', holds: '向别的模块要东西的接口' }, { dir: 'module.ts', layer: '外壳', holds: '模块组合根' } ],
+  top: [ { dir: 'bootstrap/', holds: '整个后端的组合根、起服务' }, { dir: 'infras/', holds: 'HTTP 应用、事件总线，不含业务' } ],
+  buses: [ { name: '模块内事件总线', scope: '模块内', holds: '模块里聚合发的事件给本模块的处理器', where: 'src/infras/event-bus/in-module-event-bus.ts，各模块的 module.ts 各 new 一条' },
+    { name: '模块间事件总线', scope: '模块间', holds: '一个模块的事件给别的模块听，比如 资金已分到 → 基金开立', where: 'src/infras/event-bus/cross-module-event-bus.ts，bootstrap/ new 一条交给各模块' } ],
+  sample: [
+    { line: 'src/' },
+    { line: '  participant-file/', note: '一个主题一个模块，层在模块里面' },
+    { line: '    participant-file.ts', layer: '领域', note: '聚合根' },
+    { line: '    level-and-pathway.ts', layer: '领域', note: '值对象' },
+    { line: '    events.ts', layer: '领域', note: '这个聚合的事件' },
+    { line: '    participant-file-repository.ts', layer: '领域', note: '仓储接口' },
+    { line: '    participant-registration.ts', layer: '领域', note: '领域服务' },
+    { line: '    register.ts', layer: '应用', note: '命令' },
+    { line: '    view-file.ts', layer: '应用', note: '查询' },
+    { line: '    in-memory-participant-file-repository.ts', layer: '外壳', note: '内存仓储' },
+    { line: '    participant-file.test.ts', note: '测试挨着源文件' },
+    { line: '  fund/', note: '另一个模块，同样的摆法' },
+    { line: '    open-fund-on-allocation.ts', layer: '应用', note: '事件处理器，听 participant-file 的事件' },
+    { line: '  app.ts', layer: '外壳', note: '入口：命令、查询接到路由上，处理器订阅事件' },
+    { line: '  infras/', layer: '外壳' },
+    { line: '    http/app.ts', note: 'HTTP 应用，挂各模块的路由' },
+    { line: '    event-bus/in-module-event-bus.ts', note: '模块内总线，每个模块的 module.ts 各 new 一条' },
+    { line: '    event-bus/cross-module-event-bus.ts', note: '模块间总线，整个后端一条' } ] }
+// 文件命名：一份文件结构小样，每种东西一行，写它里面导出什么、名字照哪条规矩起
+const NAMING = DATA.NAMING ?? { decidedAt: '2026-11-01', sample: [
+  { line: 'src/' },
+  { line: '  participant-file/', kind: '模块', note: '聚合根的英文名，小写连字符' },
+  { line: '    participant-file.ts', kind: '聚合根', exports: 'class ParticipantFile', note: '模型名字的英文；文件名是类名的小写连字符，不带种类前缀' },
+  { line: '    level-and-pathway.ts', kind: '值对象', exports: 'class LevelAndPathway' },
+  { line: '    events.ts', kind: '事件', exports: 'class FileCreated, AgreementSigned, …', note: '这个聚合的事件合在一个文件' },
+  { line: '    errors.ts', kind: '错误', exports: 'class IncompleteNotice, …', note: '错误也合在一个文件' },
+  { line: '    participant-file-repository.ts', kind: '仓储接口', exports: 'interface ParticipantFileRepository', note: '<根>-repository' },
+  { line: '    in-memory-participant-file-repository.ts', kind: '内存仓储', exports: 'class InMemoryParticipantFileRepository', note: 'in-memory-<根>-repository' },
+  { line: '    participant-registration.ts', kind: '领域服务', exports: 'const participantRegistration', note: '模型名字的英文' },
+  { line: '    register.ts', kind: '命令', exports: 'class Register, function register()', note: '清单里的名字，英文动词短语' },
+  { line: '    view-file.ts', kind: '查询', exports: 'function viewFile()' },
+  { line: '    participant-file.test.ts', kind: '测试', note: '被测文件名加 .test' },
+  { line: '  fund/' },
+  { line: '    open-fund-on-allocation.ts', kind: '事件处理器', exports: 'function openFundOnAllocation()', note: '<动作>-on-<事件>' },
+  { line: '  app.ts', kind: '入口', note: '固定叫 app.ts' } ] }
+// 全局结构：整个项目一份
+const GLOBAL = DATA.GLOBAL ?? { nodes: [
+  { id: 'cp', name: '照护伙伴', kind: '用户', holds: '在电脑和平板的浏览器上用' },
+  { id: 'fam', name: '老人和家属', kind: '用户', holds: '在手机上用' },
+  { id: 'web', name: '养老系统 web', kind: '前端', context: '养老系统', holds: '登记、建档、签协议、记服务', tech: 'React + Vite + Ant Design' },
+  { id: 'dlg', name: '沟通对话框', kind: '前端', context: '沟通 app', in: 'web', holds: '我在的群、群聊', later: '第三期' },
+  { id: 'app', name: '沟通 app', kind: '前端', context: '沟通 app', holds: '聊天、看余额和服务计划', later: '第三期' },
+  { id: 'api', name: '养老系统后端', kind: '后端', context: '养老系统', holds: '各模块的命令、查询、事件；HTTP 口给前端', tech: 'Node 24 + Express' },
+  { id: 'chat', name: '沟通模块', kind: '后端', context: '沟通 app', in: 'api', holds: '群、消息、推送', later: '沟通 app 建模时再定' },
+  { id: 'db', name: '数据库', kind: '数据库', holds: '各模块的仓储', tech: 'Prisma', later: '正式化时接；原型阶段仓储在内存' },
+  { id: 'files', name: '文件存储', kind: '存储', holds: '登记表上的手写签名图', tech: '原型存本机文件夹' },
+  { id: 'gov', name: '政府门户', kind: '外部', holds: '申报、付款对账' } ],
+  edges: [ { from: 'cp', to: 'web', label: '电脑' }, { from: 'fam', to: 'app', label: '手机' }, { from: 'web', to: 'api', label: '命令和查询', note: 'HTTP：调各模块的命令和查询' }, { from: 'app', to: 'chat', label: '群和消息', note: '带着凭证调沟通模块的口：群、消息、推送订阅' },
+    { from: 'dlg', to: 'chat', label: '群和消息' }, { from: 'api', to: 'db', label: '存取' }, { from: 'api', to: 'files', label: '存签名图' }, { from: 'api', to: 'gov', label: '申报' } ] }
+// 上下文的：改了的答案、拿不准的问题；没写的按模板
+const ANSWERS = DATA.ANSWERS ?? {
+  '技术选型': { decidedAt: '2026-11-01', answers: {
+    'HTTP': '不用框架，node:http 自己配路由',
+    '前端': '原型阶段没有前端，页面在工作台里点' } } }
+
+let PSEUDO = DATA.PSEUDO ?? {
+  'src/participant-file/participant-file.ts': { blocks: [
+    { name: '建档', params: ['通知书', '支持计划'], steps: [
+      '通知书.编号 为空 → <span class="g">抛 通知书不全</span>',
+      '通知书.分级 为空 → <span class="g">抛 通知书不全</span>',
+      { text: '新建 档案', sub: ['编号 ← 通知书.编号', '姓名 ← 通知书.姓名', '分级与路径 ← 通知书.分级与路径（整个值对象）', '允许的服务类型 ← 支持计划.服务类型', '<span class="w">状态 ← 未签约</span>'] },
+      '返回 档案 和 <span class="e">事件 档案已建(编号)</span>' ],
+      tests: [
+        { name: '守：编号必填', given: '通知书 编号为空', when: '建档(通知书, 支持计划)', then: '抛 通知书不全' },
+        { name: '守：分级必填', given: '通知书 分级为空', when: '建档(通知书, 支持计划)', then: '抛 通知书不全' },
+        { name: '发：档案已建', given: '通知书、支持计划齐全', when: '建档(通知书, 支持计划)', then: '状态是 未签约；返回事件 档案已建，带编号' } ] },
+    { name: '记签协议', params: ['日期'], steps: [
+      '状态 ≠ 未签约 → <span class="g">抛 还没建档或已签过(当前状态)</span>',
+      '<span class="w">签协议日 ← 日期</span>',
+      '<span class="w">状态 ← 已签约</span>',
+      '返回 <span class="e">事件 协议已签(编号, 日期)</span>' ],
+      tests: [
+        { name: '守：状态是未签约', given: '档案状态 已签约', when: '记签协议(日期)', then: '抛 还没建档或已签过' },
+        { name: '发：协议已签', given: '档案状态 未签约', when: '记签协议(日期)', then: '签协议日是 日期；状态 已签约；返回事件 协议已签' } ] },
+    { name: '记分到资金', params: ['日期', '全额或过渡'], steps: [
+      '状态 ≠ 已签约 → <span class="g">抛 还没签约(当前状态)</span>',
+      '<span class="w">分到资金日 ← 日期</span>',
+      '<span class="w">状态 ← 已到位</span>',
+      '返回 <span class="e">事件 资金已分到(编号, 日期, 全额或过渡, 分级与路径)</span>  — 开基金要用分级，带上' ],
+      tests: [
+        { name: '守：状态是已签约', given: '档案状态 未签约', when: '记分到资金(日期, 全额)', then: '抛 还没签约' },
+        { name: '发：资金已分到', given: '档案状态 已签约', when: '记分到资金(日期, 全额)', then: '状态 已到位；事件里带分级与路径' } ] },
+    { name: '开始服务', params: ['日期'], steps: [
+      '状态 ≠ 已到位 → <span class="g">抛 还没分到资金(当前状态)</span>',
+      '天数 ← 日期 − 分到资金日',
+      '没延期 且 天数 > 56 → <span class="g">抛 过了期限</span>',
+      '延过期 且 天数 > 84 → <span class="g">抛 过了期限</span>',
+      '<span class="w">入场日 ← 日期</span>',
+      '<span class="w">状态 ← 在册</span>',
+      '返回 <span class="e">事件 服务已开始(编号, 日期)</span>' ],
+      tests: [
+        { name: '守：56 天内', given: '分到资金日 + 57 天，没延期', when: '开始服务(日期)', then: '抛 过了期限' },
+        { name: '守：延期 84 天', given: '分到资金日 + 80 天，延过期', when: '开始服务(日期)', then: '不抛；状态 在册' } ] } ] },
+  'src/participant-file/register.ts': { blocks: [
+    { name: '命令 建档', params: ['通知书', '支持计划'], steps: [
+      '通知书.编号 为空 → <span class="g">抛 通知书上没有编号</span>',
+      '已有 ← 仓储.按编号找(通知书.编号)',
+      '参与者登记.查唯一(通知书.编号, 已有) — 有就 <span class="g">抛 这个编号已有档案</span>',
+      '档案, 事件 ← 参与者档案.建档(通知书, 支持计划)',
+      '仓储.存(档案)',
+      '发 <span class="e">事件</span>',
+      '返回 编号' ],
+      tests: [
+        { name: '自己抛：通知书上没有编号', given: '通知书 编号为空', when: '建档', then: '抛 通知书上没有编号；仓储里没存' },
+        { name: '领域服务抛：编号重复', given: '仓储里已有这个编号', when: '建档', then: '抛 这个编号已有档案；没发事件' },
+        { name: '走通', given: '仓储空', when: '建档', then: '仓储里有一份；发了 档案已建' } ] } ] },
+  'src/fund/open-fund-on-allocation.ts': { blocks: [
+    { name: '事件处理器 资金到了开基金', params: ['事件 资金已分到'], steps: [
+      '基金, 事件 ← 基金.开立(事件.编号, 事件.分级与路径)',
+      '仓储.存(基金)',
+      '发 <span class="e">事件 基金已开</span>' ],
+      tests: [ { name: '走通', given: '收到 资金已分到，分级 四级', when: '处理', then: '仓储里有一份基金，账户数按四级的笔数；发了 基金已开' } ] } ] },
+  'src/participant-file/level-and-pathway.ts': { blocks: [
+    { name: '值对象 分级与路径', params: ['级别', '路径'], steps: [
+      '带两栏：级别（一到八级）、路径（辅助技术、家居改造、复健、临终）',
+      '建了就不改：要换，整个换一个新的',
+      '两个 分级与路径 的级别、路径都一样，就算同一个' ],
+      tests: [ { name: '比', given: '两个 分级与路径，级别、路径都一样', when: '比是不是同一个', then: '是' } ] } ] },
+  'src/participant-file/copay-rate.ts': { blocks: [
+    { name: '值对象 共付比例', params: ['临床', '独立', '日常'], steps: [
+      '带三栏，各是一个比例：临床、独立、日常',
+      '建了就不改：要换，整个换一个新的' ],
+      tests: [ { name: '比', given: '两个 共付比例，三栏都一样', when: '比是不是同一个', then: '是' } ] } ] },
+  'src/participant-file/events.ts': { blocks: [
+    { name: '事件 档案已建', steps: ['带：编号'] },
+    { name: '事件 协议已签', steps: ['带：编号、日期'] },
+    { name: '事件 资金已分到', steps: ['带：编号、日期、全额或过渡、分级与路径 — 开基金要用分级，带上'] },
+    { name: '事件 服务已开始', steps: ['带：编号、日期'] } ] },
+  'src/participant-file/participant-file-repository.ts': { blocks: [
+    { name: '按编号找', params: ['编号'], steps: ['返回这个 My Aged Care 编号的档案；没有就返回 空'] },
+    { name: '存', params: ['档案'], steps: ['这个编号已经有一份的，换成这一份；没有的，加上'] } ] },
+  'src/participant-file/in-memory-participant-file-repository.ts': { blocks: [
+    { name: '按编号找', params: ['编号'], steps: ['从内存里那张表照编号取', '取到的抄一份返回；没有就返回 空'],
+      tests: [ { name: '没存过', given: '仓储空', when: '按编号找', then: '返回 空' } ] },
+    { name: '存', params: ['档案'], steps: ['抄一份，照编号放进内存里那张表；原来有的换掉'],
+      tests: [
+        { name: '存了找得到', given: '存了一份档案', when: '按编号找', then: '返回的档案每一栏都和存的一样' },
+        { name: '存的是抄的一份', given: '存了一份档案，再改外面那一份', when: '按编号找', then: '返回的还是存的时候的样子' } ] } ] },
+  'src/participant-file/participant-registration.ts': { blocks: [
+    { name: '领域服务 参与者登记 · 查唯一', params: ['编号', '已有（命令照编号从仓储找到的档案，或者 空）'], steps: [
+      '已有 不是 空 → <span class="g">抛 这个编号已有档案</span>',
+      '它自己不碰仓储：命令先找，把找到的递进来，它只比' ],
+      tests: [
+        { name: '守：同一个编号只有一份档案', given: '已有 是一份档案', when: '查唯一(编号, 已有)', then: '抛 这个编号已有档案' },
+        { name: '走通', given: '已有 是 空', when: '查唯一(编号, 已有)', then: '不抛' } ] } ] },
+  'src/participant-file/record-agreement.ts': { blocks: [
+    { name: '命令 记签协议', params: ['编号', '日期'], steps: [
+      '档案 ← 仓储.按编号找(编号)',
+      '档案 是 空 → <span class="g">抛 找不到这个编号的档案</span>',
+      '事件 ← 档案.记签协议(日期)',
+      '仓储.存(档案)',
+      '发 <span class="e">事件</span>' ],
+      tests: [
+        { name: '自己抛：找不到这个编号的档案', given: '仓储空', when: '记签协议', then: '抛 找不到这个编号的档案；没发事件' },
+        { name: '走通', given: '仓储里有一份 未签约 的档案', when: '记签协议', then: '仓储里那份状态 已签约；发了 协议已签' } ] } ] },
+  'src/participant-file/record-allocation.ts': { blocks: [
+    { name: '命令 记分到资金', params: ['编号', '日期', '全额或过渡'], steps: [
+      '档案 ← 仓储.按编号找(编号)',
+      '事件 ← 档案.记分到资金(日期, 全额或过渡)',
+      '仓储.存(档案)',
+      '发 <span class="e">事件</span>  — 基金那边听到它，给她开基金' ],
+      tests: [ { name: '走通', given: '仓储里有一份 已签约 的档案', when: '记分到资金', then: '仓储里那份状态 已到位；发了 资金已分到，带分级与路径' } ] } ] },
+  'src/participant-file/view-file.ts': { blocks: [
+    { name: '查询 看她的档案', params: ['编号'], steps: [
+      '档案 ← 仓储.按编号找(编号)',
+      '档案 是 空 → <span class="g">抛 找不到这个编号的档案</span>',
+      '返回 档案、分级与路径、她在哪一段（档案的状态）',
+      '不动聚合，不发事件' ],
+      tests: [
+        { name: '自己抛：找不到这个编号的档案', given: '仓储空', when: '看她的档案', then: '抛 找不到这个编号的档案' },
+        { name: '走通', given: '仓储里有一份 已签约 的档案', when: '看她的档案', then: '返回里有分级与路径，她在 已签约 这一段' } ] } ] },
+  'src/fund/fund.ts': { blocks: [
+    { name: '开立', params: ['参与者编号', '分级'], steps: [
+      '账户类型 ← 照分级该有的那几个',
+      { text: '新建 基金', sub: ['参与者编号 ← 参与者编号', '季度 ← 这一季', '账户 ← 每个账户类型建一个 基金账户', '<span class="w">状态 ← 已开</span>'] },
+      '返回 基金 和 <span class="e">事件 基金已开(参与者编号, 季度)</span>' ],
+      tests: [ { name: '发：基金已开', given: '分级 四级', when: '开立(参与者编号, 分级)', then: '账户数是四级该有的个数；状态 已开；返回事件 基金已开' } ] },
+    { name: '季度结束', params: ['日期'], steps: [
+      '日期 到了这一季的最后一天，才往下做',
+      '<span class="w">状态 ← 已关</span>',
+      '返回 <span class="e">事件 基金已关(参与者编号, 季度)</span>' ],
+      tests: [ { name: '发：基金已关', given: '基金状态 在用，日期是这一季最后一天', when: '季度结束(日期)', then: '状态 已关；返回事件 基金已关' } ] } ] },
+  'src/fund/fund-account.ts': { blocks: [
+    { name: '扣', params: ['金额', '服务类型'],
+      asks: [ { id: 'a-1', q: '金额是 0 的时候，算不算扣了一笔？', lean: '不算：直接返回，不发事件', options: ['不算：直接返回，不发事件', '算：照常走，发 已扣款'] } ],
+      steps: [
+      '服务类型 不在她批了的范围内 → <span class="g">抛 服务类型不许</span>',
+      '余额 < 金额 → <span class="g">抛 余额不足</span>',
+      '<span class="w">余额 ← 余额 − 金额</span>',
+      '余额 是 0 → <span class="w">状态 ← 已用完</span>',
+      '返回 <span class="e">事件 已扣款(类型, 金额, 余额)</span>' ],
+      tests: [
+        { name: '守：服务类型在批了的范围内', given: '账户只许 持续服务', when: '扣(金额, 辅助技术)', then: '抛 服务类型不许；余额没动' },
+        { name: '守：余额够', given: '余额 100', when: '扣(150, 持续服务)', then: '抛 余额不足；余额没动' },
+        { name: '发：已扣款', given: '余额 100', when: '扣(40, 持续服务)', then: '余额 60；状态 可用；返回事件 已扣款' },
+        { name: '扣到零', given: '余额 100', when: '扣(100, 持续服务)', then: '余额 0；状态 已用完' } ] } ] },
+  'src/fund/events.ts': { blocks: [
+    { name: '事件 基金已开', steps: ['带：参与者编号、季度'] },
+    { name: '事件 基金已关', steps: ['带：参与者编号、季度'] },
+    { name: '事件 已扣款', steps: ['带：账户类型、金额、扣完的余额'] } ] },
+  'src/fund/fund-repository.ts': { blocks: [
+    { name: '按参与者编号找', params: ['参与者编号'], steps: ['返回她名下的基金，一季一份；没有就返回空的一串'] },
+    { name: '存', params: ['基金'], steps: ['同一位老人同一季已经有一份的，换成这一份；没有的，加上'] } ] },
+  'src/fund/in-memory-fund-repository.ts': { blocks: [
+    { name: '按参与者编号找', params: ['参与者编号'], steps: ['从内存里那张表里挑出这位老人的', '每一份抄一份返回'],
+      tests: [ { name: '没存过', given: '仓储空', when: '按参与者编号找', then: '返回空的一串' } ] },
+    { name: '存', params: ['基金'], steps: ['抄一份，照参与者编号和季度放进内存里那张表；原来有的换掉'],
+      tests: [ { name: '存了找得到', given: '存了一份基金', when: '按参与者编号找', then: '返回一份，账户和存的一样' } ] } ] },
+  'src/app.ts': { blocks: [
+    { name: '入口', steps: [
+      '建两个内存仓储：参与者档案的、基金的',
+      '建事件总线',
+      '订上：资金已分到 → 事件处理器 资金到了开基金',
+      '把仓储和事件总线交给命令和查询：建档、记签协议、记分到资金、看她的档案',
+      '原型阶段数据放在内存里，进程一停就没了' ] } ] } }
+
+
+// 代码片段：只抄几份，够看出照模型写是什么样
+let CODE = DATA.CODE ?? {
+  'src/participant-file/participant-file.ts': `// 聚合根 参与者档案：一位老人一份，用 My Aged Care 编号认她
+export type FileState = '待评估' | '未签约' | '已签约' | '已到位' | '在册' | '已退出'
+
+export class ParticipantFile {
+  // 身份
+  readonly myAgedCareId: string
+  readonly name: string
+  // 业务属性 · 批了什么
+  allowedServiceTypes: string[]
+  // 业务属性 · 走到哪天
+  agreementSignedOn?: Date
+  fundsAllocatedOn?: Date
+  entryOn?: Date
+  // 状态
+  state: FileState
+  // 成员
+  level: LevelAndPathway
+  copay?: CopayRate
+
+  // 守：编号必填、分级必填；抛：通知书不全；发：档案已建
+  static register(notice: Notice, plan: SupportPlan): [ParticipantFile, FileCreated] {
+    if (!notice.myAgedCareId || !notice.level) throw new IncompleteNotice()
+    const file = new ParticipantFile(notice, plan.allowedServiceTypes)
+    file.state = '未签约'
+    return [file, new FileCreated(file.myAgedCareId)]
+  }
+
+  // 守：状态是未签约；抛：还没建档或已签过；发：协议已签
+  recordAgreement(on: Date): AgreementSigned {
+    if (this.state !== '未签约') throw new NotAwaitingAgreement(this.state)
+    this.agreementSignedOn = on
+    this.state = '已签约'
+    return new AgreementSigned(this.myAgedCareId, on)
+  }
+
+  // 守：状态是已签约；发：资金已分到
+  recordAllocation(on: Date, kind: '全额' | '过渡'): FundsAllocated {
+    if (this.state !== '已签约') throw new NotAwaitingAllocation(this.state)
+    this.fundsAllocatedOn = on
+    this.state = '已到位'
+    return new FundsAllocated(this.myAgedCareId, on, kind, this.level)
+  }
+
+  // 守：在分到资金起 56 天内（延期 84 天）；抛：过了期限；发：服务已开始
+  startService(on: Date): ServiceStarted { /* 做法：算天数、改入场日与状态 */ }
+}`,
+  'src/participant-file/register.ts': `// 命令 建档：查编号没重复 → 参与者档案.建档 → 存 → 发 档案已建
+// 自己抛：通知书上没有编号
+export async function register(cmd: { notice: Notice; plan: SupportPlan }, deps: Deps) {
+  if (!cmd.notice.myAgedCareId) throw new NoticeWithoutId()
+  const existing = await deps.files.findByMyAgedCareId(cmd.notice.myAgedCareId)
+  ParticipantRegistration.ensureUnique(cmd.notice.myAgedCareId, existing)   // 领域服务，抛 这个编号已有档案
+  const [file, event] = ParticipantFile.register(cmd.notice, cmd.plan)
+  await deps.files.save(file)
+  await deps.events.publish(event)
+  return file.myAgedCareId
+}`,
+  'src/participant-file/participant-registration.ts': `// 领域服务 参与者登记：同一个 My Aged Care 编号只有一份档案
+// 纯函数：命令先查仓储，把查到的递进来，它只比对
+export const ParticipantRegistration = {
+  ensureUnique(id: string, existing: ParticipantFile | undefined) {
+    if (existing) throw new DuplicateParticipant(id)
+  } }`,
+  'src/participant-file/participant-file.test.ts': `describe('参与者档案.建档', () => {
+  it('守：编号必填 → 抛 通知书不全', () => { expect(() => ParticipantFile.register({ ...notice, myAgedCareId: '' }, plan)).toThrow(IncompleteNotice) })
+  it('守：分级必填 → 抛 通知书不全', () => { expect(() => ParticipantFile.register({ ...notice, level: undefined }, plan)).toThrow(IncompleteNotice) })
+  it('发：档案已建，状态到 未签约', () => { const [file, ev] = ParticipantFile.register(notice, plan); expect(file.state).toBe('未签约'); expect(ev).toBeInstanceOf(FileCreated) })
+})
+describe('参与者档案.记签协议', () => {
+  it('守：状态是未签约 → 抛 还没建档或已签过', () => { … })
+  it('发：协议已签，状态到 已签约', () => { … })
+})
+describe('参与者档案.记分到资金', () => {
+  it('守：状态是已签约 → 抛', () => { … })   // ✗ 跑挂了：现在没查状态
+})`,
+  'src/fund/open-fund-on-allocation.ts': `// 事件处理器 资金到了开基金：听 资金已分到 → 基金.开立 → 存 → 发 基金已开
+// 还没写`,
+}
+
+// ---------- 通用 ----------
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+const S = { '未写': 0, '已写': 1, '有测试': 2, '跑过': 3 }
+const SN = ['未写', '已写', '有测试', '跑过']
+const stOf = (key) => PROGRESS.status[key] ?? '未写'
+const stTag = (st) => `<span class="st s${S[st]}">${st}</span>`
+const dot = (st) => `<span class="dot s${S[st]}"></span>`
+let aggOf = Object.fromEntries(MODEL.aggs.map((a) => [a.id, a]))
+let itemOf = Object.fromEntries(MODEL.items.map((x) => [x.id, x]))
+const memberName = (aid, mid) => aggOf[aid]?.members.find((m) => m.id === mid)?.name ?? mid
+// 文件的 model.context 指到别的上下文时，从那个上下文的模型里找；模型路径前面带「<上下文>:」，不跟本上下文的撞
+const MODELS = DATA.MODELS ?? {}
+// 上面那五样（MODEL、STRUCT、PROGRESS、PSEUDO、CODE）是 CODE_CX 那个上下文的；别的有文件结构的上下文在 DATA.BY_CX 里各一份，换上下文时换着用。
+// 规范（结构设计、文件命名、技术选型）不跟着换：CODE_CX 的是顶层那三份，别的上下文的在 SPECS 里
+const CODE_CX = DATA.CODE_CX ?? '养老系统'
+const FIRST = { MODEL, STRUCT, PROGRESS, PSEUDO, CODE }
+const cxData = (cx) => cx === CODE_CX ? FIRST : (DATA.BY_CX && DATA.BY_CX[cx]) || null
+function useCx(cx) {
+  const d = cxData(cx); if (!d) return
+  ;({ MODEL, STRUCT, PROGRESS, PSEUDO, CODE } = d)
+  aggOf = Object.fromEntries(MODEL.aggs.map((a) => [a.id, a])); itemOf = Object.fromEntries(MODEL.items.map((x) => [x.id, x]))
+}
+const modelIn = (cx) => (cx && MODELS[cx]) || MODEL
+const aggIn = (cx, id) => modelIn(cx).aggs.find((a) => a.id === id)
+const itemIn = (cx, id) => modelIn(cx).items.find((x) => x.id === id)
+const memberIn = (cx, aid, mid) => aggIn(cx, aid)?.members.find((m) => m.id === mid)?.name ?? mid
+// 一个文件对应的模型路径（可以几条：事件文件对几个事件、测试文件对几条被测的）
+const keysOfFile = (f) => {
+  if (f.tests) return f.tests
+  const m = f.model ?? {}, pre = m.context ? m.context + ':' : ''
+  if (m.item) return [pre + 'item/' + m.item]
+  if (m.service) return [pre + 'service/' + m.service]
+  if (m.member) return [pre + 'agg/' + m.aggregate + '/' + m.member]
+  if (m.aggregate) return [pre + 'agg/' + m.aggregate]
+  return []
+}
+const filesOfKey = (key) => STRUCT.files.filter((f) => keysOfFile(f).includes(key) || (key.split('/').length === 4 && keysOfFile(f).includes(key.split('/').slice(0, 3).join('/')) && !f.tests))
+// 模型路径念成人话
+const keyTitle = (key) => {
+  const i = key.indexOf(':'), cx = i > 0 ? key.slice(0, i) : '', pre = cx ? cx + ' › ' : ''
+  const p = (cx ? key.slice(i + 1) : key).split('/')
+  if (p[0] === 'agg') return pre + (p.length === 2 ? aggIn(cx, p[1])?.title ?? p[1] : p.length === 3 ? memberIn(cx, p[1], p[2]) : `${memberIn(cx, p[1], p[2])}.${p[3]}`)
+  if (p[0] === 'item') { const x = itemIn(cx, p[1]); return pre + (x ? `${x.kind} ${x.name}` : p[1]) }
+  return pre + `领域服务 ${p[1]}`
+}
+// 低一档的往上汇：成员的状态取它和它的行为里最低的
+const minSt = (keys) => SN[Math.min(...keys.map((k) => S[stOf(k)]))] ?? '未写'
+const memberKeys = (a, m) => ['agg/' + a.id + '/' + m.id, ...(m.behaviors ?? []).map((b) => 'agg/' + a.id + '/' + m.id + '/' + b)]
+let view = 'tree'      // 'tree' | 'model/<模型路径>' | 'flow/<流程>'；地址前面带上下文名
+// 上下文：左边栏第一层，折叠展开；地址第一段是上下文名
+const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统', '共享内核']
+let context = CODE_CX
+const parseHash = (dflt) => { const h = decodeURIComponent(location.hash.slice(1)); const i = h.indexOf('/'); const cx = i > 0 ? h.slice(0, i) : ''; return CONTEXTS.includes(cx) ? { cx, v: h.slice(i + 1) || dflt } : { cx: context, v: h || dflt } }
+const go = (v) => { location.hash = context + '/' + v }
+function bindContexts(dflt) {
+  // 页里的链接都写成 #<视图>，点的时候补上上下文
+  document.addEventListener('click', (ev) => { const a = ev.target.closest && ev.target.closest('a[href^="#"]'); if (!a) return; const v = decodeURIComponent(a.getAttribute('href').slice(1)); if (v.indexOf('/') > 0 && CONTEXTS.includes(v.slice(0, v.indexOf('/')))) return; ev.preventDefault(); go(v) })
+  window.addEventListener('hashchange', () => { const { cx, v } = parseHash(dflt); if (cx !== context || v !== view) { context = cx; Shell.show(cx); view = v; if (typeof selected !== 'undefined') selected = null; render() } })
+}
+let openFile = null    // 模型页上点开看代码的文件
+
+// 别的上下文先起草的规范：{ 上下文: { 类: 那一份 } }；页面先只排技术选型这种问答，另两份只说在哪
+const SPECS = DATA.SPECS ?? {}
+const sideSpecs = (cx) => cx !== CODE_CX ? SPECS[cx] ?? null : null
+const navKey = (v) =>(v.startsWith('tree') ? 'tree' : v)   // 'tree/<文件>' 也算在文件结构那一条上
+
+// ---------- 左边栏：框架画上下文那一层；这页交养老系统展开后的两组：定规范、文件结构 ----------
+Shell.init({ contexts: CONTEXTS, page: {
+  top: () => [{ href: '#全局结构', text: '全局结构', on: view === '全局结构' }],
+  badge: (cx) => cx === '共享内核' ? '共用的概念' : '',
+  items: (cx) => {
+    const link = (href, text) => Shell.link('#' + href, text, navKey(view) === href)
+    // 别的上下文：先起草的规范有哪份列哪份；有文件结构的，再列它的文件结构
+    if (cx !== CODE_CX) { const sp = sideSpecs(cx), d = cxData(cx); return (sp ? Shell.group('定规范') + SPEC_KINDS.filter((k) => sp[k]).map((k) => link('spec/' + k, k)).join('') : '') + (d ? Shell.group('文件结构 · 伪代码') + link('tree', `${d.STRUCT.root}/`) : '') }
+    return Shell.group('定规范') + SPEC_KINDS.map((k) => link('spec/' + k, k)).join('')
+      + Shell.group('文件结构 · 伪代码') + link('tree', `${STRUCT.root}/`)
+  },
+  pick: (cx) => { if (cx !== context) { context = cx; if (typeof selected !== 'undefined') selected = null } go(view); render() } },
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '建模', '编码'], current: '编码', live: !!DATA.WB } })
+
+// ---------- 代码结构：目录树 ----------
+// 文件夹的开合记在本机；当前文件那一串只在进页、换文件时自动展开一次，收起了同一个文件重画不再撑开
+const TREE_KEY = 'dev-team-lite/编码/文件树开着的'
+const treeOpen = (() => { try { return JSON.parse(localStorage.getItem(TREE_KEY)) ?? {} } catch { return {} } })()
+const treeSave = () => { try { localStorage.setItem(TREE_KEY, JSON.stringify(treeOpen)) } catch {} }
+const treeToggle = (k) => { treeOpen[k] = !treeOpen[k]; treeSave() }
+let treeAutoAt = null, treeScrolledFor = null
+// 树栏整栏收起也记在本机；换文件、重画都照记下的摆
+const TREE_HIDE_KEY = 'dev-team-lite/编码/文件树收起'
+let treeHidden = (() => { try { return localStorage.getItem(TREE_HIDE_KEY) === '1' } catch { return false } })()
+const treeHide = (on) => { treeHidden = on; try { localStorage.setItem(TREE_HIDE_KEY, on ? '1' : '0') } catch {} }
+// 伪代码上还没答的问题：一块上的、一个文件里的；有问题的文件在文件树上带红点，收着的文件夹把里面的加起来
+const openOfBlock = (b) => (b.asks ?? []).filter((q) => !q.answer)
+const openOfFile = (path) => (PSEUDO[path]?.blocks ?? []).reduce((t, b) => t + openOfBlock(b).length, 0)
+const dotN = (n) => n ? `<i class="open" title="${n} 条没答">${n}</i>` : ''
+// 答一条问题：工作台上发给后端写进伪代码文件、重载；单开时只改内存里的那条、重画
+function answerAsk(d) {
+  const path = view.split('/').slice(1).join('/'), p = PSEUDO[path]; if (!p || p.locked) return
+  const q = p.blocks.flatMap(openOfBlock).find((x) => x.id === d.ask); if (!q) return
+  const text = d.other ? (typeof prompt === 'function' ? prompt('另说：') : '') : d.opt
+  if (!text) return
+  if (LIVE) return post('答', { context, pseudo: path, ask: d.ask, text, sig: q.sig })
+  q.answer = text; q.answeredAt = '2026-11-09'; render()
+}
+function treeView(openPath) {
+  // 没选文件时，替第一个文件那一串展开
+  const at = context + '/' + (openPath ?? '')
+  const target = openPath ?? STRUCT.files[0]?.path
+  if (treeAutoAt !== at && target) { treeAutoAt = at; const p = target.split('/'); for (let i = 1; i < p.length; i++) treeOpen[context + ':' + p.slice(0, i).join('/')] = true }
+  const root = { dirs: {}, files: [] }
+  for (const f of STRUCT.files) { let n = root; for (const part of f.path.split('/').slice(0, -1)) n = (n.dirs[part] ??= { dirs: {}, files: [] }); n.files.push(f) }
+  const count = (n) => n.files.length + Object.values(n.dirs).reduce((a, c) => a + count(c), 0)
+  const openIn = (n) => n.files.reduce((t, f) => t + openOfFile(f.path), 0) + Object.values(n.dirs).reduce((a, c) => a + openIn(c), 0)
+  const asked = STRUCT.files.filter((f) => openOfFile(f.path)), askedN = asked.reduce((t, f) => t + openOfFile(f.path), 0)
+  const modelText = (f) => {
+    if (f.tests) return `测 <b>${f.tests.map(keyTitle).join('、')}</b>`
+    // 模型在别的上下文的，前面带上下文名
+    const m = f.model ?? {}, cx = m.context, pre = cx ? esc(cx) + ' › ' : ''
+    if (m.event) return pre + `事件 <b>${[].concat(m.event).join('、')}</b>`
+    if (m.item) return pre + `清单 <b>${esc(itemIn(cx, m.item)?.name ?? m.item)}</b>`
+    if (m.service) return pre + `领域服务 <b>${esc(m.service)}</b>`
+    if (m.member) return pre + `${esc(aggIn(cx, m.aggregate)?.title ?? m.aggregate)} › <b>${esc(memberIn(cx, m.aggregate, m.member))}</b>`
+    if (m.aggregate) return pre + `${esc(aggIn(cx, m.aggregate)?.title ?? m.aggregate)}`
+    return f.note ?? ''
+  }
+  const fileSt = (f) => f.tests ? minSt(f.tests) : keysOfFile(f).length ? minSt(keysOfFile(f)) : '已写'
+  const fileRow = (f, d) => `<div class="f${f.path === openPath ? ' on' : ''}${PSEUDO[f.path] ? '' : ' none'}" style="--d:${d}" title="${esc(f.path)}" data-key="${esc(keysOfFile(f)[0] ?? '')}" data-path="${esc(f.path)}"><span class="p">${esc(f.path.split('/').pop())}${dotN(openOfFile(f.path))}</span><span class="m"><span class="k">${esc(f.kind)}</span>${modelText(f)}</span></div>`
+  const draw = (n, pre, d) => Object.entries(n.dirs).map(([name, c]) => {
+    const k = pre ? pre + '/' + name : name, open = !!treeOpen[context + ':' + k]
+    return `<div class="dr" data-tg="${esc(k)}" title="${open ? '收起' : '展开'}" style="--d:${d}"><span class="tri">${open ? '▾' : '▸'}</span><span class="n">${esc(name)}/${open ? '' : dotN(openIn(c))}</span><span class="c">${count(c)}</span></div>` + (open ? draw(c, k, d + 1) : '')
+  }).join('') + n.files.map((f) => fileRow(f, d)).join('')
+  // 没点开文件时，右边先列出伪代码上有问题没答的文件，点过去答
+  const right = openPath ? pseudoView(openPath) : `<div class="card"><p class="none">左边点一个文件，这里看它的伪代码。</p>${asked.length ? `<div class="qlist"><div class="cap" style="margin:10px 0 4px">伪代码上有 ${askedN} 条问题没答，在这几个文件里</div>${asked.map((f) => `<a href="#tree/${esc(f.path)}"><code>${esc(f.path)}</code>${dotN(openOfFile(f.path))}</a>`).join('')}</div>` : ''}</div>`
+  return `<p class="sub">照结构设计和命名规范从模型推出来：一个主题一个模块，一个聚合一个文件夹；清单里一条命令、查询、处理器一个文件；领域服务、仓储、事件单列。文件名下面是它对应模型里的哪一条；点文件夹展开收起，点一个文件右边看伪代码。</p>
+    <div class="row2"><div class="l tree-col${treeHidden ? ' hide' : ''}"><div class="rail" data-tree-show title="展开文件树"><span>▸</span><span class="w">文件</span></div><div class="card tree-box"><div class="tree"><div class="cnt">共 ${STRUCT.files.length} 个文件<button class="tree-hide" data-tree-hide title="收起文件树">◂ 收起</button></div>${draw(root, '', 0)}</div></div></div><div class="r">${right}</div></div>`
+}
+
+// ---------- 模型一条 → 代码 ----------
+function highlight(src) {
+  return esc(src).replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g, '<span class="cm">$1</span>').replace(/('[^']*')/g, '<span class="str">$1</span>')
+    .replace(/\b(export|class|static|readonly|return|throw|new|if|const|async|await|function|type|describe|it|expect)\b/g, '<span class="kw">$1</span>')
+}
+function modelView(key) {
+  const p = key.split('/')
+  const files = filesOfKey(key)
+  const own = files.filter((f) => !f.tests), tests = files.filter((f) => f.tests)
+  const st = p[0] === 'agg' && p.length === 3 ? minSt(memberKeys(aggOf[p[1]], aggOf[p[1]].members.find((m) => m.id === p[2]))) : p[0] === 'agg' && p.length === 2 ? minSt(aggOf[p[1]].members.flatMap((m) => memberKeys(aggOf[p[1]], m))) : stOf(key)
+  const fileRow = (f) => `<div class="file${openFile === f.path ? ' on' : ''}" data-path="${esc(f.path)}"><code>${esc(f.path)}</code><span class="k">${esc(f.kind)}</span>${PSEUDO[f.path] ? `<a href="#tree/${esc(f.path)}" style="font-size:12px;color:var(--accent);text-decoration:none">伪代码 ›</a>` : ''}${stTag(f.tests ? minSt(f.tests) : st)}</div>`
+  const shown = openFile && files.find((f) => f.path === openFile) ? openFile : (own[0] ?? tests[0])?.path
+  const code = shown ? (CODE[shown] ? `<pre class="code">${highlight(CODE[shown])}</pre>` : `<p class="none">${esc(shown)} 还没写。</p>`) : '<p class="none">还没有对应的文件。</p>'
+  // 一个成员：下面列它的行为各到哪一步
+  let bh = ''
+  if (p[0] === 'agg' && p.length === 3) {
+    const m = aggOf[p[1]].members.find((x) => x.id === p[2])
+    if (m.behaviors?.length) bh = `<div class="card"><div class="cap">行为</div><table class="t">${m.behaviors.map((b) => { const k = key + '/' + b; const t = STRUCT.files.filter((f) => f.tests?.includes(k)); return `<tr><td class="n"><a href="#model/${k}">${esc(b)}</a></td><td>${stTag(stOf(k))}</td><td class="x">${t.length ? '测在 ' + t.map((f) => esc(f.path.split('/').pop())).join('、') : '还没测'}</td></tr>` }).join('')}</table></div>`
+  }
+  if (p[0] === 'agg' && p.length === 2) {
+    const a = aggOf[p[1]]
+    bh = `<div class="card"><div class="cap">成员</div><table class="t">${a.members.map((m) => `<tr><td class="n"><a href="#model/agg/${a.id}/${m.id}">${esc(m.name)}</a> <span class="x">${m.kind}</span></td><td>${stTag(minSt(memberKeys(a, m)))}</td><td class="x">${(m.behaviors ?? []).map((b) => `${dot(stOf('agg/' + a.id + '/' + m.id + '/' + b))} ${esc(b)}`).join('　') || '值对象没有行为'}</td></tr>`).join('')}</table></div>`
+  }
+  const runs = tests.map((f) => PROGRESS.runs.find((r) => r.file === f.path)).filter(Boolean)
+  const runText = runs.length ? runs.map((r) => `${r.file.split('/').pop()}：${r.passed} 过${r.failed ? `、<b style="color:var(--s2l)">${r.failed} 挂</b>` : ''}（${r.at}）`).join('；') : ''
+  return `<p class="sub">模型里这一条在代码里落在哪几个文件、到了哪一步。状态由测试算：写了是已写，有用例是有测试，用例全过是跑过。</p>
+    <div class="row2">
+      <div class="l">
+        <div class="card"><div class="cap">文件</div>${files.length ? `<div class="files">${own.map(fileRow).join('')}${tests.length ? `<div class="cap" style="margin-top:8px">测试</div>${tests.map(fileRow).join('')}` : ''}</div>` : '<p class="none">还没有对应的文件。</p>'}${runText ? `<div class="sub" style="margin:10px 0 0;font-size:12px">${runText}</div>` : ''}</div>
+        ${bh}
+      </div>
+      <div class="r">${code}</div>
+    </div>`
+}
+
+// ---------- 走通一段：流程里的每条调动四个格子各自点亮 ----------
+function flowView(f) {
+  const cell = (cls, cap, name, st) => `<div class="cell ${cls}"><div><small>${esc(cap)}</small><br>${esc(name)}</div>${st ? stTag(st) : ''}</div>`
+  const none = (text) => `<div class="cell none">${esc(text)}</div>`
+  let h = `<div class="h"></div><div class="h">命令 / 查询 / 事件处理器</div><div class="h">领域服务</div><div class="h">聚合 · 行为</div><div class="h">事件</div>`
+  f.rows.forEach((id, i) => {
+    const x = itemOf[id]
+    const a = MODEL.aggs.find((g) => g.members.some((m) => m.name === x.aggregate)), m = a?.members.find((mm) => mm.name === x.aggregate)
+    const bkey = x.behavior ? `agg/${a.id}/${m.id}/${x.behavior}` : `agg/${a.id}/${m.id}`
+    h += `<div class="n">${i + 1}</div>`
+    h += `<a href="#model/item/${id}" style="text-decoration:none;color:inherit">${cell(x.kind === '查询' ? 'qry' : x.kind === '事件处理器' ? 'hdl' : 'cmd', x.kind + (x.on ? ' · 听 ' + x.on : ''), x.name, stOf('item/' + id))}</a>`
+    // via 是一串名字（lib 拍平的），过几个就叠几个格子
+    h += x.via?.length ? `<div style="display:flex;flex-direction:column;gap:4px">${x.via.map((v) => `<a href="#model/service/${v}" style="text-decoration:none;color:inherit">${cell('svc', '领域服务', v, stOf('service/' + v))}</a>`).join('')}</div>` : none('不经过')
+    h += `<a href="#model/${bkey}" style="text-decoration:none;color:inherit">${cell('agg', x.aggregate, x.read ? '读' : x.behavior, stOf(bkey))}</a>`
+    h += x.kind === '查询' ? none('返回 ' + x.out) : cell('evt', '事件', x.out, stOf('item/' + id))
+  })
+  const all = f.rows.flatMap((id) => { const x = itemOf[id]; const a = MODEL.aggs.find((g) => g.members.some((m) => m.name === x.aggregate)), m = a.members.find((mm) => mm.name === x.aggregate); return ['item/' + id, ...(x.via ?? []).map((v) => 'service/' + v), x.behavior ? `agg/${a.id}/${m.id}/${x.behavior}` : `agg/${a.id}/${m.id}`].filter(Boolean) })
+  const left = all.filter((k) => stOf(k) !== '跑过')
+  return `<p class="sub">这一段流程里的每条调动，从进来到发事件四个格子各自到了哪一步；全绿这一段就走通了，再开下一段。</p>
+    <div class="card"><div style="margin-bottom:10px">${left.length ? `<span class="todo">还差 ${left.length} 处</span> <span class="sub" style="font-size:12px">${left.map(keyTitle).map(esc).join('、')}</span>` : '<span class="done">走通了</span>'}</div><div class="walk">${h}</div></div>
+    <div class="legend">${SN.map((s) => `<span>${stTag(s)}</span>`).join('')}</div>`
+}
+
+// ---------- 定规范：每类几个问题，答案是这个上下文的；改了的标出，拿不准的带着偏向等你定 ----------
+const SPEC_KINDS = ['结构设计', '文件命名', '技术选型']
+const specOf = (k) => k === '结构设计' ? STRUCTURE : k === '文件命名' ? NAMING : (ANSWERS[k] ??= { answers: {} })
+// 后端三层；前端功能里的几块照 React 常用的叫法：components 近外壳、hooks 近应用、api 近领域那一头的颜色
+const LAYER_COLOR = { '领域': 'var(--s3)', '应用': 'var(--accent-bg)', '外壳': 'var(--badge)', 'components': 'var(--badge)', 'hooks': 'var(--accent-bg)', 'api': 'var(--s3)' }
+// 关系图：层从上到下一格一格，箭头是谁引谁；左边另一个模块靠事件来往；右边是外面的东西，有几样竖着排几个框，各自一条线连到领域那层（端口在领域）
+// 估字宽：中文一个字号宽，其余按 0.62 个
+const textW = (s, fs) => [...String(s)].reduce((w, c) => w + (c.charCodeAt(0) > 255 ? fs : fs * 0.62), 0)
+// 按宽度折行：中文一个字一份、英文一个词一份往上放，放不下换行；词比一行还宽才拆开；逗号句号这些不放行首，带上一个字下来
+const NO_START = /^[，。、；：！？）」』》,.;:!?)]/
+function wrapText(s, fs, maxW, firstW = maxW) {
+  const out = []; let line = []
+  const lim = () => (out.length ? maxW : firstW), str = (ts) => ts.join('').trim()
+  // 起新的一行；一份比一行还宽（很长的英文词）就一个字一个字拆
+  const start = (ts) => { line = ts; let t = str(line); while (textW(t, fs) > lim() && [...t].length > 1) { let w = ''; for (const c of t) { if (textW(w + c, fs) > lim()) break; w += c } out.push(w); t = t.slice(w.length) } line = t ? [t] : [] }
+  for (const t of String(s ?? '').match(/[A-Za-z0-9_.\/+\-#@&'"]+|\s+|./gsu) ?? []) {
+    if (/^\s+$/.test(t)) { if (line.length) line.push(' '); continue }
+    if (!line.length || textW(str([...line, t]), fs) <= lim()) { line.length ? line.push(t) : start([t]); continue }
+    while (line.length && line[line.length - 1] === ' ') line.pop()
+    if (NO_START.test(t) && line.length > 1) { const last = line.pop(); out.push(str(line)); start([last, t]) }
+    else { out.push(str(line)); start([t]) }
+  }
+  if (str(line)) out.push(str(line))
+  return out
+}
+const chipOf = (layer) => layer ? `<span class="lay" style="background:${LAYER_COLOR[layer] ?? 'var(--panel)'}">${esc(layer)}</span>` : ''
+// 模块放在哪个文件夹照小样认：小样里写的是 contexts/（旧的叫法）就照它，别的都是 modules/
+const modsDirOf = (st) => { const ls = (st.sample ?? []).map((r) => r.line.trim()); return ls.some((l) => /^contexts\//.test(l)) && !ls.some((l) => /^modules\//.test(l)) ? 'contexts/' : 'modules/' }
+// 结构图：照文件结构画的 SVG，照卡片的真宽排。src/ 一个大框：上 bootstrap/，中 modules/，下 infras/；外面的东西在右边（窄了换到下面）
+// modules/ 只画一个模块看结构，别的模块收进一个虚框
+// 箭头是谁依赖谁：模块里照 deps 画层与层；bootstrap → 各模块的 module.ts；module.ts → infras 的总线，adapters/ → infras 的 http；两个示例模块之间一条虚线，后一个经 ports/ 向前一个要东西
+// 线走框与框之间留出的空道（模块左右两边各一条、模块之间一条、src/ 左边一条），不穿过叶子格子，也不压字
+function structSvg(W, st = STRUCTURE) {
+  const sample = st.sample ?? [], buses = st.buses ?? [], outs = st.outside ?? []
+  const MONO = 0.62, wrapM = (t, fs, w) => wrapText(t, fs, w)
+  // 小样里某个文件夹下面的文件：按缩进还原成相对路径
+  const under = (head) => {
+    const i = sample.findIndex((r) => r.line.trim() === head), out = []
+    if (i < 0) return out
+    const base = sample[i].line.match(/^ */)[0].length, stack = []
+    for (let j = i + 1; j < sample.length; j++) {
+      const r = sample[j], ind = r.line.match(/^ */)[0].length, t = r.line.trim()
+      if (ind <= base) break
+      const d = (ind - base) / 2 - 1; stack.length = d
+      if (t.endsWith('/')) { stack[d] = t; continue }
+      out.push({ path: [...stack.filter(Boolean), t].join(''), note: r.note ?? '' })
+    }
+    return out
+  }
+  // 只画一个模块看结构，不挑真主题；它的 ports/ 经端口向「别的模块」要东西
+  const ex = st.modules.length ? [{ topic: '模块' }] : []
+  const tname = () => '<模块>/', tsub = '一个主题一个模块，每个都这样摆'
+  // 模块里的几块：外壳在上、应用、领域，没层的放最后；同一层里文件在前
+  const RANK = { '外壳': 0, '应用': 1, '领域': 2 }
+  const parts = [...(st.parts ?? [])].sort((a, b) => (RANK[a.layer] ?? 3) - (RANK[b.layer] ?? 3) || a.dir.endsWith('/') - b.dir.endsWith('/'))
+  const pIdx = (dir) => parts.findIndex((p) => p.dir === dir)
+  // infras/ 里的东西：按第一层文件夹分组；总线照 buses.where 认出来；http 放最右（外面的东西从右边接进来）
+  const infra = under('infras/')
+  for (const b of buses) { const p = String(b.where ?? '').split(/[，,\s]/)[0].replace(/^src\/infras\//, ''); if (p && !infra.some((f) => f.path === p)) infra.push({ path: p, note: '' }) }
+  const groups = []
+  for (const f of infra) {
+    const seg = f.path.includes('/') ? f.path.slice(0, f.path.indexOf('/') + 1) : f.path, file = f.path.slice(seg.length) || f.path
+    const bus = buses.find((b) => String(b.where ?? '').split(/[，,\s]/)[0].endsWith('infras/' + f.path))
+    let g = groups.find((x) => x.dir === seg); if (!g) groups.push(g = { dir: seg, files: [] })
+    g.files.push({ file, note: f.note, bus })
+  }
+  const isEv = (g) => g.files.some((f) => f.bus), isHttp = (g) => /^http/.test(g.dir)
+  groups.sort((a, b) => (isEv(b) - isEv(a)) || (isHttp(a) - isHttp(b)))
+  const boot = under('bootstrap/'), topOf = (d) => (st.top ?? []).find((t) => t.dir === d)
+  // ---- 尺寸 ----
+  // 外面的东西每样一条线接进 http，各走一条 8 宽的道：道放在 src/ 和外面那一列（或下面那一排）之间，道宽跟着有几样走，线不压到外面的框上
+  const pad = 10, wide = outs.length > 0 && W >= 900, outW = wide ? Math.max(150, Math.min(210, Math.round(W * 0.16))) : 0, laneW = 20 + 8 * Math.max(0, outs.length - 1) + 16, oGap = wide ? Math.max(56, laneW) : 0
+  const x0 = pad, srcW = Math.max(560, W - 2 * pad - outW - oGap), LL = 22, PR = 14
+  const bx = x0 + LL, bw = srcW - LL - PR
+  const T = [], R = [], P = [], LB = []   // 字、框、线、线上的小卡
+  const txt = (x, y, cls, t, extra = '') => T.push('<text class="' + cls + '" x="' + Math.round(x) + '" y="' + Math.round(y) + '"' + extra + '>' + esc(t) + '</text>')
+  const rect = (r, cls, id, rx = 6) => R.push('<rect class="' + cls + '"' + (id ? ' data-id="' + esc(id) + '"' : '') + ' x="' + Math.round(r.x) + '" y="' + Math.round(r.y) + '" width="' + Math.round(r.w) + '" height="' + Math.round(r.h) + '" rx="' + rx + '"/>')
+  // 一段字从 y 往下排，返回排完的 y
+  const flow = (x, y, w, t, cls, fs, lh) => { for (const l of wrapM(t, fs, w)) { y += lh; txt(x, y - 4, cls, l) } return y }
+  const flowH = (w, t, fs, lh) => wrapM(t, fs, w).length * lh
+  // src/
+  const srcY = pad, by = srcY + 30
+  const bootFiles = boot.map((f) => f.path).join('　')
+  const bt = topOf('bootstrap/')
+  const bh = 10 + 20 + (bt ? flowH(bw - 20, bt.holds, 13, 18) : 0) + (bootFiles ? flowH(bw - 20, bootFiles, 12, 17) : 0) + 8
+  // modules/
+  const ctxY = by + bh + 30, colGap = 56, otherW = 180
+  const mw = Math.min(480, bw - 28 - colGap - otherW), gL = 26, gR = 24, iw = mw - gL - gR
+  const nonAdj = (st.deps ?? []).filter(([a, b]) => { const ia = parts.map((p) => p.layer).lastIndexOf(a), ib = parts.findIndex((p) => p.layer === b); return ia >= 0 && ib >= 0 && ib - ia > 1 }).length
+  const headH = Math.max(...ex.map((m) => 10 + flowH(iw, tname(m), 14, 19) + flowH(iw, tsub, 12, 16) + 8), 0)
+  const rowH = 24, rowGap = 14
+  const modH = Math.max(ex.length ? headH + parts.length * rowH + Math.max(0, parts.length - 1) * rowGap + 14 : 0, 60)
+  const my = ctxY + 32, ctxH = 32 + modH + 16, ctxBottom = ctxY + ctxH
+  const mx = (i) => bx + 14 + i * (mw + colGap)
+  const rowR = (i, j) => ({ x: mx(i) + gL, y: my + headH + j * (rowH + rowGap), w: iw, h: rowH })
+  // 模块 → infras 的线：每个示例模块 module.ts → 总线一条（它 new 总线、接线），adapters/ → 总线、→ http 各一条（它真用这些技术件）
+  const modTs = parts.find((p) => p.dir === 'module.ts'), adp = parts.find((p) => /^adapters/.test(p.dir))
+  const downs = ex.length * ((modTs ? 1 : 0) + (adp ? 2 : 0))
+  const infY = ctxBottom + 16 + downs * 9 + 10
+  // infras 里一格一格：总线那组占两份
+  const shares = groups.map((g) => isEv(g) ? 2 : 1), sum = shares.reduce((a, b) => a + b, 0) || 1, cg = 16, iiw = bw - 28
+  // 每一份之间都隔一道 cg，占两份的那格把中间那道也算进去，总宽正好 iiw
+  const unit = (iiw - cg * (sum - 1)) / sum
+  const gw = shares.map((n) => n * unit + (n - 1) * cg)
+  const gx = gw.map((_, i) => bx + 14 + gw.slice(0, i).reduce((a, b) => a + b + cg, 0))
+  const busH = (f, w) => 8 + flowH(w - 16, f.bus.name, 13, 18) + flowH(w - 16, f.file, 12, 16) + (f.note ? flowH(w - 16, f.note, 12, 16) : 0) + 8
+  const gH = groups.map((g, i) => 10 + 20 + g.files.reduce((h, f) => h + (f.bus ? busH(f, gw[i] - 16) + 8 : flowH(gw[i] - 20, f.file, 12, 17)), 0) + 8)
+  const childH = Math.max(40, ...gH), iy = infY + 32
+  const http = groups.findIndex(isHttp)
+  const it = topOf('infras/'), footW = (http >= 0 ? gx[http] - bx - 24 : bw - 28)
+  const footH = it ? flowH(Math.max(160, footW), it.holds, 12, 16) : 0
+  const infH = 32 + childH + (footH ? 10 + footH : 0) + 12
+  const srcH = infY + infH + 12 - srcY
+  // ---- 画框和字 ----
+  rect({ x: x0, y: srcY, w: srcW, h: srcH }, 'fr', 'src', 10); txt(x0 + 10, srcY + 20, 'tt', 'src/')
+  rect({ x: bx, y: by, w: bw, h: bh }, 'b boot', 'bootstrap'); { let y = by + 10; y += 20; txt(bx + 10, y - 4, 'tt', 'bootstrap/'); if (bt) y = flow(bx + 10, y, bw - 20, bt.holds, 'ho', 13, 18); if (bootFiles) flow(bx + 10, y, bw - 20, bootFiles, 'fl', 12, 17) }
+  rect({ x: bx, y: ctxY, w: bw, h: ctxH }, 'fr ctx', 'modules', 8); txt(bx + 10, ctxY + 20, 'tt', modsDirOf(st))
+  ex.forEach((m, i) => {
+    rect({ x: mx(i), y: my, w: mw, h: modH }, 'fr mod', m.topic, 8)
+    let y = my + 10; y = flow(mx(i) + gL, y, iw, tname(m), 'mt', 14, 19); flow(mx(i) + gL, y, iw, tsub, 'sm', 12, 16)
+    parts.forEach((p, j) => {
+      const r = rowR(i, j); R.push('<rect class="b" data-id="' + esc(m.topic + '/' + p.dir) + '" x="' + r.x + '" y="' + r.y + '" width="' + r.w + '" height="' + r.h + '" rx="4" style="fill:' + (LAYER_COLOR[p.layer] ?? 'var(--panel)') + '"><title>' + esc(p.holds ?? '') + '</title></rect>')
+      txt(r.x + 7, r.y + 17, 'mo', p.dir)
+      if (p.layer && textW(p.dir, 13) * (MONO / 0.62) + textW(p.layer, 12) + 22 <= iw) txt(r.x + iw - 7 - textW(p.layer, 12), r.y + 16, 'tag', p.layer)
+    })
+  })
+  // 别的模块：一个小虚线框，和 ports/ 那一格齐平
+  const iP = parts.findIndex((p) => /^ports/.test(p.dir))
+  const other = ex.length && iP >= 0 ? (() => { const r = rowR(0, iP), h = 56; return { x: mx(0) + mw + colGap, y: r.y + r.h / 2 - h / 2, w: otherW, h } })() : null
+  if (other) { rect(other, 'b rest', '别的模块', 8); const y = flow(other.x + 10, other.y + 8, other.w - 20, '别的模块', 'mt', 13, 19); flow(other.x + 10, y, other.w - 20, '同样的摆法', 'sm', 12, 17) }
+  rect({ x: bx, y: infY, w: bw, h: infH }, 'fr', 'infras', 8); txt(bx + 10, infY + 20, 'tt', 'infras/')
+  if (it) flow(bx + 10, iy + childH + 10, Math.max(160, footW), it.holds, 'sm', 12, 16)
+  const busR = {}
+  groups.forEach((g, i) => {
+    const ev = isEv(g)
+    rect({ x: gx[i], y: iy, w: gw[i], h: childH }, ev ? 'fr ev' : 'b', 'infras/' + g.dir)
+    let y = iy + 10; y += 20; txt(gx[i] + 10, y - 4, 'tt', g.dir)
+    for (const f of g.files) {
+      if (!f.bus) { y = flow(gx[i] + 10, y, gw[i] - 20, f.file, 'fl', 12, 17); continue }
+      const w = gw[i] - 16, h = busH(f, w), r = { x: gx[i] + 8, y: y + 2, w, h }
+      rect(r, 'b bus', 'bus/' + f.bus.scope); busR[f.bus.scope] = r
+      let yy = r.y + 8; yy = flow(r.x + 8, yy, w - 16, f.bus.name, 'mt', 13, 18); yy = flow(r.x + 8, yy, w - 16, f.file, 'fl', 12, 16); if (f.note) flow(r.x + 8, yy, w - 16, f.note, 'sm', 12, 16)
+      y = r.y + h + 6
+    }
+  })
+  // 外面的东西
+  const oBox = []
+  const oContent = (o, w) => 10 + flowH(w - 20, o.name, 14, 19) + 17 + 8
+  outs.forEach((o, i) => {
+    let r
+    if (wide) { const top = http >= 0 ? iy : infY; const prev = oBox[i - 1]; r = { x: x0 + srcW + oGap, y: prev ? prev.y + prev.h + 12 : top, w: outW, h: oContent(o, outW) } }
+    else { const w = 200; r = { x: bx + i * (w + 16), y: srcY + srcH + Math.max(44, laneW), w, h: oContent(o, w) } }
+    oBox.push(r); rect(r, 'b out', 'out/' + o.name, 8)
+    let y = flow(r.x + 10, r.y + 10, r.w - 20, o.name, 'mt', 14, 19); txt(r.x + 10, y + 13, 'sm', '外面的东西')
+  })
+  // ---- 线 ----
+  const line = (pts, from, to, cls = 'e', label) => {
+    const id = 'e' + P.length
+    P.push('<path class="' + cls + '" data-e="' + id + '" data-from="' + esc(from) + '" data-to="' + esc(to) + '" d="M' + pts.map((p) => p.map((v) => Math.round(v * 10) / 10).join(',')).join(' L') + '" marker-end="url(#sah)"/>')
+    if (label) { const [a, b] = label.seg, cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2, lw = Math.ceil(textW(label.t, 12)) + 10, lh = 19
+      LB.push('<rect class="lb" data-for="' + id + '" x="' + Math.round(cx - lw / 2) + '" y="' + Math.round(cy - lh / 2) + '" width="' + lw + '" height="' + lh + '" rx="4"/><text class="lt" data-for="' + id + '" x="' + Math.round(cx - lw / 2 + 5) + '" y="' + Math.round(cy + 4) + '">' + esc(label.t) + '</text>') }
+  }
+  const mid = (r) => r.y + r.h / 2
+  ex.forEach((m, i) => {
+    const xl = mx(i), xr = mx(i) + gL + iw
+    // 层与层：挨着的竖着一小段；隔着一层的走右边的空道
+    let lane = 0
+    for (const [a, b] of st.deps ?? []) {
+      const ia = parts.map((p) => p.layer).lastIndexOf(a), ib = parts.findIndex((p) => p.layer === b)
+      if (ia < 0 || ib < 0) continue
+      const ra = rowR(i, ia), rb = rowR(i, ib)
+      if (ib - ia === 1) line([[ra.x + iw / 2, ra.y + rowH], [rb.x + iw / 2, rb.y]], m.topic + '/' + parts[ia].dir, m.topic + '/' + parts[ib].dir)
+      else if (ib > ia) { const lx = xr + 15 + 5 * lane++; line([[xr, mid(ra)], [lx, mid(ra)], [lx, mid(rb)], [xr, mid(rb)]], m.topic + '/' + parts[ia].dir, m.topic + '/' + parts[ib].dir) }
+    }
+    // bootstrap → module.ts，走右边的空道下来
+    if (modTs) { const r = rowR(i, pIdx('module.ts')), lx = xr + 7; line([[lx, by + bh], [lx, mid(r)], [xr, mid(r)]], 'bootstrap', m.topic + '/module.ts') }
+  })
+  // bootstrap → 模块间总线：走 src/ 左边的空道
+  if (busR['模块间']) { const r = busR['模块间'], lx = x0 + 11; line([[bx, by + bh / 2], [lx, by + bh / 2], [lx, mid(r)], [r.x, mid(r)]], 'bootstrap', 'bus/模块间') }
+  // 模块 → infras：module.ts → 总线那组，adapters/ → 总线那组和 http；从模块左边的空道各走一道下去，在 modules/ 和 infras/ 之间拐过去。
+  // 不交叉的摆法：空道越靠右的越早拐、落点越靠右；adapters/ 出两条，上面那条走外道、下面那条走内道
+  const ev = groups.findIndex(isEv)
+  const tgt = [ev, http].map((g) => g >= 0 ? { g, r: { x: gx[g], y: iy, w: gw[g], h: childH } } : null)
+  const downL = []
+  ex.forEach((m, i) => {
+    [[modTs, tgt[0], 7, 0], [adp, tgt[0], 13, -4], [adp, tgt[1], 19, 4]].forEach(([p, t, off, dy]) => {
+      if (p && t) downL.push({ m, p, t, lx: mx(i) + off, y0: mid(rowR(i, pIdx(p.dir))) + dy, x0: rowR(i, pIdx(p.dir)).x })
+    })
+  })
+  for (const t of tgt) {
+    if (!t) continue
+    const mine = downL.filter((d) => d.t === t).sort((a, b) => a.lx - b.lx), step = Math.min(16, (t.r.w - 24) / Math.max(1, mine.length))
+    mine.forEach((d, j) => { d.tx = Math.min(t.r.x + Math.max(t.r.w * 0.4, 90) + step * j, t.r.x + t.r.w - 12) })
+  }
+  downL.sort((a, b) => b.lx - a.lx).forEach((d, j) => {
+    const jy = ctxBottom + 14 + 9 * j
+    line([[d.x0, d.y0], [d.lx, d.y0], [d.lx, jy], [d.tx, jy], [d.tx, d.t.r.y]], d.m.topic + '/' + d.p.dir, 'infras/' + groups[d.t.g].dir)
+  })
+  // ports/ 经端口向别的模块要东西
+  if (other) { const b = rowR(0, iP), y = mid(b); line([[b.x + iw, y], [other.x, y]], ex[0].topic + '/' + parts[iP].dir, '别的模块', 'e x', { t: '端口', seg: [[mx(0) + mw, y], [other.x, y]] }) }
+  // 外面的东西 → http
+  oBox.forEach((r, i) => {
+    if (http < 0) return
+    const h = { x: gx[http], y: iy, w: gw[http], h: childH }
+    if (wide) { const yy = Math.min(h.y + 24 + i * 10, h.y + h.h - 6), lx = x0 + srcW + 20 + (oBox.length - 1 - i) * 8; line([[r.x, mid(r)], [lx, mid(r)], [lx, yy], [h.x + h.w, yy]], 'out/' + outs[i].name, 'infras/' + groups[http].dir, 'e x') }
+    else { const tx = h.x + h.w - 16 - i * 12, jy = srcY + srcH + 20 + i * 8; line([[r.x + r.w / 2, r.y], [r.x + r.w / 2, jy], [tx, jy], [tx, h.y + h.h]], 'out/' + outs[i].name, 'infras/' + groups[http].dir, 'e x') }
+  })
+  const Wt = Math.ceil(wide ? x0 + srcW + oGap + outW + pad : Math.max(x0 + srcW + pad, ...oBox.map((r) => r.x + r.w + pad)))
+  const H = Math.ceil(Math.max(srcY + srcH, ...oBox.map((r) => r.y + r.h)) + pad)
+  return '<svg class="struct" viewBox="0 0 ' + Wt + ' ' + H + '" width="' + Wt + '" height="' + H + '"><defs><marker id="sah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--ink-2)"/></marker></defs>' + R.join('') + T.join('') + P.join('') + LB.join('') + '</svg>'
+}
+let structW = 1100
+function structureView(st = STRUCTURE) {
+  if (!st.modules?.length) return layerView(st)
+  const notes = [
+    '<li><b>模块之间</b>：' + esc(st.between) + '</li>',
+    (st.parts ?? []).length ? '<li><b>每个模块里</b>：' + st.parts.map((p) => '<code>' + esc(p.dir) + '</code> ' + esc(p.holds)).join('；') + '</li>' : '',
+    ...(st.buses ?? []).map((b) => '<li><b>' + esc(b.name) + '</b>（' + esc(b.scope) + '）：' + esc(b.holds) + '。放在 <code>' + esc(b.where) + '</code></li>'),
+    ...(st.outside ?? []).map((o) => '<li><b>' + esc(o.name) + '</b>：' + esc(o.how) + '</li>'),
+    // 模型在别的上下文的模块：标出归哪个上下文
+    ...st.modules.filter((m) => m.context).map((m) => '<li class="xcx"><b>' + esc(modsDirOf(st) + m.dir + '/') + '</b>：模型在「' + esc(m.context) + '」上下文' + (m.holds ? '，' + esc(m.holds) : '') + '</li>') ].join('')
+  return '<p class="sub">代码照文件结构摆：src/ 里 bootstrap/、' + modsDirOf(st) + '、infras/；' + modsDirOf(st) + ' 一个主题一个模块，图上只画一个看结构，它经 ports/ 的端口向别的模块要东西；两条事件总线都在 infras/ 里，模块内那条每个模块各 new 一条，模块间那条整个后端一条；module.ts 只管装载（new 总线、接线），真用 infras/ 的总线和 HTTP 件的是 adapters/；箭头是谁依赖谁，虚线是模块之间、外面的东西经端口来往。下面一份文件结构小样，看每样东西放哪。存 代码/规范/结构设计.json；一个上下文定一次。</p>' +
+    '<div class="card"><div class="cap">结构图 · 箭头是谁依赖谁</div><div class="struct-host">' + structSvg(structW, st) + '</div><ul class="notes">' + notes + '</ul></div>' +
+    '<div class="card"><div class="cap">文件结构小样</div><pre class="code tree-sample">' + sampleTree(st.sample) + '</pre></div>'
+}
+// 旧数据没有 modules：层从上到下一格一格，箭头是谁引谁；左边另一个模块靠事件来往；右边是外面的东西
+function layerView(st = STRUCTURE) {
+  const L = st.layers ?? [], bx = 200, bh = 58, gap = 26, top = 16, mw = 110
+  const bw = Math.max(220, ...L.map((l) => Math.ceil(textW(l.holds, 13)) + 28))
+  const y = (name) => top + L.findIndex((l) => l.name === name) * (bh + gap)
+  const box = (l, i) => `<rect x="${bx}" y="${y(l.name)}" width="${bw}" height="${bh}" rx="8" fill="${LAYER_COLOR[l.name]}" stroke="var(--line)"/><text x="${bx + 14}" y="${y(l.name) + 23}" font-size="15" font-weight="600" fill="var(--ink)">${esc(l.name)}</text><text x="${bx + 14}" y="${y(l.name) + 44}" font-size="13" fill="var(--ink-2)">${esc(l.holds)}</text>`
+  // 隔层的箭头从右边绕下来，落在目标层的上半截，下半截留给通到外面的线
+  const arrow = ([a, b], i) => {
+    const ya = y(a) + bh, yb = y(b), direct = Math.abs(L.findIndex((l) => l.name === a) - L.findIndex((l) => l.name === b)) === 1
+    if (direct) return `<line x1="${bx + bw / 2}" y1="${ya}" x2="${bx + bw / 2}" y2="${yb}" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#ah)"/>`
+    const x = bx + bw + 18
+    return `<path d="M${bx + bw},${y(a) + bh / 2} H${x} V${yb + 14} H${bx + bw + 2}" fill="none" stroke="var(--ink-2)" stroke-width="1.5" marker-end="url(#ah)"/>`
+  }
+  // 外面的东西：框高 ob、间隔 og，从上往下一个一个排；线从领域右边下半截各起一点，起点也从上往下排
+  // 第一个框对着第一条线的起点，直连；后面的往下拐，越靠前的拐得越右，线不交叉
+  const O = st.outside ?? [], n = O.length, dy = top + (L.length - 1) * (bh + gap), ob = 48, og = 10
+  const ow = Math.max(110, ...O.map((o) => Math.ceil(textW(o.name, 14)) + 26))
+  const sy = (i) => n === 1 ? dy + 36 : dy + 28 + i * (bh - 34) / (n - 1)
+  const oy = (i) => Math.round(sy(0) - ob / 2) + i * (ob + og)
+  const downs = O.map((o, i) => i).filter((i) => oy(i) + ob / 2 - sy(i) > ob / 2 - 8)
+  const ox = bx + bw + 40 + 7 * downs.length
+  const xm = (i) => bx + bw + 28 + 7 * (downs.length - 1 - downs.indexOf(i))
+  const W = ox + ow + 16
+  const H = Math.max(top + L.length * (bh + gap) - gap + 16, n ? oy(n - 1) + ob + 16 : 0)
+  const other = `<rect x="16" y="${top}" width="${mw}" height="${H - top - 16}" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/><text x="28" y="${top + 22}" font-size="14" font-weight="600" fill="var(--ink-2)">另一个模块</text><path d="M${16 + mw},${top + 40} H${bx - 2}" fill="none" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ah)"/><text x="${(16 + mw + bx) / 2}" y="${top + 33}" text-anchor="middle" font-size="12" fill="var(--ink-3)">事件、查询</text>`
+  const out = O.map((o, i) => {
+    const s = sy(i), t = oy(i) + ob / 2, straight = !downs.includes(i)
+    const d = straight ? `M${bx + bw},${s} H${ox - 2}` : `M${bx + bw},${s} H${xm(i)} V${t} H${ox - 2}`
+    return `<rect x="${ox}" y="${oy(i)}" width="${ow}" height="${ob}" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/><text x="${ox + 12}" y="${oy(i) + 20}" font-size="14" font-weight="600" fill="var(--ink-2)">${esc(o.name)}</text><text x="${ox + 12}" y="${oy(i) + 38}" font-size="12" fill="var(--ink-3)">端口</text><path d="${d}" fill="none" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ah)"/>`
+  }).join('')
+  const svg = `<svg class="arch" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--ink-2)"/></marker></defs>${L.map(box).join('')}${(st.deps ?? []).map(arrow).join('')}${other}${out}</svg>`
+  const tree = sampleTree(st.sample)
+  return `<p class="sub">代码分几层、谁引谁、模块之间怎么来往、外面的东西怎么接，一张图；下面一份文件结构小样，看每样东西放哪。存 代码/规范/结构设计.json；一个上下文定一次。</p>
+    <div class="card" style="max-width:${W + 40}px"><div class="cap">关系图 · 箭头是谁引谁</div>${svg}<div class="sub" style="font-size:13px;margin:8px 0 0">${esc(st.between)}。${(st.outside ?? []).map((o) => esc(o.name) + '：' + esc(o.how)).join('；')}。</div></div>
+    <div class="card"><div class="cap">文件结构小样</div><pre class="code tree-sample">${tree}</pre></div>`
+}
+// 文件结构小样：一行一个文件，后面跟 层或种类 的色块、导出什么、一句说明；行首的空格换成缩进，放不下的后半截折到下一行
+// 两个空格一层；每层一根竖线，往下还有同层的接着画，到这一层最后一个拐成 └
+function sampleTree(rows) {
+  const dep = rows.map((r) => Math.floor(String(r.line).match(/^ */)[0].length / 2))
+  const more = (i, k) => { for (let j = i + 1; j < rows.length; j++) { if (dep[j] < k) return false; if (dep[j] === k) return true } return false }
+  return rows.map((r, i) => {
+    const chip = r.layer ?? r.kind, ind = String(r.line).match(/^ */)[0].length, d = dep[i]
+    const guides = Array.from({ length: d }, (_, k) => k === d - 1 ? (more(i, d) ? 'tee' : 'end') : (more(i, k + 1) ? 'bar' : '')).map((c, k) => c ? `<span class="g ${c}" style="--k:${k}"></span>` : '').join('')
+    const meta = `${chip ? `<span class="lay" style="background:${LAYER_COLOR[chip] ?? 'var(--panel)'}">${esc(chip)}</span>` : ''}${r.exports ? `<span class="ex">${esc(r.exports)}</span>` : ''}${r.note ? `<span class="nt">${esc(r.note)}</span>` : ''}`
+    return `<div class="ln" style="--ind:${ind}ch">${guides}<span class="p">${esc(String(r.line).slice(ind))}</span>${meta ? `<span class="mt">${meta}</span>` : ''}</div>`
+  }).join('')
+}
+// 前端的结构图：照 React 常用的按功能分摆。src/ 一个大框，从上到下：app/（入口、provider、router、routes/）一条；跨功能共用的（components/、hooks/…）一排；
+// features/ 一个功能一个一样大的框、框里 components → hooks → api 几块带层名；最下面 lib/ 调口底座一条，连到 src/ 下面要调的后端
+// 箭头是谁依赖谁：app/ 的路由组件拼 features 的部件（走 src/ 左边的空道，不压共用那一排）；功能里 components 用 hooks、hooks 调 api；功能的 api 都走 lib/ 去后端
+function frontSvg(W, st) {
+  const apps = st.app ?? [], feats = st.features ?? [], layers = st.layers ?? [], apis = st.api ?? []
+  const tops = (st.top ?? []).filter((t) => !/^(app|features)\b/.test(t.dir))
+  const lib = tops.find((t) => /^lib\b/.test(t.dir)), shared = tops.filter((t) => t !== lib)
+  const T = [], R = [], P = []
+  const txt = (x, y, cls, t) => T.push('<text class="' + cls + '" x="' + Math.round(x) + '" y="' + Math.round(y) + '">' + esc(t) + '</text>')
+  const rect = (r, cls, id, rx = 6, tip) => R.push('<rect class="' + cls + '"' + (id ? ' data-id="' + esc(id) + '"' : '') + ' x="' + Math.round(r.x) + '" y="' + Math.round(r.y) + '" width="' + Math.round(r.w) + '" height="' + Math.round(r.h) + '" rx="' + rx + '"' + (tip ? '><title>' + esc(tip) + '</title></rect>' : '/>'))
+  const flow = (x, y, w, t, cls, fs, lh) => { for (const l of wrapText(t, fs, w)) { y += lh; txt(x, y - 4, cls, l) } return y }
+  const flowH = (w, t, fs, lh) => wrapText(t, fs, w).length * lh
+  const line = (pts, from, to, cls = 'e') => P.push('<path class="' + cls + '" data-e="e' + P.length + '" data-from="' + esc(from) + '" data-to="' + esc(to) + '" d="M' + pts.map((p) => p.map((v) => Math.round(v * 10) / 10).join(',')).join(' L') + '" marker-end="url(#fah)"/>')
+  const mid = (r) => r.y + r.h / 2
+  const pad = 10, x0 = pad, srcW = Math.max(520, W - 2 * pad), LL = 22, bx = x0 + LL, bw = srcW - LL - 14
+  // app/：一条，名字一行、放了哪几样一行
+  const appY = pad + 30, appList = apps.map((a) => a.dir).join('　')
+  const appH = 10 + 20 + (appList ? flowH(bw - 20, appList, 12, 17) : 0) + 8
+  // 共用的：一行几个
+  const sY = appY + appH + 16, sgap = 12
+  const scols = Math.max(1, Math.min(shared.length || 1, Math.floor((bw + sgap) / (140 + sgap))))
+  const sw = (bw - sgap * (scols - 1)) / scols
+  const sH = Math.max(0, ...shared.map((t) => 8 + flowH(sw - 16, t.dir, 13, 18) + (t.holds ? flowH(sw - 16, t.holds, 12, 16) : 0) + 8))
+  const sRows = Math.ceil(shared.length / scols)
+  const sBox = (i) => ({ x: bx + (i % scols) * (sw + sgap), y: sY + Math.floor(i / scols) * (sH + sgap), w: sw, h: sH })
+  // features/：一行放得下几个就几列，框一样大
+  const fY = shared.length ? sY + sRows * sH + (sRows - 1) * sgap + 26 : appY + appH + 30
+  const fx0 = bx + 12, fw0 = bw - 24, fgap = 16
+  const cols = Math.max(1, Math.min(feats.length || 1, Math.floor((fw0 + fgap) / (200 + fgap))))
+  const fw = (fw0 - fgap * (cols - 1)) / cols, iw = fw - 24
+  const rowH = 24, rowGap = 12
+  const headH = Math.max(0, ...feats.map((f) => 10 + flowH(iw, f.dir + '/', 14, 19) + (f.holds ? flowH(iw, f.holds, 12, 16) : 0) + 6))
+  const scrH = feats.some((f) => f.screens?.length) ? 18 : 0
+  const boxH = headH + layers.length * rowH + Math.max(0, layers.length - 1) * rowGap + scrH + 12
+  const fRows = Math.ceil(feats.length / cols), fFrameH = 32 + fRows * boxH + Math.max(0, fRows - 1) * fgap + 12
+  const fBox = (i) => ({ x: fx0 + (i % cols) * (fw + fgap), y: fY + 32 + Math.floor(i / cols) * (boxH + fgap), w: fw, h: boxH })
+  const lRow = (i, j) => { const b = fBox(i); return { x: b.x + 12, y: b.y + headH + j * (rowH + rowGap), w: iw, h: rowH } }
+  // lib/：最下面一条调口底座
+  const libY = fY + fFrameH + 22, libH = lib ? 8 + 18 + (lib.holds ? flowH(bw - 20, lib.holds, 12, 16) : 0) + 8 : 0
+  const srcH = (lib ? libY + libH : fY + fFrameH) + 14 - pad
+  // ---- 画框和字 ----
+  rect({ x: x0, y: pad, w: srcW, h: srcH }, 'fr', 'src', 10); txt(x0 + 10, pad + 20, 'tt', 'src/')
+  const appR = { x: bx, y: appY, w: bw, h: appH }
+  rect(appR, 'b boot', 'app', 6, apps.map((a) => a.dir + '：' + (a.holds ?? '')).join('\n'))
+  { const y = appY + 30; txt(bx + 10, y - 4, 'tt', 'app/'); if (appList) flow(bx + 10, y, bw - 20, appList, 'fl', 12, 17) }
+  shared.forEach((t, i) => {
+    const r = sBox(i); rect(r, 'b', 'shared/' + t.dir, 6)
+    const y = flow(r.x + 8, r.y + 8, r.w - 16, t.dir, 'mo', 13, 18); if (t.holds) flow(r.x + 8, y, r.w - 16, t.holds, 'sm', 12, 16)
+  })
+  const fR = { x: bx, y: fY, w: bw, h: fFrameH }
+  rect(fR, 'fr ctx', 'features', 8); txt(bx + 10, fY + 20, 'tt', 'features/')
+  feats.forEach((f, i) => {
+    const b = fBox(i)
+    rect(b, 'fr feat', 'feature/' + f.dir, 8)
+    const y = flow(b.x + 12, b.y + 10, iw, f.dir + '/', 'mt', 14, 19); if (f.holds) flow(b.x + 12, y, iw, f.holds, 'sm', 12, 16)
+    layers.forEach((l, j) => {
+      const r = lRow(i, j)
+      R.push('<rect class="b" data-id="' + esc(f.dir + '/' + l.name) + '" x="' + Math.round(r.x) + '" y="' + Math.round(r.y) + '" width="' + Math.round(r.w) + '" height="' + r.h + '" rx="4" style="fill:' + (LAYER_COLOR[l.name] ?? 'var(--panel)') + '"><title>' + esc(l.holds ?? '') + '</title></rect>')
+      txt(r.x + 7, r.y + 17, 'mo', l.name + '/')
+    })
+    if (f.screens?.length) txt(b.x + 12, b.y + b.h - 10, 'sm', f.screens.length + ' 屏')
+  })
+  const libR = lib ? { x: bx, y: libY, w: bw, h: libH } : null
+  if (libR) { rect(libR, 'b', 'shared/' + lib.dir, 6); const y = flow(bx + 10, libY + 8, bw - 20, lib.dir, 'mo', 13, 18); if (lib.holds) flow(bx + 10, y, bw - 20, lib.holds, 'sm', 12, 16) }
+  // 要调的后端：src/ 下面一排，和 src/ 之间留几条道
+  const laneW = 20 + 8 * Math.max(0, apis.length - 1) + 16
+  const oY = pad + srcH + laneW, ow = Math.min(240, Math.max(160, (bw - 16 * (apis.length - 1)) / Math.max(1, apis.length)))
+  const oBox = apis.map((a, i) => { const h = 10 + flowH(ow - 20, a.name, 14, 19) + 17 + 8; return { x: bx + i * (ow + 16), y: oY, w: ow, h } })
+  oBox.forEach((r, i) => { rect(r, 'b out', 'api/' + apis[i].name, 8, apis[i].how); const y = flow(r.x + 10, r.y + 10, r.w - 20, apis[i].name, 'mt', 14, 19); txt(r.x + 10, y + 13, 'sm', '调口') })
+  // ---- 线 ----
+  // app/ → features/：路由组件拼功能的部件；中间有共用那一排就走 src/ 左边的空道
+  if (feats.length) {
+    if (shared.length) { const lx = x0 + 11; line([[bx, mid(appR)], [lx, mid(appR)], [lx, fY + 40], [bx, fY + 40]], 'app', 'features') }
+    else line([[bx + bw / 2, appY + appH], [bx + bw / 2, fY]], 'app', 'features')
+  }
+  // 功能里：挨着的层竖着一小段；隔着一层的走框右边的空道
+  feats.forEach((f, i) => {
+    let lane = 0
+    for (const [a, b] of st.deps ?? []) {
+      const ia = layers.findIndex((l) => l.name === a), ib = layers.findIndex((l) => l.name === b)
+      if (ia < 0 || ib <= ia) continue
+      const ra = lRow(i, ia), rb = lRow(i, ib)
+      if (ib - ia === 1) line([[ra.x + iw / 2, ra.y + rowH], [rb.x + iw / 2, rb.y]], f.dir + '/' + a, f.dir + '/' + b)
+      else { const lx = ra.x + iw + 4 + 3 * lane++; line([[ra.x + iw, mid(ra)], [lx, mid(ra)], [lx, mid(rb)], [ra.x + iw, mid(rb)]], f.dir + '/' + a, f.dir + '/' + b) }
+    }
+  })
+  // features/ → lib/：功能的 api 都走调口底座
+  if (libR && feats.length) line([[bx + bw / 2, fY + fFrameH], [bx + bw / 2, libY]], 'features', 'shared/' + lib.dir)
+  // 调口 → 后端：从 lib/ 框底（没有 lib/ 就从 features/ 框底）下到 src/ 下面，各走一条道横过去
+  const from = libR ? { x: bx + bw / 2, y: libY + libH, id: 'shared/' + lib.dir } : { x: bx + bw / 2, y: fY + fFrameH, id: 'features' }
+  oBox.forEach((r, i) => {
+    const jy = pad + srcH + 20 + i * 8, sx = from.x + (i - (oBox.length - 1) / 2) * 6, tx = r.x + r.w / 2
+    line([[sx, from.y], [sx, jy], [tx, jy], [tx, r.y]], from.id, 'api/' + apis[i].name, 'e x')
+  })
+  const Wt = Math.ceil(Math.max(x0 + srcW + pad, ...oBox.map((r) => r.x + r.w + pad)))
+  const H = Math.ceil(Math.max(pad + srcH, ...oBox.map((r) => r.y + r.h)) + pad)
+  return '<svg class="struct front" viewBox="0 0 ' + Wt + ' ' + H + '" width="' + Wt + '" height="' + H + '"><defs><marker id="fah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--ink-2)"/></marker></defs>' + R.join('') + T.join('') + P.join('') + '</svg>'
+}
+// 前端的结构设计：一张图、路由表、要调的后端、文件结构小样
+function frontView(st) {
+  const notes = [
+    st.between ? '<li><b>功能之间</b>：' + esc(st.between) + '</li>' : '',
+    (st.app ?? []).length ? '<li><b>app/</b>：' + st.app.map((a) => '<code>' + esc(a.dir) + '</code> ' + esc(a.holds ?? '')).join('；') + '</li>' : '',
+    (st.layers ?? []).length ? '<li><b>每个功能里</b>：' + st.layers.map((l) => '<code>' + esc(l.name) + '/</code> ' + esc(l.holds ?? '')).join('；') + '</li>' : '',
+    ...(st.features ?? []).filter((f) => f.screens?.length).map((f) => '<li><b>' + esc(f.dir) + '/</b> 的屏：' + f.screens.map(esc).join('、') + '</li>'),
+    ...(st.api ?? []).map((a) => '<li><b>' + esc(a.name) + '</b>：' + esc(a.how ?? '') + '</li>') ].join('')
+  const routes = st.routes ?? []
+  const table = routes.length ? '<div class="card"><div class="cap">路由 · 路径、哪一屏、谁进得了</div><table class="t">' + routes.map((r) => '<tr><td><code>' + esc(r.path) + '</code></td><td>' + esc(r.page ?? '') + '</td><td>' + esc(r.who ?? '') + '</td></tr>').join('') + '</table></div>' : ''
+  return '<p class="sub">前端照 React 常用的按功能分：src/app/ 放入口、provider、router 和 routes/（一屏一个路由组件）；src/features/ 一个功能一个文件夹，按用的人做的事分，里面 components/、hooks/、api/；跨功能共用的放 src/components/、src/lib/（调口底座）、src/hooks/ 这些。箭头是谁依赖谁，虚线是调口连到后端。下面一份文件结构小样，看每样东西放哪。存 代码/规范/结构设计.json（kind 写「前端」）；一个上下文定一次。</p>' +
+    '<div class="card"><div class="cap">结构图 · 箭头是谁依赖谁</div><div class="struct-host">' + frontSvg(structW, st) + '</div><ul class="notes">' + notes + '</ul></div>' + table +
+    '<div class="card"><div class="cap">文件结构小样</div><pre class="code tree-sample">' + sampleTree(st.sample ?? []) + '</pre></div>'
+}
+// 结构设计照哪种画：kind 写「前端」的照前端，没写就是后端
+const drawStruct = (W, st) => st?.kind === '前端' ? frontSvg(W, st) : structSvg(W, st)
+function namingView(nm = NAMING) {
+  return `<p class="sub">一份文件结构小样，每种东西一行：文件夹、每种文件、测试怎么叫，里面导出什么。名字照模型起，看一眼就能对回模型。存 代码/规范/文件命名.json；一个上下文定一次。</p>
+    <div class="card"><div class="cap">文件结构小样 · 名字怎么起</div><pre class="code tree-sample">${sampleTree(nm.sample ?? [])}</pre></div>`
+}
+function specView(k, own) {
+  if (k === '结构设计') { const st = own ?? STRUCTURE; return st.kind === '前端' ? frontView(st) : structureView(st) }
+  if (k === '文件命名') return namingView(own ?? NAMING)
+  const an = own ?? ANSWERS[k] ?? { answers: {} }
+  // 模板的问题照排，文件里多出来的接在后面；拿不准的挂在它问的那题上，哪题都对不上的另起一行
+  const asks = an.asks ?? []
+  const askHtml = (q) => asks.filter((x) => x.q === q).map((x) => `<div class="ask">拿不准：${esc(x.text)}</div>`).join('')
+  const extra = Object.keys(an.answers).filter((q) => !QUESTIONS[k].some((x) => x.q === q)).map((q) => ({ q, a: null }))
+  const all = [...QUESTIONS[k], ...extra]
+  const rows = all.map(({ q, a }) => {
+    const mine = an.answers[q]
+    const ans = mine != null ? `${esc(mine)}<span class="chip">改过</span>${a != null ? `<div class="dflt">模板：${esc(a)}</div>` : '<div class="dflt">模板里没有这题</div>'}` : esc(a)
+    return `<tr><td class="q">${esc(q)}</td><td>${ans}${askHtml(q)}</td></tr>`
+  }).join('') + asks.filter((x) => !all.some((y) => y.q === x.q)).map((x) => `<tr><td class="q">${esc(x.q)}</td><td><div class="ask">拿不准：${esc(x.text)}</div></td></tr>`).join('')
+  return `<p class="sub">${k === '技术选型' ? '用什么，各一条；原型阶段仓储默认内存，先把原型走通。' : '几个问题，答一遍就定了。'}问题和默认答案是 dev-team 的（templates/${esc(k)}.md），答案是这个上下文的，存 代码/规范/${esc(k)}.json；一个上下文定一次。</p>
+    <div class="card"><table class="t qa">${rows}</table></div>`
+}
+// ---------- 全局结构：整个项目一份 ----------
+// 照架构图排：用的人、前端、后端、存储与外部一层一行，行首写层名；一行里按上下文先后从左到右，外部排在最后
+// 写了 in 的画在父框里面的虚线小框（网页里嵌的对话框、后端装的模块）；框里一行名字、一两行放什么，整句、技术、原型没有的停上去看
+// 线是曲线，线上只写几个字（label 长了取第一小句），整句和 note 停上去看；直着走会穿过别的框的，从行间绕到右边的通道
+const G_ROW = { '用户': 0, '前端': 1, '后端': 2, '数据库': 3, '存储': 3, '外部': 3 }
+const G_ROW_NAME = ['用的人', '前端', '后端', '存储与外部']
+const G_TONES = 4
+// 一行放不下就截掉加省略号；几行放不下，最后一行截
+const clip1 = (s, fs, w) => { s = String(s ?? ''); if (textW(s, fs) <= w) return s; let o = ''; for (const c of s) { if (textW(o + c + '…', fs) > w) break; o += c } return o + '…' }
+const clipLines = (s, fs, w, n) => { const ls = wrapText(s, fs, w); if (ls.length <= n) return ls; const out = ls.slice(0, n); out[n - 1] = clip1(out[n - 1] + ls[n], fs, w); return out }
+// 线上的字：几个字的照写；长的取第一小句，还长就截
+const shortLabel = (s) => { s = String(s ?? '').trim(); const W = 11.5 * 14; if (textW(s, 11.5) <= W) return s; const f = s.split(/[；;，,。：:（(]/)[0].trim() || s; return clip1(f, 11.5, W) }
+const globalCtxs = () => [...new Set((GLOBAL.nodes ?? []).map((n) => n.context).filter(Boolean))]
+function globalSvg(W) {
+  const N = GLOBAL.nodes ?? [], E = GLOBAL.edges ?? []
+  const byId = Object.fromEntries(N.map((n) => [n.id, n]))
+  // 只嵌一层：父框自己不能再在别的框里
+  const par = (n) => { const p = n.in && byId[n.in]; return p && p !== n && !p.in ? p : null }
+  const tops = N.filter((n) => !par(n)), kidsOf = (p) => N.filter((n) => par(n) === p)
+  const ctxs = globalCtxs()
+  const tone = (n) => n.context ? 't' + (ctxs.indexOf(n.context) % G_TONES) : n.kind === '用户' ? 'tu' : 'tn'
+  const nb = (n) => E.flatMap((e) => e.from === n.id ? [byId[e.to]] : e.to === n.id ? [byId[e.from]] : []).filter(Boolean)
+  const ctxKey = (n) => { if (n.context) return ctxs.indexOf(n.context); const c = nb(n).map((m) => m.context ?? par(m)?.context).find(Boolean); return c ? ctxs.indexOf(c) + 0.5 : ctxs.length }
+  const rowOf = (n) => G_ROW[n.kind] ?? 2
+  const rows = [...new Set(tops.map(rowOf))].sort((a, b) => a - b)
+  const inRow = rows.map((r) => tops.filter((n) => rowOf(n) === r).sort((a, b) => (a.kind === '外部') - (b.kind === '外部') || ctxKey(a) - ctxKey(b) || N.indexOf(a) - N.indexOf(b)))
+  const pad = 14, gap = 22, kg = 10
+  let rg = 66
+  const dashed = (n) => n.kind === '外部' || !!n.later
+  const tip = (n) => [n.name, n.holds, n.tech && '技术：' + n.tech, n.later && '原型没有：' + n.later].filter(Boolean).join('\n')
+  // 框里的字：名字粗体，下面放什么最多两行，原型没有的一行
+  const text = (n, w, kid) => {
+    const fsN = kid ? 13 : 14.5, fsS = kid ? 11.5 : 12, inW = w - (kid ? 18 : 24), out = []
+    clipLines(n.name, fsN, inW, kid ? 1 : 2).forEach((t) => out.push({ cls: 'nm', t, fs: fsN, h: fsN + 6 }))
+    if (n.holds) clipLines(n.holds, fsS, inW, 2).forEach((t) => out.push({ cls: 'ho', t, fs: fsS, h: fsS + 5 }))
+    if (n.later) out.push({ cls: 'la', t: clip1('原型没有：' + n.later, fsS, inW), fs: fsS, h: fsS + 5 })
+    return out }
+  const linesH = (ls) => ls.reduce((a, l) => a + l.h, 0)
+  const capOf = (n, list) => kidsOf(n).length || (list.length === 1 && n.kind === '后端') ? Infinity : 340
+  function place(avail) {
+    const R = {}, T = {}
+    // 宽：一行平分，有小框的多分；没小框的最多 340，剩下的给有小框的，没有就空着、框放在那一格中间
+    inRow.forEach((list) => {
+      const wt = list.map((n) => kidsOf(n).length ? Math.max(2, kidsOf(n).length * 1.2) : 1), sum = wt.reduce((a, b) => a + b, 0)
+      const share = avail - gap * (list.length - 1), raw = wt.map((x) => share * x / sum)
+      const cap = raw.map((w, i) => Math.min(w, capOf(list[i], list))), left = share - cap.reduce((a, b) => a + b, 0), open = list.map((n) => capOf(n, list) === Infinity)
+      const ow = wt.filter((_, i) => open[i]).reduce((a, b) => a + b, 0)
+      const ws = left > 0 && ow ? cap.map((w, i) => open[i] ? w + left * wt[i] / ow : w) : cap, slot = left > 0 && ow ? ws : raw
+      let x = pad
+      list.forEach((n, i) => {
+        const w = Math.floor(ws[i]), ls = text(n, w)
+        let h = 10 + linesH(ls) + 10
+        const ks = kidsOf(n)
+        if (ks.length) {
+          const per = Math.max(1, Math.min(ks.length, Math.floor((w - 24 + kg) / (170 + kg)))), kw = Math.floor((w - 24 - kg * (per - 1)) / per)
+          const kl = ks.map((k) => text(k, kw, true)), kh = Math.max(...kl.map((l) => 8 + linesH(l) + 8))
+          ks.forEach((k, j) => { T[k.id] = kl[j]; R[k.id] = { dx: 12 + (j % per) * (kw + kg), dy: h + Math.floor(j / per) * (kh + kg), w: kw, h: kh } })
+          h += Math.ceil(ks.length / per) * (kh + kg) + 2
+        }
+        T[n.id] = ls; R[n.id] = { x: Math.round(x + (slot[i] - w) / 2), w, h }
+        x += slot[i] + gap
+      })
+    })
+    // 高：一行一样高的格子，框顶齐
+    const rowH = inRow.map((list) => Math.max(...list.map((n) => R[n.id].h)))
+    const rowY = []; inRow.forEach((_, i) => rowY.push(i ? rowY[i - 1] + rowH[i - 1] + rg : pad + 18))
+    inRow.forEach((list, i) => list.forEach((n) => { R[n.id].y = rowY[i] }))
+    // 用的人这类没小框的行：框挪到它连着的上下一行那几个框的正上下方，挤了往右推、出了往左收
+    inRow.forEach((list, i) => {
+      if (list.some((n) => capOf(n, list) === Infinity)) return
+      const near = (n) => nb(n).map((m) => tops.includes(m) ? m : par(m)).filter((m) => m && Math.abs(rows.indexOf(rowOf(m)) - i) === 1 && R[m.id].w < avail * 0.6)
+      const want = list.map((n) => { const ms = near(n); return ms.length ? ms.reduce((a, m) => a + R[m.id].x + R[m.id].w / 2, 0) / ms.length : R[n.id].x + R[n.id].w / 2 })
+      if (!list.some((n) => near(n).length)) return
+      const ord = list.map((n, k) => k).sort((a, b) => want[a] - want[b])
+      let end = pad - gap
+      for (const k of ord) { const r = R[list[k].id]; r.x = Math.max(want[k] - r.w / 2, end + gap); end = r.x + r.w }
+      let start = pad + avail + gap
+      for (const k of [...ord].reverse()) { const r = R[list[k].id]; r.x = Math.round(Math.min(r.x, start - gap - r.w)); start = r.x }
+    })
+    for (const n of N) if (par(n)) { const p = R[par(n).id], r = R[n.id]; Object.assign(r, { x: p.x + r.dx, y: p.y + r.dy }) }
+    return { R, T, rowY, rowH }
+  }
+  // 线：两头框边上找点，竖着走或横着走画一条曲线；中途穿过别的框，就从行间绕右边的通道
+  // 不在同一行的从框顶或框底出；同一行的从框侧出
+  const anchor = (a, b, vert) => { const ax = a.x + a.w / 2, ay = a.y + a.h / 2, dx = b.x + b.w / 2 - ax, dy = b.y + b.h / 2 - ay, cl = (v, m) => Math.max(-m, Math.min(m, v))
+    // 竖着出：对着对方的中线，出不了自己的框就贴边，几条线从一个框出去自然散开
+    if (vert || Math.abs(dy) * a.w > Math.abs(dx) * a.h) return [ax + cl(dx, a.w / 2 - 14), ay + Math.sign(dy) * a.h / 2]
+    return [ax + Math.sign(dx) * a.w / 2, ay + cl(dy * (a.w / 2) / Math.abs(dx || 1) * 0.6, a.h / 2 - 8)] }
+  const curve = (p, q, vert) => { const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2; return !vert && Math.abs(q[0] - p[0]) > Math.abs(q[1] - p[1]) ? [p, [mx, p[1]], [mx, q[1]], q] : [p, [p[0], my], [q[0], my], q] }
+  const bez = (c, t) => [0, 1].map((k) => (1 - t) ** 3 * c[0][k] + 3 * (1 - t) ** 2 * t * c[1][k] + 3 * (1 - t) * t ** 2 * c[2][k] + t ** 3 * c[3][k])
+  const poly = (pts, t) => { const L = pts.slice(1).map((q, i) => Math.hypot(q[0] - pts[i][0], q[1] - pts[i][1])), tot = L.reduce((a, b) => a + b, 0); let d = t * tot
+    for (let i = 0; i < L.length; i++) { if (d <= L[i] || i === L.length - 1) { const u = L[i] ? Math.min(1, d / L[i]) : 0; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * u, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * u] } d -= L[i] } }
+  const inR = (r, [x, y], m = 0) => x > r.x - m && x < r.x + r.w + m && y > r.y - m && y < r.y + r.h + m
+  const hit = (a, b, m = 2) => a.x < b.x + b.w + m && b.x < a.x + a.w + m && a.y < b.y + b.h + m && b.y < a.y + a.h + m
+  const live = E.filter((e) => byId[e.from] && byId[e.to] && e.from !== e.to && par(byId[e.from]) !== byId[e.to] && par(byId[e.to]) !== byId[e.from])
+  function route(L, avail) {
+    const { R, rowY, rowH } = L, out = []
+    let lane = 0
+    for (const e of live) {
+      const a = R[e.from], b = R[e.to], A = byId[e.from], B = byId[e.to]
+      const skip = new Set([e.from, e.to, par(A)?.id, par(B)?.id].filter(Boolean))
+      const others = N.filter((n) => !skip.has(n.id)).map((n) => R[n.id])
+      const vert = rowOf(par(A) ?? A) !== rowOf(par(B) ?? B), c = curve(anchor(a, b, vert), anchor(b, a, vert), vert)
+      const crosses = Array.from({ length: 39 }, (_, i) => (i + 1) / 40).some((t) => others.some((r) => inR(r, bez(c, t), -1)))
+      if (!crosses) { out.push({ e, kind: 'c', c, at: (t) => bez(c, t) }); continue }
+      // 绕：从框顶（或底）出来到行间，横到右边通道，顺通道到对方那一行的行间，再进对方的框
+      const PA = par(A) ? R[par(A).id] : a, PB = par(B) ? R[par(B).id] : b, k = lane++
+      const ra = rows.indexOf(rowOf(par(A) ?? A)), rb = rows.indexOf(rowOf(par(B) ?? B)), up = rb < ra
+      const gx = pad + avail + 16 + 12 * k, ex = PA.x + PA.w - 14 - 8 * k, nx = PB.x + PB.w - 14 - 8 * k
+      const gy1 = up ? rowY[ra] - rg * 0.42 + 7 * k : rowY[ra] + rowH[ra] + rg * 0.42 - 7 * k
+      const gy2 = up ? rowY[rb] + rowH[rb] + rg * 0.58 - 7 * k : rowY[rb] - rg * 0.58 + 7 * k
+      const pts = [[ex, up ? PA.y : PA.y + PA.h], [ex, gy1], [gx, gy1], [gx, gy2], [nx, gy2], [nx, up ? PB.y + PB.h : PB.y]]
+      out.push({ e, kind: 'g', pts, at: (t) => poly(pts.slice(1, 3), t) })
+    }
+    return { out, lanes: lane }
+  }
+  // 线上的字：先试线中间，压到框、行名或别的字就沿线挪、再往线两旁挪；有字放不下，行间加宽重排
+  const putLabels = (R, rowY) => {
+    const rects = N.map((n) => R[n.id]), rowTags = rowY.map((y, i) => ({ x: pad, y: y - 20, w: Math.ceil(textW(G_ROW_NAME[rows[i]], 11.5) * 1.15) + 6, h: 16 }))
+    const labels = []; let miss = 0
+    for (const rt of RT.out) {
+      const t = shortLabel(rt.e.label); if (!t) continue
+      const lw = Math.ceil(textW(t, 11.5)) + 12, lh = 18
+      const box = (p, [dx, dy]) => ({ x: p[0] - lw / 2 + dx, y: p[1] - lh / 2 + dy, w: lw, h: lh })
+      const free = (b) => b.x >= 0 && b.y >= 0 && b.x + b.w <= W && !rects.some((r) => hit(b, r)) && !rowTags.some((r) => hit(b, r, 1)) && !labels.some((l) => hit(b, l.box, 3))
+      let best = null
+      for (const o of [[0, 0], [lw / 2 + 8, 0], [-(lw / 2 + 8), 0], [0, -13], [0, 13], [lw + 16, 0], [-(lw + 16), 0]]) { for (const s of [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82, 0.1, 0.9]) { const b = box(rt.at(s), o); if (free(b)) { best = b; break } } if (best) break }
+      if (!best) { miss++; best = box(rt.at(0.5), [0, 0]) }
+      labels.push({ box: best, t, rt })
+    }
+    return { labels, miss } }
+  let avail, L, RT, LB
+  for (;;) {
+    avail = W - 2 * pad; L = place(avail); RT = route(L, avail)
+    for (let i = 0; i < 3; i++) { const need = RT.lanes ? 16 + 12 * RT.lanes + 4 : 0, a2 = W - 2 * pad - need; if (a2 === avail) break; avail = a2; L = place(avail); RT = route(L, avail) }
+    LB = putLabels(L.R, L.rowY)
+    if (!LB.miss || rg >= 150) break
+    rg += 28
+  }
+  const { R, T, rowY } = L, labels = LB.labels
+  // 圆角折线
+  const roundPath = (pts, r = 10) => { let d = `M${pts[0].join(',')}`
+    for (let i = 1; i < pts.length - 1; i++) { const [p, q, s] = [pts[i - 1], pts[i], pts[i + 1]], l1 = Math.hypot(q[0] - p[0], q[1] - p[1]), l2 = Math.hypot(s[0] - q[0], s[1] - q[1]), rr = Math.min(r, l1 / 2, l2 / 2)
+      const a = [q[0] - (q[0] - p[0]) / l1 * rr, q[1] - (q[1] - p[1]) / l1 * rr], b = [q[0] + (s[0] - q[0]) / l2 * rr, q[1] + (s[1] - q[1]) / l2 * rr]
+      d += ` L${a.map(f1).join(',')} Q${q.map(f1).join(',')} ${b.map(f1).join(',')}` }
+    return d + ` L${pts[pts.length - 1].map(f1).join(',')}` }
+  const f1 = (v) => Math.round(v * 10) / 10
+  const rects = N.map((n) => R[n.id])
+  let bottom = Math.max(...rects.map((r) => r.y + r.h), ...labels.map((l) => l.box.y + l.box.h))
+  for (const rt of RT.out) if (rt.kind === 'g') bottom = Math.max(bottom, ...rt.pts.map((p) => p[1]))
+  const tipE = (e) => [byId[e.from].name + ' → ' + byId[e.to].name, e.label, e.note].filter(Boolean).join('\n')
+  const etone = (e) => { const a = byId[e.from], b = byId[e.to], ta = tone(a), tb = tone(b); return ta[1] !== 'u' && ta !== 'tn' ? ta : tb[1] !== 'u' && tb !== 'tn' ? tb : 'tn' }
+  const edash = (e) => dashed(byId[e.from]) || dashed(byId[e.to]) || dashed(par(byId[e.from]) ?? {}) || dashed(par(byId[e.to]) ?? {})
+  const tones = ['t0', 't1', 't2', 't3', 'tn']
+  const defs = `<defs>${tones.map((t) => `<marker id="gah-${t}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="mk ${t}"/></marker>`).join('')}</defs>`
+  const lines = RT.out.map((rt) => { const d = rt.kind === 'c' ? `M${rt.c[0].map(f1).join(',')} C${rt.c.slice(1).map((p) => p.map(f1).join(',')).join(' ')}` : roundPath(rt.pts), t = etone(rt.e)
+    return `<g class="eg"><title>${esc(tipE(rt.e))}</title><path class="e ${t}${edash(rt.e) ? ' dash' : ''}" data-from="${esc(rt.e.from)}" data-to="${esc(rt.e.to)}" d="${d}" marker-end="url(#gah-${t})"/><path class="hit" d="${d}"/></g>` }).join('')
+  const node = (n) => { const r = R[n.id], kid = !!par(n); let y = r.y + (kid ? 7 : 10)
+    const txt = T[n.id].map((l) => { y += l.h; return `<text class="${l.cls}" font-size="${l.fs}" x="${r.x + (kid ? 9 : 12)}" y="${f1(y - l.h + l.fs + 1)}">${esc(l.t)}</text>` }).join('')
+    return `<g class="n${kid ? ' kid' : ''} k-${esc(n.kind)} ${tone(n)}${n.later ? ' later' : ''}${dashed(n) ? ' dash' : ''}" data-id="${esc(n.id)}"${kid ? ` data-in="${esc(par(n).id)}"` : ''}><title>${esc(tip(n))}</title><rect class="${kid ? 'c' : 'b'}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="${kid ? 5 : 7}"/>${txt}</g>` }
+  const lab = labels.map(({ box, t, rt }) => `<g class="el"><title>${esc(tipE(rt.e))}</title><rect class="lb" x="${f1(box.x)}" y="${f1(box.y)}" width="${box.w}" height="${box.h}" rx="4"/><text class="lt" x="${f1(box.x + 6)}" y="${f1(box.y + 13)}">${esc(t)}</text></g>`).join('')
+  const rowNames = rowY.map((y, i) => `<text class="rw" x="${pad}" y="${y - 8}">${esc(G_ROW_NAME[rows[i]])}</text>`).join('')
+  const H = Math.ceil(bottom + pad)
+  return `<svg class="glob" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${defs}${rowNames}${tops.map(node).join('')}${lines}${N.filter(par).map(node).join('')}${lab}</svg>`
+}
+let globalW = 1100
+function globalView() {
+  const ctxs = globalCtxs()
+  const legend = `<div class="legend glob-legend">${ctxs.map((c, i) => `<span><i class="sw t${i % G_TONES}"></i>${esc(c)}</span>`).join('')}<span><i class="sw tu"></i>用的人</span><span><i class="sw dash"></i>外部，或原型阶段还没有</span><span class="hint">停在框或线上看整句</span></div>`
+  return `<p class="sub">整个项目一份：用的人、前端、后端、存储与外部，一层一行；一个上下文一种颜色。嵌在别的框里的（网页里的对话框、后端装的模块）画成里面的虚线小框。框里只写名字和一两句，线上只写几个字，整句停上去看。存 代码/规范/全局结构.json；整个项目定一次。</p>
+    <div class="card"><div class="cap">全局结构 · 箭头是谁找谁</div>${legend}<div class="glob-host">${globalSvg(globalW)}</div></div>`
+}
+
+// ---------- 伪代码：一个文件一份，一个方法一块 ----------
+function pseudoView(path) {
+  const p = PSEUDO[path], f = STRUCT.files.find((x) => x.path === path)
+  // 测试文件不另写伪代码：它测的那几个方法的测试逻辑，写在那几个方法的伪代码旁边
+  if (!p) return `<div class="card"><div class="cap">${esc(f?.kind ?? '')} · ${esc(path)}</div><p class="none">${f?.kind === '测试' ? '测试文件不另写伪代码：它测的那几个方法的测试逻辑，写在那几个方法的伪代码旁边。' : '还没写伪代码。'}</p></div>`
+  // 排成代码：方法一行签名，步骤缩两格，子步骤再缩两格；关键词上色
+  const kw = (t) => t.replace(/^(新建|返回|发|若)\b/, '<span class="kw">$1</span>').replace(/(→ )(抛 )/, '$1<span class="kw">$2</span>').replace(/ (和|—) /g, ' <span class="tn">$1</span> ')
+  const ln = (t, ind) => `<div class="ln" style="--ind:${ind}ch">${t}</div>`
+  const line = (st, ind) => typeof st === 'string' ? ln(kw(st), ind) : ln(kw(st.text), ind) + st.sub.map((x) => ln(kw(x), ind + 2)).join('')
+  const block = (b) => {
+    const head = `<span class="fn">${esc(b.name)}</span>(${esc((b.params ?? []).join(', '))})`
+    const body = b.steps.map((st) => line(st, 2)).join('')
+    const tests = (b.tests ?? []).map((t) => ln(`<span class="kw">测试</span> <span class="fn">${esc(b.name)}</span> <span class="tn">· ${esc(t.name)}</span>`, 0) + ln('给  ' + esc(t.given), 6) + ln('做  ' + esc(t.when), 6) + ln('断  ' + esc(t.then), 6)).join('<div class="ln">&nbsp;</div>')
+    // 这一块上没答的问题跟在它下面：选项第一个加粗是偏向，没有 options 就一个「照偏向」，最后「另说」自己输
+    const btn = (x, text, cls, extra) => `<button class="opt${cls}" data-ask="${esc(x.id)}"${extra}${p.locked ? ' disabled' : ''}>${esc(text)}</button>`
+    const opts = (x) => `<div class="opts">${(x.options?.length ? x.options : x.lean ? [x.lean] : []).map((o, i) => btn(x, x.options?.length ? o : '照偏向', i === 0 ? ' b' : '', ` data-opt="${esc(o)}"`)).join('')}${btn(x, '另说', ' other', ' data-other="1"')}</div>`
+    const asks = openOfBlock(b).map((x) => `<div class="ask"><span class="wh">软件工程师问的是 ${esc(b.name)} 这一块</span><div class="q">${esc(x.q)}</div>${x.lean ? `<div class="lean">偏向 <b>${esc(x.lean)}</b></div>` : ''}${opts(x)}</div>`).join('')
+    return `<div class="psrow"><pre class="code ps">${ln(head, 0)}${body}</pre><pre class="code ps tests${tests ? '' : ' none'}">${tests || '还没写测试'}</pre></div>${asks ? `<div class="asks">${asks}</div>` : ''}`
+  }
+  return `<div class="card"><div class="cap">${esc(f?.kind ?? '')} · ${esc(path)}</div><div class="sub" style="font-size:12px;margin:0 0 10px">不带语言和库，步骤到能照着写的粒度：<span class="g">抛</span>、<span class="w">改哪一栏</span>、<span class="e">发什么</span>各一个颜色；左边方法，右边它的测试。</div>
+    ${p.locked ? `<p class="lock">${esc(p.locked.role)}正在改这份伪代码（${esc(p.locked.step)}）。等它交回再答这上面的问题：现在答的会被它写回去时盖掉。</p>` : ''}
+    ${p.blocks.map(block).join('')}</div>`
+}
+
+// ---------- 页面 ----------
+const gate = () => `<span class="badge">进度 ${PROGRESS.updatedAt}</span>`
+function render() {
+  useCx(context)
+  Shell.current = context; Shell.nav()
+  const main = document.getElementById('main')
+  const [kind, ...rest] = view.split('/')
+  if (view === '全局结构') {
+    main.innerHTML = `<h1><span class="kind">定规范</span><span class="sep">›</span>全局结构${GLOBAL.fromTemplate ? ' <span class="badge">模板</span>' : ''}</h1>${globalView()}`
+    // 照卡片的真宽重排一次，字不跟着缩
+    const host = document.querySelector('.glob-host'), w = host && host.clientWidth
+    if (w && Math.abs(w - globalW) > 4) { globalW = w; host.innerHTML = globalSvg(globalW) }
+    return
+  }
+  const sp = sideSpecs(context)
+  if (sp && kind === 'spec' && sp[rest[0]]) {
+    main.innerHTML = `<h1><span class="kind">定规范</span><span class="sep">›</span>${esc(rest[0])}</h1>${specView(rest[0], sp[rest[0]])}`
+    const host = document.querySelector('.struct-host'), w = host && host.clientWidth
+    if (rest[0] === '结构设计' && (sp[rest[0]].kind === '前端' || sp[rest[0]].modules?.length) && w && Math.abs(w - structW) > 4) { structW = w; host.innerHTML = drawStruct(structW, sp[rest[0]]) }
+    return
+  }
+  // 别的上下文有文件结构、却没有这一份规范的：直接看它的文件结构
+  if (context !== CODE_CX && cxData(context) && kind === 'spec') { view = 'tree'; return render() }
+  if (!cxData(context)) {
+    main.innerHTML = `<h1><span class="kind">上下文</span><span class="sep">›</span>${esc(context)}</h1><p class="sub">${context === '共享内核' ? '共享内核没有代码，只有概念。' : `这个上下文还没开始。规范、技术选型、文件结构、伪代码、代码都落 上下文/${esc(context)}/代码/。`}</p>`
+    return
+  }
+  if (kind === 'spec') {
+    main.innerHTML = `<h1><span class="kind">定规范</span><span class="sep">›</span>${esc(rest[0])}</h1>${specView(rest[0])}`
+    const host = document.querySelector('.struct-host'), w = host && host.clientWidth
+    if (w && Math.abs(w - structW) > 4) { structW = w; host.innerHTML = drawStruct(structW, STRUCTURE) }
+  } else if (kind === 'pseudo') {
+    go('tree/' + rest.join('/'))
+  } else if (kind === 'flow') {
+    const f = MODEL.flows.find((x) => x.file === rest.join('/'))
+    main.innerHTML = `<h1><span class="kind">走通一段</span><span class="sep">›</span>${esc(f.title)} ${gate()}</h1>${flowView(f)}`
+  } else if (kind === 'model') {
+    const key = rest.join('/')
+    main.innerHTML = `<h1><span class="kind">模型 → 代码</span><span class="sep">›</span>${esc(keyTitle(key))} ${gate()}</h1>${modelView(key)}`
+  } else {
+    const openPath = rest.join('/') || null
+    const box = document.querySelector('.tree-box'), top = box && box.scrollTop
+    main.innerHTML = `<h1><span class="kind">文件结构 · 伪代码</span><span class="sep">›</span>${esc(STRUCT.root)}/${openPath ? `<span class="sep">›</span>${esc(openPath.split('/').pop())}` : ''}</h1>${treeView(openPath)}`
+    const nb = document.querySelector('.tree-box')
+    if (nb && typeof top === 'number') nb.scrollTop = top
+    if (nb && nb.querySelector && openPath && treeScrolledFor !== openPath) {
+      treeScrolledFor = openPath
+      const on = nb.querySelector('.f.on')
+      if (on && (on.offsetTop < nb.scrollTop || on.offsetTop + on.offsetHeight > nb.scrollTop + nb.clientHeight)) nb.scrollTop = Math.max(0, on.offsetTop - nb.clientHeight / 3)
+    }
+  }
+}
+function bind() {
+  document.getElementById('main').addEventListener('click', (ev) => {
+    const ob = ev.target.closest('.ask button.opt')   // 问题卡上的一个选项或「另说」
+    if (ob) { if (!ob.disabled) answerAsk(ob.dataset); return }
+    const th = ev.target.closest('[data-tree-hide], [data-tree-show]')
+    if (th) { const on = th.hasAttribute('data-tree-hide'); treeHide(on); th.closest('.tree-col').classList.toggle('hide', on); return }
+    const tg = ev.target.closest('.tree [data-tg]')
+    if (tg) { treeToggle(context + ':' + tg.dataset.tg); render(); return }
+    const row = ev.target.closest('.tree .f[data-key]')
+    if (row) { go('tree/' + row.dataset.path); return }
+    const file = ev.target.closest('.file[data-path]')
+    if (file) { openFile = file.dataset.path; render(); return }
+  })
+  bindContexts('spec/结构设计')
+}
+;({ cx: context, v: view } = parseHash('spec/结构设计')); Shell.show(context)
+window.addEventListener('resize', () => { if (view === '全局结构' || view === 'spec/结构设计') render() })
+render(); bind()
+</script>
+</body>
+</html>

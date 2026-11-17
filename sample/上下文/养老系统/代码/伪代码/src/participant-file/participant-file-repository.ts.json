@@ -1,0 +1,23 @@
+{
+  "file": "src/participant-file/participant-file-repository.ts",
+  "blocks": [
+    {
+      "name": "按编号找",
+      "params": [
+        "编号"
+      ],
+      "steps": [
+        "返回这个 My Aged Care 编号的档案；没有就返回 空"
+      ]
+    },
+    {
+      "name": "存",
+      "params": [
+        "档案"
+      ],
+      "steps": [
+        "这个编号已经有一份的，换成这一份；没有的，加上"
+      ]
+    }
+  ]
+}

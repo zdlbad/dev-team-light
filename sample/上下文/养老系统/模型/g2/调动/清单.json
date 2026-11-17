@@ -1,0 +1,98 @@
+{
+  "items": [
+    {
+      "id": "register",
+      "kind": "命令",
+      "name": "建档",
+      "in": {
+        "params": [
+          "通知书",
+          "支持计划"
+        ]
+      },
+      "via": {
+        "name": "参与者登记",
+        "does": "查编号没重复",
+        "throws": [
+          "这个编号已有档案"
+        ]
+      },
+      "call": {
+        "aggregate": "参与者档案",
+        "behavior": "建档"
+      },
+      "out": "档案已建",
+      "throws": [
+        "通知书上没有编号"
+      ]
+    },
+    {
+      "id": "sign",
+      "kind": "命令",
+      "name": "记签协议",
+      "in": {
+        "params": [
+          "编号",
+          "日期"
+        ]
+      },
+      "call": {
+        "aggregate": "参与者档案",
+        "behavior": "记签协议"
+      },
+      "out": "协议已签",
+      "throws": [
+        "找不到这个编号的档案"
+      ]
+    },
+    {
+      "id": "allocate",
+      "kind": "命令",
+      "name": "记分到资金",
+      "in": {
+        "params": [
+          "编号",
+          "日期",
+          "全额或过渡"
+        ]
+      },
+      "call": {
+        "aggregate": "参与者档案",
+        "behavior": "记分到资金"
+      },
+      "out": "资金已分到"
+    },
+    {
+      "id": "open-fund",
+      "kind": "事件处理器",
+      "name": "资金到了开基金",
+      "in": {
+        "on": "资金已分到"
+      },
+      "call": {
+        "aggregate": "她名下的基金",
+        "behavior": "开立"
+      },
+      "out": "基金已开"
+    },
+    {
+      "id": "view-file",
+      "kind": "查询",
+      "name": "看她的档案",
+      "in": {
+        "params": [
+          "编号"
+        ]
+      },
+      "call": {
+        "aggregate": "参与者档案",
+        "read": true
+      },
+      "out": "档案、分级与路径、她在哪一段",
+      "throws": [
+        "找不到这个编号的档案"
+      ],
+      "note": "查询不动聚合、不发事件"
+    }
+  ]
+}

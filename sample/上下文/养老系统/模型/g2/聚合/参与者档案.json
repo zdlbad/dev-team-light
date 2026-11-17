@@ -1,0 +1,459 @@
+{
+  "id": "file",
+  "title": "参与者档案",
+  "topic": "g2",
+  "concepts": [
+    "参与者档案"
+  ],
+  "summary": "一位老人在我们这里的档案：她是谁、政府批了她什么、她走到了哪一步。分级与路径、共付比例都是通知书和评定上写死的，跟着档案整个换，所以收在这一个聚合里；她的钱另起一个聚合，靠编号找她。",
+  "members": [
+    {
+      "id": "root",
+      "name": "参与者档案",
+      "kind": "根",
+      "desc": "一位老人一份，用 My Aged Care 编号认她。从来通知书到退出，她走到哪一段记在状态上；签协议、分到资金、开始服务各记一天。",
+      "groups": [
+        {
+          "group": "身份",
+          "fields": [
+            {
+              "name": "My Aged Care 编号",
+              "type": "文本",
+              "note": "政府那边认她的号"
+            },
+            {
+              "name": "姓名",
+              "type": "文本"
+            }
+          ]
+        },
+        {
+          "group": "业务属性",
+          "aspect": "批了什么",
+          "fields": [
+            {
+              "name": "允许的服务类型",
+              "type": "列表",
+              "note": "支持计划批的"
+            }
+          ]
+        },
+        {
+          "group": "业务属性",
+          "aspect": "走到哪天",
+          "fields": [
+            {
+              "name": "签协议日",
+              "type": "日期"
+            },
+            {
+              "name": "分到资金日",
+              "type": "日期"
+            },
+            {
+              "name": "入场日",
+              "type": "日期",
+              "note": "第一次上门那天"
+            }
+          ]
+        },
+        {
+          "group": "状态",
+          "fields": [
+            {
+              "name": "状态",
+              "type": "状态",
+              "note": "她在哪一段"
+            }
+          ]
+        },
+        {
+          "group": "外部关联",
+          "none": "不指向别的聚合；她的钱在「她名下的基金」那边，靠编号找她"
+        },
+        {
+          "group": "成员",
+          "fields": [
+            {
+              "name": "分级与路径",
+              "type": "值对象 分级与路径",
+              "note": "通知书上写的"
+            },
+            {
+              "name": "共付比例",
+              "type": "值对象 共付比例",
+              "note": "Services Australia 评的"
+            }
+          ]
+        },
+        {
+          "group": "审计",
+          "none": "不记：谁在哪天改的"
+        }
+      ],
+      "sources": {
+        "stages": [
+          {
+            "id": "notice",
+            "title": "来通知书"
+          },
+          {
+            "id": "sign",
+            "title": "签协议"
+          },
+          {
+            "id": "alloc",
+            "title": "分到资金"
+          },
+          {
+            "id": "start",
+            "title": "开始服务"
+          }
+        ],
+        "origins": [
+          {
+            "id": "partner",
+            "kind": "角色",
+            "title": "照护伙伴"
+          },
+          {
+            "id": "first-visit",
+            "kind": "时间",
+            "title": "第一次上门那天"
+          }
+        ],
+        "facts": [
+          {
+            "stage": "notice",
+            "from": "partner",
+            "event": "政府发了通知书",
+            "fact": "通知书上的编号、姓名、分级与路径",
+            "fields": [
+              "My Aged Care 编号",
+              "姓名",
+              "分级与路径"
+            ],
+            "behavior": "建档",
+            "trace": {
+              "flow": "01-老人注册",
+              "step": "5"
+            }
+          },
+          {
+            "stage": "notice",
+            "from": "partner",
+            "event": "支持计划批了服务",
+            "fact": "支持计划上允许哪几类服务",
+            "fields": [
+              "允许的服务类型"
+            ],
+            "behavior": "建档",
+            "trace": {
+              "flow": "01-老人注册",
+              "step": "5"
+            }
+          },
+          {
+            "stage": "sign",
+            "from": "partner",
+            "event": "签了服务协议",
+            "fact": "协议上签的那天",
+            "fields": [
+              "签协议日",
+              "状态"
+            ],
+            "behavior": "记签协议",
+            "trace": {
+              "flow": "01-老人注册",
+              "step": "6"
+            }
+          },
+          {
+            "stage": "alloc",
+            "from": "partner",
+            "event": "政府分到了资金",
+            "fact": "通知上分到那天、全额或过渡",
+            "fields": [
+              "分到资金日",
+              "状态"
+            ],
+            "behavior": "记分到资金",
+            "trace": {
+              "flow": "01-老人注册",
+              "step": "8"
+            }
+          },
+          {
+            "stage": "start",
+            "from": "first-visit",
+            "event": "第一次上门做了服务",
+            "fact": "入场那天",
+            "fields": [
+              "入场日",
+              "状态"
+            ],
+            "behavior": "开始服务"
+          }
+        ]
+      },
+      "states": [
+        "待评估",
+        "未签约",
+        "已签约",
+        "已到位",
+        "在册",
+        "已退出"
+      ],
+      "transitions": [
+        {
+          "from": "待评估",
+          "to": "未签约",
+          "by": "建档"
+        },
+        {
+          "from": "未签约",
+          "to": "已签约",
+          "by": "记签协议"
+        },
+        {
+          "from": "已签约",
+          "to": "已到位",
+          "by": "记分到资金"
+        },
+        {
+          "from": "已到位",
+          "to": "在册",
+          "by": "开始服务"
+        },
+        {
+          "from": "在册",
+          "to": "已退出",
+          "by": "退出"
+        }
+      ],
+      "behaviors": [
+        {
+          "name": "建档",
+          "params": [
+            "通知书",
+            "支持计划"
+          ],
+          "guards": [
+            "编号必填",
+            "分级必填"
+          ],
+          "throws": [
+            "通知书不全"
+          ],
+          "emits": [
+            "档案已建"
+          ],
+          "trace": {
+            "flow": "01-老人注册",
+            "step": "5"
+          }
+        },
+        {
+          "name": "记签协议",
+          "params": [
+            "日期"
+          ],
+          "guards": [
+            "状态是未签约"
+          ],
+          "throws": [
+            "还没建档或已签过"
+          ],
+          "emits": [
+            "协议已签"
+          ],
+          "trace": {
+            "flow": "01-老人注册",
+            "step": "6"
+          }
+        },
+        {
+          "name": "记分到资金",
+          "params": [
+            "日期",
+            "全额或过渡"
+          ],
+          "guards": [
+            "状态是已签约"
+          ],
+          "throws": [],
+          "emits": [
+            "资金已分到"
+          ],
+          "trace": {
+            "flow": "01-老人注册",
+            "step": "8"
+          }
+        },
+        {
+          "name": "开始服务",
+          "params": [
+            "日期"
+          ],
+          "guards": [
+            "在分到资金起 56 天内（延期 84 天）"
+          ],
+          "throws": [
+            "过了期限"
+          ],
+          "emits": [
+            "服务已开始"
+          ],
+          "asks": [
+            {
+              "id": "a-1",
+              "q": "延期到 84 天，要不要先有人批？",
+              "lean": "要：案例经理记一笔延期的理由，才按 84 天算",
+              "options": [
+                "要：案例经理记一笔延期的理由，才按 84 天算",
+                "不要：过了 56 天自动按 84 天算"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "level",
+      "name": "分级与路径",
+      "kind": "值对象",
+      "desc": "通知书上写的级别（一到八级）和路径。政府重新评估就发新通知书，整个换掉，不单改里面一项。",
+      "groups": [
+        {
+          "group": "业务属性",
+          "fields": [
+            {
+              "name": "级别",
+              "type": "一到八级"
+            },
+            {
+              "name": "路径",
+              "type": "辅助技术、家居改造、复健、临终"
+            }
+          ]
+        }
+      ],
+      "sources": {
+        "stages": [
+          {
+            "id": "notice",
+            "title": "来通知书"
+          },
+          {
+            "id": "renotice",
+            "title": "新通知书"
+          }
+        ],
+        "origins": [
+          {
+            "id": "partner",
+            "kind": "角色",
+            "title": "照护伙伴"
+          }
+        ],
+        "facts": [
+          {
+            "stage": "notice",
+            "from": "partner",
+            "event": "政府发了通知书",
+            "fact": "通知书上的级别、路径",
+            "fields": [
+              "级别",
+              "路径"
+            ],
+            "trace": {
+              "flow": "01-老人注册",
+              "step": "5"
+            }
+          },
+          {
+            "stage": "renotice",
+            "from": "partner",
+            "event": "政府重新评估，发了新通知书",
+            "fact": "新通知书上的级别、路径，整个换掉",
+            "fields": [
+              "级别",
+              "路径"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "copay",
+      "name": "共付比例",
+      "kind": "值对象",
+      "desc": "Services Australia 评的，按服务类别三档：临床、独立、日常各一个比例。评一次给一份，重评整个换。",
+      "groups": [
+        {
+          "group": "业务属性",
+          "fields": [
+            {
+              "name": "临床",
+              "type": "比例"
+            },
+            {
+              "name": "独立",
+              "type": "比例"
+            },
+            {
+              "name": "日常",
+              "type": "比例"
+            }
+          ]
+        }
+      ],
+      "sources": {
+        "stages": [
+          {
+            "id": "assess",
+            "title": "评共付"
+          }
+        ],
+        "origins": [
+          {
+            "id": "sa",
+            "kind": "角色",
+            "title": "Services Australia"
+          }
+        ],
+        "facts": [
+          {
+            "stage": "assess",
+            "from": "sa",
+            "event": "评出了她的共付比例",
+            "fact": "评定结果上临床、独立、日常各一档",
+            "fields": [
+              "临床",
+              "独立",
+              "日常"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": "root",
+      "to": "level",
+      "label": "通知书上写的"
+    },
+    {
+      "from": "root",
+      "to": "copay",
+      "label": "Services Australia 评的，按服务类别三档"
+    }
+  ],
+  "rules": [
+    {
+      "text": "同一个 My Aged Care 编号只有一份档案",
+      "service": "参与者登记"
+    }
+  ]
+}

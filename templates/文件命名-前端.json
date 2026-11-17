@@ -1,0 +1,18 @@
+{
+  "_": "前端文件命名的默认：照 React 常用的。不照后端那套「种类前缀.类名.ts」；软件工程师拿它来、照上下文改，定下的存 上下文/<名>/代码/规范/文件命名.json",
+  "sample": [
+    { "line": "src/features/", "kind": "文件夹", "note": "文件夹都用 kebab-case" },
+    { "line": "  group-chat/", "kind": "文件夹", "note": "一个功能一个文件夹，名字是用的人做的事" },
+    { "line": "    components/", "kind": "文件夹" },
+    { "line": "      MessageList.tsx", "kind": "部件", "exports": "MessageList", "note": "组件文件 PascalCase.tsx，一个文件导出一个同名组件" },
+    { "line": "      MessageList.test.tsx", "kind": "测试", "exports": "describe MessageList", "note": "测试 Xxx.test.tsx 挨着被测的放" },
+    { "line": "    hooks/", "kind": "文件夹" },
+    { "line": "      useMessages.ts", "kind": "钩子", "exports": "useMessages", "note": "钩子 useXxx.ts，导出同名函数" },
+    { "line": "    api/", "kind": "文件夹" },
+    { "line": "      get-messages.ts", "kind": "调口", "exports": "getMessages", "note": "一个口一个文件，kebab-case 按做的事起名，导出 camelCase 的函数" },
+    { "line": "      send-message.ts", "kind": "调口", "exports": "sendMessage" },
+    { "line": "    index.ts", "kind": "入口", "exports": "MessageList, useMessages", "note": "每个功能一个 index.ts，只导出对外的东西；别处只从这里 import" },
+    { "line": "src/app/routes/", "kind": "文件夹" },
+    { "line": "  group-chat.tsx", "kind": "页面", "exports": "GroupChatRoute", "note": "一屏一个路由组件，文件名 kebab-case，照小样那一屏起名" }
+  ]
+}

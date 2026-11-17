@@ -1,0 +1,70 @@
+{
+  "_": "前端结构设计的默认：照 React 常用的按功能分（bulletproof-react 那一路）。kind 写「前端」；软件工程师拿它来、照上下文改，定下的存 上下文/<名>/代码/规范/结构设计.json",
+  "kind": "前端",
+  "app": [
+    { "dir": "main.tsx", "holds": "入口，挂上 provider 和 router" },
+    { "dir": "provider.tsx", "holds": "全局的 provider：取数缓存、登录状态、主题" },
+    { "dir": "router.tsx", "holds": "路由表；登录守卫照角色放行，没分角色的弹提示" },
+    { "dir": "routes/", "holds": "一屏一个路由组件，只拼 features 的部件，不直接调口" }
+  ],
+  "features": [
+    { "dir": "auth", "holds": "登录、注册、我的账户" },
+    { "dir": "groups", "holds": "我在的群、群里说话、发文件" },
+    { "dir": "settings", "holds": "提醒和偏好" }
+  ],
+  "layers": [
+    { "name": "components", "holds": "这个功能的部件，路由组件拿去拼屏" },
+    { "name": "hooks", "holds": "取数、提交、实时推送的钩子；部件只经它拿数据" },
+    { "name": "api", "holds": "这个功能调的后端口，一个口一个函数，走 src/lib/ 的调口底座" }
+  ],
+  "deps": [["components", "hooks"], ["hooks", "api"]],
+  "between": "功能之间不互相 import，要共用的放 src/components/、src/hooks/；一屏要几个功能的部件，在 src/app/routes/ 里拼",
+  "top": [
+    { "dir": "components/", "holds": "跨功能共用的部件" },
+    { "dir": "hooks/", "holds": "跨功能共用的钩子" },
+    { "dir": "stores/", "holds": "跨功能共用的状态" },
+    { "dir": "types/", "holds": "共用的类型" },
+    { "dir": "utils/", "holds": "共用的小函数" },
+    { "dir": "lib/", "holds": "调口底座：fetch 封装、带登录 cookie、实时连接" }
+  ],
+  "api": [
+    { "name": "后端", "how": "调 /api 下的口，src/lib/api-client.ts 统一带登录 cookie；实时消息走 src/lib/realtime.ts 的一条连接" }
+  ],
+  "routes": [
+    { "path": "/login", "page": "登录", "who": "所有人" },
+    { "path": "/", "page": "首页", "who": "登录了的" },
+    { "path": "/groups/:id", "page": "群聊", "who": "群里的人" }
+  ],
+  "sample": [
+    { "line": "src/" },
+    { "line": "  app/", "note": "入口、provider、router、路由" },
+    { "line": "    main.tsx", "note": "入口" },
+    { "line": "    provider.tsx" },
+    { "line": "    router.tsx", "note": "路由表，登录守卫在这里" },
+    { "line": "    routes/", "note": "一屏一个路由组件" },
+    { "line": "      login.tsx" },
+    { "line": "      groups/" },
+    { "line": "        group.tsx", "note": "群聊那一屏：拼 groups 的部件" },
+    { "line": "  features/", "note": "一个功能一个文件夹，按用的人做的事分" },
+    { "line": "    groups/" },
+    { "line": "      api/", "layer": "api" },
+    { "line": "        get-messages.ts", "note": "一个口一个函数" },
+    { "line": "        send-message.ts" },
+    { "line": "      components/", "layer": "components" },
+    { "line": "        MessageList.tsx" },
+    { "line": "        Composer.tsx" },
+    { "line": "      hooks/", "layer": "hooks" },
+    { "line": "        useMessages.ts", "note": "取数加实时推送" },
+    { "line": "      stores/", "note": "需要时才有" },
+    { "line": "      types/", "note": "需要时才有" },
+    { "line": "      index.ts", "note": "只导出对外的东西" },
+    { "line": "  components/", "note": "跨功能共用的部件" },
+    { "line": "  hooks/" },
+    { "line": "  stores/" },
+    { "line": "  types/" },
+    { "line": "  utils/" },
+    { "line": "  lib/", "note": "调口底座" },
+    { "line": "    api-client.ts", "note": "fetch 封装，带登录 cookie" },
+    { "line": "    realtime.ts", "note": "实时连接" }
+  ]
+}

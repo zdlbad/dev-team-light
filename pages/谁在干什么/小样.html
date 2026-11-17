@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>谁在干什么 · 小样</title>
+<style>
+:root{
+  --bg:#f7f6f3; --panel:#ffffff; --ink:#1d1d1b; --ink-2:#55534e; --ink-3:#8a877f; --line:#dedbd3; --accent:#2563eb; --accent-bg:#e8efff;
+  --data:#e7f5ec; --data-line:#2f855a; --area:#f4f4f1; --area-line:#b8b5ad;
+  --c1:#fdf1e3; --c1l:#c2410c; --c2:#e8efff; --c2l:#2563eb; --c3:#f1ebfd; --c3l:#7c3aed; --c4:#fbf3d5; --c4l:#b45309; --c5:#e3f6f8; --c5l:#0891b2;
+  --badge:#fff3cd; --badge-ink:#7a5200; --badge-line:#f0d58c; --warn:#b35c00; --red:#cf222e; --stripe:#f3f2ee;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#18181a; --panel:#222225; --ink:#ecebe7; --ink-2:#b5b2ab; --ink-3:#85827b; --line:#3a3a3e; --accent:#7aa2ff; --accent-bg:#26314d;
+    --data:#1f3327; --data-line:#4ade80; --area:#1d1d20; --area-line:#4a4a50;
+    --c1:#3a2a1c; --c1l:#fb923c; --c2:#1f2a44; --c2l:#7aa2ff; --c3:#2d2342; --c3l:#c4b5fd; --c4:#3a3220; --c4l:#fbbf24; --c5:#1b3337; --c5l:#67e8f9;
+    --badge:#3a3220; --badge-ink:#fbbf24; --badge-line:#6b5f2e; --warn:#fb923c; --red:#ff6b6b; --stripe:#1d1d20;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 system-ui,"PingFang SC","Microsoft YaHei",sans-serif}
+h1{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+h1 .kind{color:var(--ink-3);font-weight:400;font-size:14px}
+h2{font-size:15px;margin:22px 0 8px;display:flex;align-items:center;gap:8px}
+h2 small{font-weight:400;color:var(--ink-3);font-size:12px}
+h2 .zoom{margin-left:auto;display:flex;gap:4px}
+.sub{color:var(--ink-2);margin:0 0 12px;max-width:960px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:12px}
+/* 今天的流水越来越长：放进自己滚的框；倒序，最新的在最上面 */
+.card.logbox{max-height:460px;overflow:auto}
+.card.tight{padding:8px 10px 6px}
+.badge{font-size:11px;padding:1px 7px;border-radius:9px;background:var(--badge);color:var(--badge-ink);border:1px solid var(--badge-line);font-weight:400}
+.act{font-size:12px;padding:3px 12px;border:1px solid var(--accent);color:var(--accent);background:var(--panel);border-radius:4px;cursor:pointer}
+.act.pri,.act.on{background:var(--accent);color:#fff}
+.act.sm{padding:1px 8px;font-size:11px;border-color:var(--line);color:var(--ink-2)}.act.sm.on{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+/* 角色标：五个角色各一色 */
+.role{display:inline-block;font-size:12px;padding:0 8px;border-radius:9px;border:1px solid;white-space:nowrap}
+.role.指挥{background:var(--area);border-color:var(--area-line)}
+.role.项目管理{background:var(--c4);border-color:var(--c4l)}
+.role.业务{background:var(--c1);border-color:var(--c1l)}
+.role.建模{background:var(--data);border-color:var(--data-line)}
+.role.UI设计{background:var(--c5);border-color:var(--c5l)}
+.role.软件工程师{background:var(--c3);border-color:var(--c3l)}
+.role.你{background:var(--panel);border-color:var(--red);color:var(--red)}
+.cxt{display:inline-block;font-size:11px;padding:0 6px;border-radius:3px;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+/* 现在这一步 */
+.now{display:grid;grid-template-columns:auto 1fr auto;gap:6px 18px;align-items:center}
+.now .big{font-size:17px;font-weight:600}
+.now .since{color:var(--ink-3);font-size:12px;text-align:right}
+.now .files{grid-column:1/-1;font-size:12.5px;color:var(--ink-2);display:flex;gap:18px;flex-wrap:wrap}
+.now .files code{font:12px ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
+.now .files i{font-style:normal;color:var(--ink-3);margin-right:4px}
+.now .files b{color:var(--ink)}
+.now .files a{color:var(--accent);text-decoration:none}
+.now .stg{color:var(--ink-3)}.now .stg.done{color:var(--data-line)}.now .stg.doing{color:var(--accent);font-weight:600}
+.idle{color:var(--ink-3)}
+/* 泳道与进度图：一个 svg 字体 */
+svg{display:block;max-width:100%}
+svg text{font-size:11px;fill:var(--ink-3)}
+svg text.lab{fill:var(--ink);font-size:12px}
+svg text.lab.dim{fill:var(--ink-3)}
+svg text.lab.mile{font-weight:600}
+svg .trip{cursor:pointer}svg .trip:hover rect{stroke:var(--ink);stroke-width:1.5}
+svg .live{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+/* 等你定：按页一组，一条一行，点了去那一页那一项 */
+.decides{display:grid;gap:10px}
+.decides .grp{font-size:12px;color:var(--ink-3);margin:0 0 4px}
+.decides a.dc{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:6px 8px;border-radius:6px;color:var(--ink);text-decoration:none}
+.decides a.dc:hover{background:var(--stripe)}
+.decides a.dc .ref{font:12px ui-monospace,Menlo,Consolas,monospace;color:var(--ink-3)}
+.decides a.dc .nt{font-size:12px;color:var(--ink-3)}
+.decides a.dc .nt.again{color:var(--warn)}
+.decides a.dc .go{margin-left:auto;font-size:12px;color:var(--accent)}
+/* 等你答：一排卡 */
+.asks{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
+.ask{border:1px solid var(--badge-line);background:var(--panel);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.ask .who{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-3)}
+.ask .q{font-size:14px;font-weight:600}
+.ask .ctx{font-size:12.5px;color:var(--ink-2)}
+.ask .lean{font-size:12.5px;color:var(--ink-2);border-left:3px solid var(--badge-line);padding-left:8px}
+.ask .lean b{color:var(--ink)}
+.ask .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.ask .opts .act.lean-on{border-width:2px}
+.ask .where{font-size:12px;color:var(--ink-3)}
+.ask .where a{color:var(--accent);text-decoration:none}
+/* 进度：里程碑一行一条 */
+table.m{border-collapse:collapse;font-size:13px;width:100%;margin-bottom:8px}
+table.m td{padding:4px 14px 4px 0;vertical-align:top;border-top:1px solid var(--line)}
+table.m tr:first-child td{border-top:0}
+table.m td.k{white-space:nowrap;font-weight:600}
+table.m td.n{white-space:nowrap;color:var(--ink-2);font-variant-numeric:tabular-nums}
+table.m td.d{color:var(--warn);font-size:12.5px}
+table.m td.d.ok{color:var(--data-line)}
+/* 流水 */
+table.t{border-collapse:collapse;font-size:13px;width:100%}
+table.t td{padding:5px 12px 5px 0;border-top:1px solid var(--line);vertical-align:top}
+table.t tr:first-child td{border-top:0}
+table.t tr.day td{font-weight:600;color:var(--ink-2);padding-top:12px;border-top:0}
+table.t tr.day small{font-weight:400;color:var(--ink-3)}
+table.t tr.day + tr td{border-top:0}
+table.t tr.flash td{animation:flash 1.6s ease-out}
+@keyframes flash{0%{background:var(--accent-bg)}100%{background:transparent}}
+table.t td.ts{color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums;width:1%}
+table.t td.k{white-space:nowrap;width:1%}
+table.t td.k .out{color:var(--c2l)}table.t td.k .back{color:var(--data-line)}table.t td.k .ask{color:var(--badge-ink);border:0;padding:0;display:inline}table.t td.k .ans{color:var(--ink-2)}
+table.t td .x{color:var(--ink-3);font-size:12px}
+table.t td code{font:12px ui-monospace,Menlo,Consolas,monospace}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--ink-2);margin:6px 0 0}
+.legend i{display:inline-block;width:14px;height:8px;border-radius:2px;vertical-align:middle;margin-right:4px}
+</style>
+<link rel="stylesheet" href="../../lib/shell.css">
+<script src="../../lib/shell.js"></script>
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="wrap">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+// 工作台起的时候 window.DATA 由 /data/<页>.js 先定义，下面每个常量都先取它；单开这份小样时 DATA 是空的，用写死的
+const DATA = (typeof window !== 'undefined' && window.DATA) || {}
+const LIVE = Object.keys(DATA).length > 0
+const post = (action, body) => fetch('api/' + action, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json()).then((o) => { if (o.ok) location.reload(); else alert(o.error) })
+// 指挥的三份输出，数据写死在这里。形状：
+// 指挥怎么走：你说做哪个任务（或指挥照需求清单提议、你确认）→ 照全队共用的顺序和门槛派角色一步 → 角色交回：有问就等你答、答了重派；
+//   没问、上面也没有挂着的待定项，就算定了，指挥告诉你去哪一页看，接着派后面的活。只有界面的小样要你一屏一屏按「定下」。
+// 1. 现场.json：{ now: [{ role, context, task?, stage?, step, since, reads: [], writes: [], stop }, …], waiting: [问题] }
+//    now 是数组，一个角色在干一件事就是一项，空数组就是没人在干；task 是项目管理日程里的任务编号，stage 是这一步在哪个阶段（业务、建模、界面、编码）
+//    问题：{ id, role, context, q, why, lean?: { pick, why }, options: [], goto?: { page, hash } }   lean 是角色偏向哪个；goto 是去哪一页看着答
+// 2. 派工书（brief）：{ role, context, task?, stage?, step, reads: [文件], writes: [文件], stop: 做到哪里停, samples: [文件] }   一步一份，派出去时写进日志
+// 3. 日志/<日期>.jsonl：一行一条 { ts, kind: 派出|交回|问|撤问|答|定下|留言, role, context, task?, stage?, q?, text, files? }，只追加；问与答靠 q 配对，派出与交回靠角色配对；答、定下、留言的 role 是「你」，定下只有界面的小样
+// 泳道图从日志画出来：一个角色一道，派出到交回一段条，问到答在「你」那道一段红条，你按的定下是「你」那道上一个绿菱形。
+// 进度不是指挥的输出：读项目管理的 需求.json + 日程.json，按里程碑画；每个任务四段（业务、建模、界面、编码）做到哪，工作台从日志和屏算好放在 stages 里：哪个角色为它派出过、屏是不是都定下了、指挥记没记「做完」；日程里老数据填过的日期照旧认。
+// 指挥在派工书和日志上写 task 和 stage，进度图就能点出谁在干哪个任务的哪一段。
+// 左边栏按上下文折叠展开，每个上下文下面是它现在有没有人在干、有几个在等你答、任务完成了几个
+
+const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统', '共享内核']
+const NOW_TS = DATA.NOW_TS ?? '2026-11-09 16:20'
+const RECENT = DATA.RECENT ?? []   // 最近 3 天的流水，一天一组 { date, rows }；单开时只有今天
+const SCENE = DATA.SCENE ?? {
+  now: [   // 同时在干的每个角色一项；页面按 since 先后排
+    { role: '建模', context: '养老系统', task: 'N-02.2', stage: '建模', step: '照流程「服务发生与申报」拆解调动，补进清单', since: '2026-11-09 15:40', reads: ['业务/流程/03-服务发生与申报.json', '模型/g2/聚合/参与者档案.json', '模型/g2/调动/清单.json'], writes: ['模型/g5/调动/清单.json', '模型/g5/调动/03-服务发生与申报.json'], stop: '清单里新加的每条都有 call 和 out，流程页能画出来；碰到清单里没有的行为停下来问' },
+    { role: '业务', context: '聊天 app', task: 'N-07.2', stage: '业务', step: '照 N-07 拆出的功能，写聊天 app 的概念「聊天」和它听的事件「协议已签」', since: '2026-11-09 15:55', reads: ['项目管理/需求.json', '上下文/养老系统/业务/流程/02-签服务协议.json'], writes: ['业务/概念/聊天.json', '业务/概念/协议已签.json'], stop: '两个概念各有一句定义和出处；原料没说的别编，停下来问' } ],
+  waiting: [
+    { id: 'q-1', role: '建模', context: '养老系统', q: '「扣」是基金账户的行为，还是基金的？', why: '扣一笔要先看所有账户加起来没超这一季的钱，这条规则在基金那一层；但钱是从一个账户里扣的。', lean: { pick: '基金.扣(账户类型, 金额)', why: '让根守总额，根再调账户减；账户不单独对外' }, options: ['基金.扣(账户类型, 金额)', '基金账户.扣(金额)', '两层都有'], goto: { page: '建模', hash: '养老系统/agg/fund' } },
+    { id: 'q-2', role: '业务', context: '聊天 app', q: '聊天 app 的业务主题从原料的哪一份读？', why: '原料里只有养老系统的政策文件，没有 app 的；要么你口述，要么先不画它的全局图。', lean: { pick: '先不画', why: '没有原料的东西写出来是编的' }, options: ['先不画', '我口述你记', '从养老系统的流程里抽'], goto: null },
+    { id: 'q-3', role: '项目管理', context: null, q: 'N-07 开聊天要不要分到第二期？', why: '它依赖 N-01 建档，建档第一期就完；但聊天 app 一个字都还没开。', lean: { pick: '第二期', why: '第一期只做养老系统，别把 app 拖进来' }, options: ['第二期', '第三期', '不做'], goto: { page: '项目管理', hash: '' } } ],
+  today: [
+    { ts: '09:12', kind: '派出', role: '业务', context: '养老系统', task: 'N-02.2', stage: '业务', text: '画流程「服务发生与申报」', files: ['业务/流程/03-服务发生与申报.json'] },
+    { ts: '10:05', kind: '交回', role: '业务', context: '养老系统', text: '流程画好，14 步；两处原料没说的标了「问」' },
+    { ts: '10:05', kind: '问', role: '业务', context: '养老系统', q: 'q-0', text: '上门服务的签到由谁记？原料只说「服务后记录」' },
+    { ts: '10:30', kind: '答', role: '指挥', context: '养老系统', q: 'q-0', text: '你答：照护伙伴回来录，不做现场签到' },
+    { ts: '10:31', kind: '派出', role: '业务', context: '养老系统', task: 'N-02.2', stage: '业务', text: '照答案改流程第 6 步' },
+    { ts: '10:40', kind: '交回', role: '业务', context: '养老系统', text: '改了第 6 步' },
+    { ts: '10:45', kind: '定下', role: '你', context: '养老系统', task: 'N-02.2', stage: '业务', text: '你在业务页按了定下，日程里 N-02.2 的业务填 11-09', files: ['项目管理/日程.json'] },
+    { ts: '11:20', kind: '派出', role: '项目管理', context: null, text: '把 N-07 拆成功能、标上下文', files: ['需求.json', '日程.json'] },
+    { ts: '11:50', kind: '交回', role: '项目管理', context: null, text: '拆成两个功能：养老系统发事件、聊天 app 听事件开聊天' },
+    { ts: '11:50', kind: '问', role: '项目管理', context: null, q: 'q-3', text: 'N-07 分到第二期？' },
+    { ts: '14:00', kind: '派出', role: '业务', context: '聊天 app', text: '读原料画聊天 app 的全局图' },
+    { ts: '14:20', kind: '交回', role: '业务', context: '聊天 app', text: '原料里没有 app 的内容，停下' },
+    { ts: '14:20', kind: '问', role: '业务', context: '聊天 app', q: 'q-2', text: '聊天 app 的业务主题从哪读？' },
+    { ts: '15:40', kind: '派出', role: '建模', context: '养老系统', task: 'N-02.2', stage: '建模', text: '照流程「服务发生与申报」拆解调动', files: ['模型/g5/调动/清单.json'] },
+    { ts: '15:55', kind: '派出', role: '业务', context: '聊天 app', task: 'N-07.2', stage: '业务', text: '照 N-07 拆出的功能写聊天 app 的概念「聊天」和事件「协议已签」', files: ['业务/概念/聊天.json', '业务/概念/协议已签.json'] },
+    { ts: '16:05', kind: '问', role: '建模', context: '养老系统', q: 'q-1', text: '「扣」是基金账户的行为还是基金的？' } ] }
+if (!Array.isArray(SCENE.now)) SCENE.now = []   // 新建项目的 现场.json 里 now 还是 null 时，当没人在干
+
+// 项目管理那两份的节选：需求.json 的功能（编号、标题、上下文、状态）＋ 日程.json 的里程碑与任务
+const ITEMS = DATA.ITEMS ?? {
+  'N-01': { title: '给参与者建档，记下决定通知书', context: '养老系统' },
+  'N-02': { title: '记下分到她名下的基金和额度', context: null },
+  'N-03': { title: '录一笔服务记录，扣她的基金', context: '养老系统' },
+  'N-04': { title: '按季度给她做预算', context: '养老系统' },
+  'N-05': { title: '月底给她出月结单', context: null },
+  'N-07': { title: '签了协议，聊天 app 上开一个聊天', context: null } }
+// 等你定：lib/project.js 的 pendingDecisions 算好的，只有界面的小样，一条需求一条 { page, title, hash, ref?, note? }；点了去界面页那一屏按定下；不按期过滤
+const DECIDES = DATA.DECIDES ?? [
+  { page: '界面', title: '给参与者建档，记下决定通知书 · 小样', hash: '养老系统/N-01/c-list', ref: 'N-01', note: '3 / 7 屏没定' } ]
+const STAGES = ['业务', '建模', '界面', '编码']
+// 每段的值是做完那天的日期或 null；_doing 是工作台算好的正在做的那几段（建模和界面可以同时在做）。单开时写死的数据没有 _doing：有一段做完了、还没全完，就当头一个没完的那段在做
+const doingOf = (st) => !st ? [] : st._doing ?? (STAGES.some((k) => st[k]) && !STAGES.every((k) => st[k]) ? [STAGES.find((k) => !st[k])] : [])
+const stOf = (st) => !st ? '未开始' : STAGES.every((k) => st[k]) ? '已完成' : STAGES.some((k) => st[k]) || doingOf(st).length ? '进行中' : '未开始'
+const PLAN = DATA.PLAN ?? {
+  updatedAt: '2026-11-09',   // 日程.json 的节选：没拆任务的功能自己带 stages，拆了的看任务
+  milestones: [
+    { id: 'M1', title: '第一期：建档、分钱、录一笔服务', date: '2026-11-21', items: [
+      { id: 'N-01', start: '2026-11-01', end: '2026-11-05', stages: { 业务: '2026-11-02', 建模: '2026-11-03', 编码: '2026-11-05' } },
+      { id: 'N-02', start: '2026-11-04', end: '2026-11-12', tasks: [
+        { id: 'N-02.1', context: '养老系统', title: '照通知书记下每笔基金和额度', start: '2026-11-04', end: '2026-11-06', stages: { 业务: '2026-11-04', 建模: '2026-11-05', 编码: '2026-11-06' } },
+        { id: 'N-02.2', context: '养老系统', title: '看她名下各笔基金还剩多少', start: '2026-11-07', end: '2026-11-10', stages: { 业务: '2026-11-09', 建模: null, 编码: null } },
+        { id: 'N-02.3', context: '养老系统', title: '来了新通知书，改额度', start: '2026-11-10', end: '2026-11-12', stages: { 业务: null, 建模: null, 编码: null } } ] },
+      { id: 'N-03', start: '2026-11-12', end: '2026-11-21', stages: { 业务: null, 建模: null, 编码: null } } ] },
+    { id: 'M2', title: '第二期：季度预算', date: '2026-12-05', items: [
+      { id: 'N-04', start: '2026-11-24', end: '2026-12-05', stages: { 业务: null, 建模: null, 编码: null } },
+      { id: 'N-07', start: '2026-11-26', end: '2026-12-05', tasks: [
+        { id: 'N-07.1', context: '养老系统', title: '签了协议发一个事件出去', start: '2026-11-26', end: '2026-11-28', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-07.2', context: '聊天 app', title: '听到协议已签，开聊天', start: '2026-11-29', end: '2026-12-05', stages: { 业务: null, 建模: null, 编码: null } } ] } ] },
+    { id: 'M3', title: '第三期：月结单', date: '2026-12-19', items: [
+      { id: 'N-05', start: '2026-12-08', end: '2026-12-19', tasks: [
+        { id: 'N-05.1', context: '养老系统', title: '算出这个月花了哪些、剩多少', start: '2026-12-08', end: '2026-12-12', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-05.2', context: '排版系统', title: '排成能打印的月结单', start: '2026-12-15', end: '2026-12-19', stages: { 业务: null, 建模: null, 编码: null } } ] } ] } ],
+  drift: [{ milestone: 'M1', days: 3, why: 'N-02 的基金账户类型比预想的多，建模多花了三天' }] }
+for (const m of PLAN.milestones) for (const it of m.items) for (const x of [it, ...(it.tasks ?? [])]) if (x.stages && !('界面' in x.stages)) x.stages = { 业务: x.stages.业务, 建模: x.stages.建模, 界面: x.stages.编码 ?? null, 编码: x.stages.编码 }
+// 当期：lib/project.js 的 currentMilestone 算好的里程碑 id（今天落在哪一期；落不进取最早没走完的）；首页的进度和左边栏的任务数只看这一期，别的期在项目管理页看
+const CURRENT = DATA.CURRENT ?? 'M1'
+const curMs = () => PLAN.milestones.filter((m) => m.id === CURRENT).length ? PLAN.milestones.filter((m) => m.id === CURRENT) : PLAN.milestones.slice(0, 1)
+
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+// 角色名可能带空格（UI 设计）：类名去掉空格
+const role = (r) => `<span class="role ${esc(String(r).replace(/s+/g, ''))}">${esc(r)}</span>`
+const cxt = (c) => c ? `<span class="cxt">${esc(c)}</span>` : `<span class="cxt">项目级</span>`
+const COLOR = { '项目管理': 'var(--c4l)', '业务': 'var(--c1l)', 'UI 设计': 'var(--c5l)', '建模': 'var(--data-line)', '软件工程师': 'var(--c3l)', '你': 'var(--red)' }
+const colorOf = (r) => COLOR[r] ?? 'var(--ink-3)'   // 名单外的角色灰色
+let answered = {}   // 小样里按了哪个，真做时写回 现场.json 并记一条「答」
+let lzoom = 0       // 泳道看多宽：0 全天，60 一小时，180 三小时
+const DATE = NOW_TS.slice(0, 10), NOW = +new Date(NOW_TS.replace(' ', 'T'))
+const T = (hm) => +new Date(`${DATE}T${hm}:00`)
+const D = (ymd) => +new Date(`${ymd}T00:00:00`)
+const hm = (t) => { const d = new Date(t); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` }
+const md = (ymd) => `${+ymd.slice(5, 7)}/${+ymd.slice(8, 10)}`
+const days = (a, b) => Math.round((D(b) - D(a)) / 864e5)
+// 截止＝原定日期加上记下的拖延（日程只追加 drift、不改原日期）
+const dueOf = (m) => { const n = (PLAN.drift ?? []).filter((d) => d.milestone === m.id).reduce((s, d) => s + (d.days ?? 0), 0); if (!n) return m.date; const d = new Date(m.date + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10) }
+const dur = (ms) => { const m = Math.round(ms / 60000); return m < 60 ? `${m} 分钟` : `${Math.floor(m / 60)} 小时 ${m % 60} 分` }
+const mins = (since) => Math.round((NOW - new Date(since.replace(' ', 'T'))) / 60000)
+const bySince = (ns) => [...ns].sort((a, b) => a.since.localeCompare(b.since))   // 在干的按派出先后排，先派的在前；不改原数组
+const mainW = () => Math.max((document.getElementById('main').clientWidth || 1000) - 56 - 36, 640)
+
+// 任务查找：N-02.2 → { task, item, milestone }
+function findTask(id) {
+  for (const m of PLAN.milestones) for (const it of m.items) {
+    if (it.id === id) return { task: null, item: it, milestone: m }
+    for (const t of it.tasks ?? []) if (t.id === id) return { task: t, item: it, milestone: m }
+  }
+  return null
+}
+const taskTitle = (id) => { const f = findTask(id); return f ? (f.task ? f.task.title : ITEMS[f.item.id]?.title) : '' }
+// 一个上下文当期的任务：功能本身标了上下文的算一条，拆了任务的按任务算
+function tasksOf(cx) {
+  const out = []
+  for (const m of curMs()) for (const it of m.items) {
+    if (it.tasks) for (const t of it.tasks) { if (!cx || t.context === cx) out.push({ ...t, status: stOf(t.stages) }) }
+    else if (!cx || ITEMS[it.id]?.context === cx) out.push({ ...it, status: stOf(it.stages) })
+  }
+  return out
+}
+
+// 左边栏：框架画上下文那一层；这页交每个上下文行右边的小字，和展开后下面的三行（在干、等你答、任务进度）
+Shell.init({ contexts: CONTEXTS, page: {
+  badge: (cx) => { const n = SCENE.waiting.filter((q) => q.context === cx && !answered[q.id]).length; return n ? `${n} 等你答` : '' },
+  items: (cx) => {
+    const nows = bySince(SCENE.now.filter((n) => n.context === cx))   // 这个上下文里在干的可能不止一个，一人一行
+    const asks = SCENE.waiting.filter((q) => q.context === cx && !answered[q.id])
+    const ts = tasksOf(cx), done = ts.filter((t) => t.status === '已完成').length
+    return (nows.length ? nows.map((now) => Shell.line(`${role(now.role)}<b>在干</b> ${esc(now.task ? now.task + ' ' : '')}${esc(now.step)}`)).join('') : Shell.line('没人在干', true))
+      + (asks.length ? Shell.line(`<b>${asks.length} 个</b>等你答`) : '')
+      + (ts.length ? Shell.line(`<span>当期任务 <b>${done}</b> / ${ts.length}</span>${Shell.bar(done, ts.length)}`) : (cx === '共享内核' ? '' : Shell.line('当期没有任务', true)))
+  },
+  pick: () => render() },
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '建模', '编码'], current: '谁在干什么', live: !!DATA.WB } })
+// 「现在」：在干的卡，几个人几张，先派出的在前；没有就说没人在干
+function nowView() {
+  const ns = bySince(SCENE.now)
+  if (!ns.length) return `<div class="card"><p class="idle" style="margin:0">没人在干。我按日程提一个，你说做就派。</p></div>`
+  return ns.map(nowCard).join('')
+}
+// 一个角色一张卡：在做哪一步、为哪个任务、到哪个阶段了、读写哪些文件、停在哪
+function nowCard(n) {
+  const f = (cap, xs) => xs?.length ? `<span><i>${cap}</i>${xs.map((x) => `<code>${esc(x)}</code>`).join('、')}</span>` : ''
+  const t = n.task ? findTask(n.task) : null
+  const forLine = t ? `<div class="files"><span><i>为 </i><b>${esc(n.task)}</b> ${esc(taskTitle(n.task))}${t.task ? ` <span class="x">（${esc(t.task.start.slice(5))} 到 ${esc(t.task.end.slice(5))}）</span>` : ''} · ${esc(t.milestone.title.split('：')[0])} ${esc(md(dueOf(t.milestone)))} 还差 ${days(DATE, dueOf(t.milestone))} 天 <a href="#progress">看进度 ›</a></span></div>` : ''
+  const stg = t ? (t.task ?? t.item).stages : null
+  const stageLine = stg ? `<div class="files"><span><i>到哪了 </i>${STAGES.map((k) => `<span class="stg${stg[k] ? ' done' : k === n.stage ? ' doing' : ''}">${esc(k)}${stg[k] ? ' ✓ ' + esc(stg[k].slice(5)) : k === n.stage ? ' ● 在做' : ' ○'}</span>`).join('<span class="x"> → </span>')}</span></div>` : ''
+  return `<div class="card"><div class="now">
+      ${role(n.role)}<div class="big">${esc(n.step)}</div><div class="since">${cxt(n.context)} · 从 ${esc(n.since.slice(11))} 起，${mins(n.since)} 分钟</div>
+      ${forLine}${stageLine}
+      <div class="files">${f('读 ', n.reads)}${f('写 ', n.writes)}</div>
+      <div class="files"><span><i>停在 </i>${esc(n.stop)}</span></div>
+    </div></div>`
+}
+
+// ---------- 泳道：从今天的日志画 ----------
+function trips() {
+  const open = {}, out = []
+  SCENE.today.forEach((e, i) => {
+    if (e.kind === '派出') { open[e.role] = { who: e.role, start: T(e.ts), text: e.text, task: e.task, context: e.context, i }; out.push(open[e.role]) }
+    else if (e.kind === '交回' && open[e.role]) { open[e.role].end = T(e.ts); open[e.role].back = e.text; delete open[e.role] }
+  })
+  return out
+}
+function asksOnLane() {
+  const open = {}, out = []
+  SCENE.today.forEach((e, i) => {
+    // 问上游角色的（to 是建模、业务）不在「你」那道上等
+    if (e.kind === '问' && e.to && e.to !== '你') return
+    if (e.kind === '问') { open[e.q] = { start: T(e.ts), text: e.text, who: e.role, i }; out.push(open[e.q]) }
+    else if ((e.kind === '答' || e.kind === '撤问') && open[e.q]) { open[e.q].end = T(e.ts); delete open[e.q] }
+  })
+  return out
+}
+function lanesView() {
+  // 固定的先后；名单外的角色今天出现过也补一行，免得新角色不上泳道
+  const ROLES = ['项目管理', '业务', 'UI 设计', '建模', '软件工程师']
+  const seen = [...SCENE.today.map((e) => e.role), ...(SCENE.now ?? []).map((n) => n.role)].filter((r) => r && r !== '你' && r !== '指挥' && !ROLES.includes(r))
+  const rows = [...ROLES, ...new Set(seen), '你']
+  const W = mainW(), L = 76, R = 12, ROW = 18, TOP = 16
+  const ts = SCENE.today.map((e) => T(e.ts))
+  const t1 = NOW
+  let t0 = lzoom ? t1 - lzoom * 60e3 : Math.min(...ts) - 10 * 60e3
+  if (t1 - t0 < 10 * 60e3) t0 = t1 - 10 * 60e3
+  const x = (t) => L + ((Math.max(t0, Math.min(t1, t)) - t0) / (t1 - t0)) * (W - L - R)
+  const y = (n) => TOP + rows.indexOf(n) * ROW
+  const H = TOP + rows.length * ROW + 2
+  const tr = trips(), live = tr.filter((t) => !t.end), aks = asksOnLane()
+  let out = ''
+  rows.forEach((n, i) => {
+    const on = n === '你' ? aks.some((a) => !a.end) : live.some((t) => t.who === n)
+    out += `<rect x="0" y="${y(n)}" width="${W}" height="${ROW}" style="fill:${i % 2 ? 'var(--panel)' : 'var(--stripe)'}"/>`
+    out += (on ? `<circle cx="7" cy="${y(n) + 9}" r="3.5" class="live" style="fill:${colorOf(n)}"/>` : '') + `<text x="16" y="${y(n) + 13}" class="lab${on ? '' : ' dim'}" style="${on ? `fill:${colorOf(n)};font-weight:600` : ''}">${esc(n)}</text>`
+  })
+  const span = t1 - t0, step = [5, 10, 15, 30, 60, 120, 180].map((m) => m * 60e3).find((m) => span / m <= 9) || 360 * 60e3
+  for (let t = Math.ceil(t0 / step) * step; t <= t1; t += step) out += `<line x1="${x(t)}" x2="${x(t)}" y1="${TOP - 2}" y2="${H}" style="stroke:var(--line)"/><text x="${x(t) + 2}" y="10">${hm(t)}</text>`
+  for (const a of aks) {   // 等你：问到答
+    const b = a.end ?? t1
+    if (b < t0 || a.start > t1) continue
+    out += `<rect class="${a.end ? '' : 'live'}" x="${x(a.start)}" y="${y('你') + 4}" width="${Math.max(3, x(b) - x(a.start))}" height="10" rx="2" style="fill:var(--red)"><title>${esc(`${a.who} 问，${a.end ? '等了' : '已等'} ${dur(b - a.start)}：${a.text}`)}</title></rect>`
+  }
+  SCENE.today.forEach((e, i) => {   // 你按的定下
+    if (e.kind !== '定下') return
+    const t = T(e.ts); if (t < t0 || t > t1) return
+    out += `<g class="trip mark" data-i="${i}"><title>${esc(`${hm(t)} 定下 ${e.task ?? ''} ${e.stage ?? ''}：${e.text}`)}</title><path d="M${x(t)} ${y('你') + 3} l6 6 l-6 6 l-6 -6 z" style="fill:var(--data-line)"/></g>`
+  })
+  for (const t of tr) {   // 一趟一趟的派工
+    const b = t.end ?? t1
+    if (b < t0 || t.start > t1) continue
+    out += `<g class="trip" data-i="${t.i}"><title>${esc(`${hm(t.start)}–${t.end ? hm(b) : '还在跑'}（${dur(b - t.start)}）${t.task ? t.task + ' ' : ''}${t.text}${t.back ? '\n← ' + t.back : ''}`)}</title><rect${t.end ? '' : ' class="live"'} x="${x(t.start)}" y="${y(t.who) + 4}" width="${Math.max(3, x(b) - x(t.start))}" height="10" rx="2" style="fill:${colorOf(t.who)}"/></g>`
+  }
+  out += `<line x1="${x(t1)}" x2="${x(t1)}" y1="${TOP - 2}" y2="${H}" style="stroke:var(--red)" stroke-dasharray="2 2"/>`
+  const head = live.length ? live.map((t) => `${t.who} 已 ${dur(t1 - t.start)}`).join('　') : (aks.some((a) => !a.end) ? '都停着，等你答' : '现在没人在跑')
+  return { svg: `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${out}</svg>`, head }
+}
+
+// 去另一页：工作台里是 /<项目>/<页>（前缀在 WB.base），单开只是个占位
+const pageHref = (page) => (DATA.WB ? `${DATA.WB.base ?? ''}/${encodeURIComponent(page)}` : '#')
+// 问题的 lean 可以是一句话（角色交回时常这么写）或 { pick, why }；options 没有时只剩「照偏向」和「另说」；goto 可以只是页名
+// 问题留在各自页上的角色（业务：规则和问题挂在流程的那一步上；UI 设计：问题挂在小样那一屏上），这里一页一行几条、链过去
+const PAGE_ASKS = DATA.PAGE_ASKS ?? { '业务': 3, '界面': 2 }
+function asksView() {
+  const qs = SCENE.waiting.filter((q) => !answered[q.id])
+  const onPages = Object.entries(PAGE_ASKS).filter(([, n]) => n > 0).map(([page, n]) => `<a class="onpage" href="${esc(pageHref(page))}">「${esc(page)}」页还有 <b>${n}</b> 条待答 ›</a>`).join('')
+  if (!qs.length && !onPages) return `<div class="card"><p class="idle" style="margin:0">没有等你答的。</p></div>`
+  if (!qs.length) return `<div class="card onpages">${onPages}</div>`
+  return `<div class="asks">${onPages ? `<div class="card onpages">${onPages}</div>` : ''}${qs.map((q) => `<div class="ask" data-q="${q.id}">
+      <div class="who">${role(q.role)} 问 ${cxt(q.context)}</div>
+      <div class="q">${esc(q.q)}</div>
+      ${q.why ? `<div class="ctx">${esc(q.why)}</div>` : ''}
+      ${q.lean ? `<div class="lean">偏向 ${typeof q.lean === 'string' ? esc(q.lean) : `<b>${esc(q.lean.pick)}</b>：${esc(q.lean.why)}`}</div>` : ''}
+      <div class="opts">${(q.options ?? []).map((o) => `<button class="act${q.lean?.pick === o ? ' lean-on' : ''}" data-ans="${esc(o)}">${esc(o)}</button>`).join('')}${!q.options?.length && q.lean ? `<button class="act lean-on" data-ans="${esc(typeof q.lean === 'string' ? q.lean : q.lean.pick)}">照偏向</button>` : ''}<button class="act" data-ans="__other">另说</button></div>
+      ${q.goto ? `<div class="where">去「${esc(q.goto.page ?? q.goto)}」页看着答 <a href="${typeof q.goto === 'string' ? esc(pageHref(q.goto)) : '#' + esc(q.goto.hash)}">›</a></div>` : ''}
+    </div>`).join('')}</div>`
+}
+
+// 等你定：按页一组（业务、建模、界面、编码），一条写全名，编号小字作佐证；定下后改过的标出来；点了去那一页那一项
+const hashHref = (page, hash) => pageHref(page) + (hash ? '#' + hash.split('/').map(encodeURIComponent).join('/') : '')
+function decidesView() {
+  const pages = [...new Set(DECIDES.map((x) => x.page))]
+  return `<div class="card decides">${pages.map((pg) => `<div><div class="grp">「${esc(pg)}」页</div>${DECIDES.filter((x) => x.page === pg).map((x) => `<a class="dc" href="${esc(hashHref(pg, x.hash))}"><span>${esc(x.title)}</span>${x.ref ? `<span class="ref">${esc(x.ref)}</span>` : ''}${x.note ? `<span class="nt${x.again ? ' again' : ''}">${esc(x.note)}</span>` : ''}<span class="go">去定下 ›</span></a>`).join('')}</div>`).join('')}</div>`
+}
+
+// ---------- 进度：当期的里程碑 → 功能 → 任务，按日期画条 ----------
+function progressView() {
+  const ms = curMs()
+  const d0 = ms.flatMap((m) => m.items.map((it) => it.start)).sort()[0], d1 = ms.map(dueOf).sort().slice(-1)[0]
+  const W = mainW(), L = 300, R = 70, ROW = 20, TOP = 18
+  const x = (ymd) => L + (days(d0, ymd) / days(d0, d1)) * (W - L - R)
+  const rows = []   // { kind: 里程碑|功能|任务, id, title, context, start, end, status, date?, ind }
+  for (const m of ms) {
+    rows.push({ kind: '里程碑', id: m.id, title: m.title, date: dueOf(m), start: m.items.map((i) => i.start).sort()[0], end: dueOf(m) })
+    for (const it of m.items) {
+      const status = it.tasks ? (it.tasks.every((t) => stOf(t.stages) === '已完成') ? '已完成' : it.tasks.some((t) => stOf(t.stages) !== '未开始') ? '进行中' : '未开始') : stOf(it.stages)
+      rows.push({ kind: '功能', id: it.id, title: ITEMS[it.id]?.title, context: ITEMS[it.id]?.context, start: it.start, end: it.end, status, stages: it.stages, hasTasks: !!it.tasks })
+      for (const t of it.tasks ?? []) rows.push({ kind: '任务', ...t, status: stOf(t.stages) })
+    }
+  }
+  const H = TOP + rows.length * ROW + 4
+  let out = ''
+  // 周刻度：从 d0 起每个周一
+  const first = new Date(D(d0)); first.setDate(first.getDate() + ((8 - first.getDay()) % 7))
+  const ymdOf = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  for (let d = first; d <= new Date(D(d1)); d.setDate(d.getDate() + 7)) { const ymd = ymdOf(d); out += `<line x1="${x(ymd)}" x2="${x(ymd)}" y1="${TOP - 4}" y2="${H}" style="stroke:var(--line)"/><text x="${x(ymd) + 2}" y="10">${md(ymd)}</text>` }
+  const fill = (st) => st === '已完成' ? 'fill:var(--data-line)' : st === '进行中' ? 'fill:var(--accent)' : 'fill:var(--panel);stroke:var(--area-line);stroke-dasharray:3 2'
+  // 一条四段：业务 → 建模 → 界面 → 编码；做完的绿，正做的蓝，没到的虚框
+  const segs = (r, x0, w, yy) => { const sw = (w - 2 * (STAGES.length - 1)) / STAGES.length, doing = doingOf(r.stages)
+    return STAGES.map((k, i) => `<rect x="${x0 + i * (sw + 2)}" y="${yy + 5}" width="${Math.max(2, sw)}" height="10" rx="2" style="${fill(r.stages[k] ? '已完成' : doing.includes(k) ? '进行中' : '未开始')}"><title>${esc(`${r.id} ${r.title}\n${k}：${r.stages[k] ?? (doing.includes(k) ? '在做' : '没到')}`)}</title></rect>`).join('') }
+  rows.forEach((r, i) => {
+    const yy = TOP + i * ROW
+    if (r.kind === '里程碑') {
+      out += `<rect x="0" y="${yy}" width="${W}" height="${ROW}" style="fill:var(--stripe)"/>`
+      out += `<text x="8" y="${yy + 14}" class="lab mile">${esc(r.title)}</text>`
+      out += `<line x1="${x(r.start)}" x2="${x(r.date)}" y1="${yy + 10}" y2="${yy + 10}" style="stroke:var(--area-line)"/>`
+      out += `<path d="M${x(r.date)} ${yy + 4} l6 6 l-6 6 l-6 -6 z" style="fill:var(--ink)"/><text x="${x(r.date) + 10}" y="${yy + 14}" class="lab">${esc(md(r.date))}</text>`
+      return
+    }
+    const ind = r.kind === '任务' ? 26 : 8
+    const late = r.status !== '已完成' && r.end < DATE
+    out += `<text x="${ind}" y="${yy + 14}" class="lab${r.kind === '任务' ? '' : ''}"><tspan style="fill:var(--ink-3)">${esc(r.id)}</tspan> ${esc(r.title ?? '')}</text>`
+    if (r.hasTasks) out += `<line x1="${x(r.start)}" x2="${x(r.end)}" y1="${yy + 10}" y2="${yy + 10}" style="stroke:var(--area-line)" stroke-dasharray="1 3"/>`
+    else {
+      out += `<g class="seg${late ? ' late' : ''}">${segs(r, x(r.start), Math.max(9, x(r.end) - x(r.start)), yy)}</g>`
+      if (late) out += `<rect x="${x(r.start) - 1}" y="${yy + 4}" width="${Math.max(9, x(r.end) - x(r.start)) + 2}" height="12" rx="3" style="fill:none;stroke:var(--warn);stroke-width:1.5"><title>${esc(`${r.id} 到 ${r.end} 该完，还没完`)}</title></rect>`
+      out += `<text x="${x(r.end) + 6}" y="${yy + 14}">${esc(r.context ?? '')}</text>`
+      // 谁在干这一段：每个在干它的角色点一个圆点，几个人就往左排开
+      bySince(SCENE.now.filter((n) => n.task === r.id)).forEach((n, j) => { out += `<circle cx="${x(r.start) - 7 - j * 9}" cy="${yy + 10}" r="3.5" class="live" style="fill:${colorOf(n.role)}"><title>${esc(n.role + ' 在干')}</title></circle>` })
+    }
+  })
+  out += `<line x1="${x(DATE)}" x2="${x(DATE)}" y1="${TOP - 4}" y2="${H}" style="stroke:var(--red)" stroke-dasharray="2 2"/><text x="${x(DATE) + 2}" y="${H - 2}" style="fill:var(--red)">今天</text>`
+  // 里程碑一行一条
+  const lines = ms.map((m) => {
+    const ts = m.items.flatMap((it) => (it.tasks ?? [it]).map((t) => ({ ...t, status: stOf(t.stages) })))
+    const done = ts.filter((t) => t.status === '已完成').length, doing = ts.filter((t) => t.status === '进行中').length
+    const left = days(DATE, dueOf(m)), drift = PLAN.drift.find((d) => d.milestone === m.id)
+    return `<tr><td class="k">${esc(m.title)}</td><td class="n">${esc(md(dueOf(m)))}${drift ? ` <span class="x">原 ${esc(md(m.date))}</span>` : ''} · ${left >= 0 ? `还差 ${left} 天` : `过了 ${-left} 天`}</td><td class="n">任务 ${done} / ${ts.length} 完成${doing ? `，${doing} 在做` : ''}</td><td class="d${drift ? '' : ' ok'}">${drift ? `落后 ${drift.days} 天：${esc(drift.why)}` : (done === ts.length ? '完了' : '')}</td></tr>`
+  }).join('')
+  return `<div class="card"><table class="m">${lines}</table><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${out}</svg>
+    <div class="legend"><span><i style="background:var(--data-line)"></i><i style="background:var(--accent)"></i><i style="border:1px dashed var(--area-line)"></i>一条四段 业务 → 建模 → 界面 → 编码：绿的做完了，蓝的在做，虚框没到</span><span><i style="border:1.5px solid var(--warn)"></i>过期没完</span><span>◆ 里程碑</span><span>● 谁在干</span></div></div>`
+}
+
+function logView() {
+  const kindTag = { '派出': '<span class="out">派出 →</span>', '交回': '<span class="back">← 交回</span>', '问': '<span class="ask">? 问</span>', '答': '<span class="ans">✓ 答</span>', '定下': '<span class="back">◆ 定下</span>', '撤问': '<span class="ask">↩ 撤问</span>', '留言': '<span class="ask">✎ 留言</span>', '做完': '<span class="back">✔ 做完</span>' }
+  // 最近 3 天一天一组，新的一天在上、一天里也是新的在上；今天那组用 SCENE.today（单开时按了答会往里加），id 照今天的序号，泳道点一段能跳过来
+  const today = NOW_TS.slice(0, 10)
+  const groups = (RECENT.length ? RECENT : [{ date: today, rows: [] }]).map((g) => g.date === today ? { ...g, rows: SCENE.today } : g)
+  if (!groups.some((g) => g.date === today)) groups.unshift({ date: today, rows: SCENE.today })
+  const row = (e, id) => `<tr${id ? ` id="${id}"` : ''}><td class="ts">${esc(e.ts)}</td><td class="k">${kindTag[e.kind]}</td><td class="k">${role(e.role)}</td><td class="k">${cxt(e.context)}</td><td>${e.task ? `<span class="x">${esc(e.task)}${e.stage ? ' · ' + esc(e.stage) : ''}</span> ` : ''}${e.to && e.to !== '你' ? `<span class="x">问${esc(e.to)}</span> ` : ''}${esc(e.text)}${e.files?.length ? `<div class="x">${e.files.map((x) => `<code>${esc(x)}</code>`).join('、')}</div>` : ''}</td></tr>`
+  const dayName = (d) => d === today ? '今天' : `${+d.slice(5, 7)}/${+d.slice(8, 10)}`
+  return `<div class="card logbox" id="logbox"><table class="t">${groups.map((g) => `<tr class="day"><td colspan="5">${dayName(g.date)} <small>${g.rows.length} 条</small></td></tr>` + [...g.rows.entries()].reverse().map(([i, e]) => row(e, g.date === today ? 'lg-' + i : '')).join('')).join('')}</table></div>`
+}
+
+function render() {
+  const lb = document.getElementById('logbox'), keep = lb ? lb.scrollTop : null   // 重画时流水框的滚动位置留着
+  Shell.nav()
+  const n = SCENE.waiting.filter((q) => !answered[q.id]).length
+  const lanes = lanesView()
+  const z = (v, t) => `<button class="act sm${lzoom === v ? ' on' : ''}" data-z="${v}">${t}</button>`
+  document.getElementById('main').innerHTML = `<h1>谁在干什么 <span class="kind">· ${NOW_TS}</span></h1>
+    <p class="sub">指挥记的现场：现在哪几个角色各在哪个上下文做哪一步、为哪个任务；泳道是今天每个角色跑了几趟、你被问住多久；角色拿不准的攒在「等你答」；还没按定下的列在「等你定」；进度只看当期，读项目管理的日程，点出谁在干哪个任务；底下是今天的流水。</p>
+    <h2>现在</h2>${nowView()}
+    <h2>今天的泳道 <small>${esc(lanes.head)}</small><span class="zoom">${z(60, '1 小时')}${z(180, '3 小时')}${z(0, '全天')}</span></h2><div class="card tight">${lanes.svg}</div>
+    <h2>等你答 <small>${n ? `${n} 个，角色各写了偏向哪个，按一下就是答了` : ''}</small></h2>${asksView()}
+    ${DECIDES.length ? `<h2>等你定 <small>${DECIDES.length} 条需求的小样还有屏没定，点一条去界面页那一屏按定下</small></h2>${decidesView()}` : ''}
+    <h2 id="progress">进度 · ${esc(curMs()[0]?.title.split('：')[0] ?? '')} <small>只看当期，别的期在「项目管理」页；读项目管理的日程，${esc(PLAN.updatedAt)} 更新；每个任务四段做到哪，从日志和定下的屏算</small></h2>${progressView()}
+    <h2>最近 3 天 <small>只追加；最新的在上面</small></h2>${logView()}`
+  if (keep != null) { const nb = document.getElementById('logbox'); if (nb) nb.scrollTop = keep }
+}
+function bind() {
+  document.getElementById('main').addEventListener('click', (ev) => {
+    const zb = ev.target.closest('button[data-z]')
+    if (zb) { lzoom = +zb.dataset.z; render(); return }
+    const g = ev.target.closest && ev.target.closest('.trip[data-i]')
+    if (g) { const row = document.getElementById('lg-' + g.dataset.i); if (row) { row.scrollIntoView({ behavior: 'smooth', block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash') } return }
+    const b = ev.target.closest('button[data-ans]'); if (!b) return
+    const card = b.closest('.ask'), q = SCENE.waiting.find((x) => x.id === card.dataset.q)
+    const ans = b.dataset.ans === '__other' ? (typeof prompt === 'function' ? prompt('你说：') : null) : b.dataset.ans
+    if (!ans) return
+    if (LIVE) { post('答', { q: q.id, text: ans }); return }
+    answered[q.id] = ans
+    SCENE.today.push({ ts: NOW_TS.slice(11), kind: '答', role: '指挥', context: q.context, q: q.id, text: `你答：${ans}` })
+    render()
+  })
+  window.addEventListener('resize', render)
+}
+render(); bind()
+</script>
+</body>
+</html>

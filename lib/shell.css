@@ -18,6 +18,14 @@ body { display: flex; flex-direction: column; background: var(--bg); color: var(
 .topbar b { margin-right: 10px; font-size: 14px; }
 .topbar a, .topbar span { padding: 4px 10px; color: #d0d7de; text-decoration: none; border: 1px solid transparent; border-radius: 6px; }
 .topbar a.on, .topbar span.on { color: #fff; border-color: #57606a; }
+.topbar .proto { margin-left: 8px; padding-left: 14px; border-left: 1px solid #57606a; border-radius: 0; display: inline-flex; align-items: center; gap: 6px; }
+.topbar .dot { width: 8px; height: 8px; border-radius: 50%; background: #8a877f; display: inline-block; flex: none; }
+.topbar .dot.up { background: #4ade80; }
+.topbar details.proto { position: relative; color: #d0d7de; }
+.topbar details.proto summary { cursor: pointer; list-style: none; padding: 4px 10px 4px 0; display: inline-flex; align-items: center; gap: 6px; }
+.topbar details.proto summary::-webkit-details-marker { display: none; }
+.topbar details.proto > div { position: absolute; top: 30px; left: 6px; z-index: 50; min-width: 180px; padding: 4px; background: #24292f; border: 1px solid #57606a; border-radius: 6px; }
+.topbar details.proto > div a { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 
 /* 左边栏 + 主区 */
 .wrap { flex: 1; min-height: 0; display: flex; align-items: stretch; }

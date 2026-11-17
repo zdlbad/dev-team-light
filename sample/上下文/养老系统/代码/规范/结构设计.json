@@ -1,0 +1,185 @@
+{
+  "decidedAt": "2026-11-01",
+  "layers": [
+    {
+      "name": "外壳",
+      "holds": "HTTP 路由、内存仓储、入口"
+    },
+    {
+      "name": "应用",
+      "holds": "命令、查询、事件处理器"
+    },
+    {
+      "name": "领域",
+      "holds": "聚合、领域服务、事件、仓储接口"
+    }
+  ],
+  "deps": [
+    [
+      "外壳",
+      "应用"
+    ],
+    [
+      "应用",
+      "领域"
+    ],
+    [
+      "外壳",
+      "领域"
+    ]
+  ],
+  "between": "一个主题一个模块；模块之间只靠事件和查询，不互相 import",
+  "outside": [
+    {
+      "name": "政府门户",
+      "how": "端口在领域，适配器在外壳；原型先给假实现"
+    },
+    {
+      "name": "银行",
+      "how": "付款走端口，适配器在外壳；原型只记一笔不真付"
+    }
+  ],
+  "modules": [
+    {
+      "topic": "g2",
+      "dir": "participant-file"
+    },
+    {
+      "topic": "g4",
+      "dir": "fund"
+    }
+  ],
+  "parts": [
+    {
+      "dir": "adapters/",
+      "layer": "外壳",
+      "holds": "内存仓储、入站路由"
+    },
+    {
+      "dir": "application/",
+      "layer": "应用",
+      "holds": "命令、查询、事件处理器"
+    },
+    {
+      "dir": "domain/",
+      "layer": "领域",
+      "holds": "聚合、领域服务、事件、仓储接口"
+    },
+    {
+      "dir": "ports/",
+      "holds": "向别的模块要东西的接口"
+    },
+    {
+      "dir": "module.ts",
+      "layer": "外壳",
+      "holds": "模块组合根"
+    }
+  ],
+  "top": [
+    {
+      "dir": "bootstrap/",
+      "holds": "整个后端的组合根、起服务"
+    },
+    {
+      "dir": "infras/",
+      "holds": "HTTP 应用、事件总线，不含业务"
+    }
+  ],
+  "buses": [
+    {
+      "name": "模块内事件总线",
+      "scope": "模块内",
+      "holds": "模块里聚合发的事件给本模块的处理器",
+      "where": "src/infras/event-bus/in-module-event-bus.ts，各模块的 module.ts 各 new 一条"
+    },
+    {
+      "name": "模块间事件总线",
+      "scope": "模块间",
+      "holds": "一个模块的事件给别的模块听，比如 资金已分到 → 基金开立",
+      "where": "src/infras/event-bus/cross-module-event-bus.ts，bootstrap/ new 一条交给各模块"
+    }
+  ],
+  "sample": [
+    {
+      "line": "src/"
+    },
+    {
+      "line": "  participant-file/",
+      "note": "一个主题一个模块，层在模块里面"
+    },
+    {
+      "line": "    participant-file.ts",
+      "layer": "领域",
+      "note": "聚合根"
+    },
+    {
+      "line": "    level-and-pathway.ts",
+      "layer": "领域",
+      "note": "值对象"
+    },
+    {
+      "line": "    events.ts",
+      "layer": "领域",
+      "note": "这个聚合的事件"
+    },
+    {
+      "line": "    participant-file-repository.ts",
+      "layer": "领域",
+      "note": "仓储接口"
+    },
+    {
+      "line": "    participant-registration.ts",
+      "layer": "领域",
+      "note": "领域服务"
+    },
+    {
+      "line": "    register.ts",
+      "layer": "应用",
+      "note": "命令"
+    },
+    {
+      "line": "    view-file.ts",
+      "layer": "应用",
+      "note": "查询"
+    },
+    {
+      "line": "    in-memory-participant-file-repository.ts",
+      "layer": "外壳",
+      "note": "内存仓储"
+    },
+    {
+      "line": "    participant-file.test.ts",
+      "note": "测试挨着源文件"
+    },
+    {
+      "line": "  fund/",
+      "note": "另一个模块，同样的摆法"
+    },
+    {
+      "line": "    open-fund-on-allocation.ts",
+      "layer": "应用",
+      "note": "事件处理器，听 participant-file 的事件"
+    },
+    {
+      "line": "  app.ts",
+      "layer": "外壳",
+      "note": "入口：命令、查询接到路由上，处理器订阅事件"
+    },
+    {
+      "line": "  infras/",
+      "layer": "外壳"
+    },
+    {
+      "line": "    http/app.ts",
+      "note": "HTTP 应用，挂各模块的路由"
+    },
+    {
+      "line": "    event-bus/in-module-event-bus.ts",
+      "note": "模块内总线，每个模块的 module.ts 各 new 一条"
+    },
+    {
+      "line": "    event-bus/cross-module-event-bus.ts",
+      "note": "模块间总线，整个后端一条"
+    }
+  ]
+}

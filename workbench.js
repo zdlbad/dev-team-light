@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // 指挥的工作台：一个地址，可以开好几个项目；每个项目六页。项目管理页里的「总览」把开着的项目一页列全。
-// 页面代码就是 _wip/ 里的小样，数据从项目目录读出来注进去。
+// 页面代码在 pages/<页名>/小样.html，数据从项目目录读出来注进去。
 // 用法：node workbench.js <项目目录> [<项目目录>…] [--port 4870] [--now "2026-11-09 16:20"]
 // 地址：/<项目目录名>/<页>；/ 跳到第一个项目的「谁在干什么」。小样里 const X = DATA.X ?? …：单开时 DATA 是空的、用写死的；工作台里 DATA 由 data/<页>.js 先定义。
 // 按「定下」「答」是 POST <项目目录名>/api/…（小样里写的是相对地址 api/…），写回那个项目的文件。
 const http = require('node:http')
 const fs = require('node:fs')
 const path = require('node:path')
-const { pageData, applyAction } = require('./lib/project.js')
+const { pageData, applyAction, prototypes } = require('./lib/project.js')
 
 const args = process.argv.slice(2)
 const flagAt = (f) => args.indexOf(f)
@@ -21,15 +21,9 @@ const PORT = flagAt('--port') >= 0 ? Number(args[flagAt('--port') + 1]) : 4870
 // --now '2026-11-09 16:20'：把「现在」钉在某个时刻，对着样板项目看页面用；平时不传。dirs 给项目管理页的总览列所有项目
 const OPTS = { ...(flagAt('--now') >= 0 ? { now: args[flagAt('--now') + 1] } : {}), dirs: Object.values(PROJECTS) }
 
-// 页名 → 小样目录；地址栏用页名
-const PAGES = {
-  '谁在干什么': '2026-11-01-指挥',
-  '项目管理': '2026-10-31-项目管理',
-  '业务': '2026-10-31-业务',
-  '界面': '2026-11-02-界面',
-  '建模': '2026-11-01-建模',
-  '编码': '2026-11-01-编码' }
-const samplePath = (page) => path.join(__dirname, '_wip', PAGES[page], '小样.html')
+// 六页；地址栏用页名，页面代码在 pages/<页名>/小样.html
+const PAGES = Object.fromEntries(['谁在干什么', '项目管理', '业务', '界面', '建模', '编码'].map((p) => [p, p]))
+const samplePath = (page) => path.join(__dirname, 'pages', PAGES[page], '小样.html')
 
 // 小样 → 工作台页面：小样引的 ../../lib/ 改成 /lib/，<script> 前插一个 data/<页>.js（相对地址，跟着项目前缀走）；顶栏、左边栏由 lib/shell.js 画
 // ?view=<hash> 是给无头截图用的（截图时地址里的 # 带不过去）：页面脚本跑之前先把它写进 location.hash
@@ -40,8 +34,22 @@ function renderPage(page, view) {
   html = html.replace('<script>', `${pre}<script src="data/${encodeURIComponent(page)}.js"></script>\n<script>`)
   return html
 }
-// 页面数据外加 WB：项目名、六页、这一页、地址前缀；shell 拿它画顶栏的真链接
-const dataFor = (proj, page) => ({ ...pageData(PROJECTS[proj], page, OPTS), WB: { project: projectName(proj), pages: Object.keys(PAGES), current: page, base: '/' + encodeURIComponent(proj) } })
+// 原型开没开：对地址探一下，半秒不回就算没开；结果记几秒，翻页不用每次都等
+const probed = new Map()
+function probe(url) {
+  const hit = probed.get(url)
+  if (hit && Date.now() - hit.at < 5000) return hit.up
+  const up = new Promise((ok) => {
+    const req = http.get(url, { timeout: 500 }, (res) => { res.resume(); ok(true) })
+    req.on('timeout', () => { req.destroy(); ok(false) })
+    req.on('error', () => ok(false))
+  })
+  probed.set(url, { at: Date.now(), up })
+  return up
+}
+const protosFor = async (proj) => Promise.all(prototypes(PROJECTS[proj]).map(async (p) => ({ ...p, up: await probe(p.url) })))
+// 页面数据外加 WB：项目名、六页、这一页、地址前缀、各上下文的原型；shell 拿它画顶栏的真链接和「原型」入口
+const dataFor = async (proj, page) => ({ ...pageData(PROJECTS[proj], page, OPTS), WB: { project: projectName(proj), pages: Object.keys(PAGES), current: page, base: '/' + encodeURIComponent(proj), protos: await protosFor(proj) } })
 function projectName(proj) {
   try { return JSON.parse(fs.readFileSync(path.join(PROJECTS[proj], '项目.json'), 'utf8')).name ?? proj } catch { return proj }
 }
@@ -71,7 +79,7 @@ http.createServer(async (req, res) => {
     if (req.method === 'GET' && segs[1] === 'data' && segs.length === 3 && segs[2].endsWith('.js')) {
       const page = segs[2].slice(0, -3)
       if (!PAGES[page]) return send(res, 404, 'no such page', text)
-      return send(res, 200, `window.DATA = ${JSON.stringify(dataFor(proj, page))}`, 'text/javascript; charset=utf-8')
+      return send(res, 200, `window.DATA = ${JSON.stringify(await dataFor(proj, page))}`, 'text/javascript; charset=utf-8')
     }
     if (req.method === 'POST' && segs[1] === 'api' && segs.length === 3) {
       const out = applyAction(PROJECTS[proj], segs[2], JSON.parse((await readBody(req)) || '{}'), OPTS)
