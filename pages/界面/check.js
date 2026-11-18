@@ -108,6 +108,8 @@ const cases = [
   ['单开按定下：只定当前这一屏，计数加一，别的屏还是没定', '#养老系统/N-01/file', ({ main, nav, snap }) => !snap[0].includes(GATE) && /<span class="n">③<\/span>档案页<span class="gate"><span class="badge ok">已定 \d{4}-\d\d-\d\d<\/span>/.test(snap[0]) && snap[0].includes('<span class="cnt">已定 3/4 屏</span>') && snap[0].includes('案例经理<small>3/3</small>')
     && global.location.hash === '#养老系统/N-01/mine' && main.includes(GATE) && main.includes('<span class="n">①</span>我的档案<span class="gate">' + GATE) && main.includes('<span class="cnt">已定 3/4 屏</span>') && /href="#N-01\/file" class="sub2 scr"><small>③<\/small>档案页<i title="已定 \d{4}-\d\d-\d\d">✓ \d\d-\d\d<\/i>/.test(nav) && nav.includes('<small>①</small>我的档案' + DOT(1) + '</a>') && count(nav, /✓ /g) === 3,
     click('.gate button.act') + "; snap.push(els.main.innerHTML); go('N-01/mine'); window.handlers.hashchange()"],
+  ['工作台按定下：post 定下，带需求、屏、上下文、记号；不整页重载', '#养老系统/N-01/notice', () => global.posted.length === 1 && global.posted[0].url === 'api/定下' && global.posted[0].body.mockup === 'N-01' && global.posted[0].body.screen === 'notice' && global.posted[0].body.context === '养老系统' && !global.reloaded,
+    'location.reload = () => { global.reloaded = true }; ' + click('.gate button.act'), WBDATA()],
   // ---- 问题在这一屏旁边答 ----
   ['样例：建档那屏对着流程第 5 步；没有「去流程页答」', '#养老系统/N-01/new', ({ main }) => main.includes('<span class="n">②</span>建档<span class="stp">对着流程第 5 步</span><span class="gate">') && !main.includes('toflow') && !main.includes('去流程页答') && !main.includes('<span class="n">①</span>老人列表<span class="stp">')],
   ['红框卡：问题、偏向、选项（第一个加粗）、另说；别的屏的问题按钮带那一屏，没有 options 的给「照偏向」', '#养老系统/N-01/new', ({ main }) => count(main, /class="ask"/g) === 3 && count(main, /class="ask done"/g) === 0 && count(main, /<button class="opt/g) === 8

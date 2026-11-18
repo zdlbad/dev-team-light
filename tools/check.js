@@ -4,7 +4,7 @@
 //   「错」是页面会画坏、下游会照着错的；「提醒」是不一定错、看一眼的。有「错」退出码 1。
 // 查什么：
 //   全部    每份 .json 读不读得出（原料/、_wip/ 不看）
-//   业务    一份流程里步号、规则号、问题号有没有重复
+//   业务    一份流程里步号、规则号、问题号有没有重复；分了子主题的主题：子主题号重不重复、撞不撞主题号，每个子主题有没有概念文件，子主题之间的线两头在不在，子文件夹里有没有图上没有的文件
 //   界面    屏号、问题号有没有重复；每一屏的小样文件在不在；does 的 to 指不指得到屏；flow 那份流程在不在、step 那一步在不在；
 //           小样里 data-ask 标的问题在不在这一屏的 asks 里；文件夹里有没有哪一屏都不用的小样文件（提醒）
 //   模型    清单项的号有没有重复；清单项调的聚合、行为在不在；流程索引引的清单项在不在本主题清单里、对着的流程和步在不在；
@@ -92,6 +92,33 @@ for (const cx of names) {
     for (const x of dups(steps.flatMap((s) => (s.rules ?? []).map((r) => r.id)))) say('错', cx, '业务', file, `规则号重复：${x}`)
     for (const x of dups(steps.flatMap((s) => (s.asks ?? []).map((a) => a.id)))) say('错', cx, '业务', file, `问题号重复：${x}`)
   }
+
+  // 子主题：主题那份概念文件里有 subs 的，每个子主题一份 概念/<主题>/<子主题>.json
+  const cdir = path.join(c, '业务', '概念'), gp = path.join(c, '业务', '全局图.json')
+  const topicIds = (exists(gp) ? load(gp, cx, '业务')?.topics ?? [] : []).map((t) => t.id)
+  const allSubs = []
+  for (const { name, file } of jsonIn(cdir)) {
+    const d = load(file, cx, '业务'); if (!d) continue
+    const folder = path.join(cdir, name)
+    if (!Array.isArray(d.subs)) {
+      if (exists(folder)) say('错', cx, '业务', file, `概念/${name}/ 下有子主题的文件，这一份却没写 subs：要么写上子主题图，要么把子文件夹拿掉`)
+      continue
+    }
+    const ids = d.subs.map((x) => x.id)
+    for (const x of d.subs) if (!x.id) say('错', cx, '业务', file, `有一个子主题没写号（id）：${x.title ?? ''}`)
+    for (const x of dups(ids)) say('错', cx, '业务', file, `子主题号重复：${x}`)
+    for (const x of ids.filter((i) => i && topicIds.includes(i))) say('错', cx, '业务', file, `子主题号 ${x} 跟全局图上的主题号撞了`)
+    for (const e of d.edges ?? []) for (const end of [e.from, e.to]) if (!ids.includes(end)) say('错', cx, '业务', file, `子主题之间的线 ${e.from} → ${e.to}：${end} 不是这个主题的子主题`)
+    for (const x of d.subs) if (x.id && !exists(path.join(folder, x.id + '.json'))) say('错', cx, '业务', file, `子主题 ${x.id}（${x.title ?? ''}）没有自己的概念文件：概念/${name}/${x.id}.json`)
+    for (const { name: f, file: sf } of jsonIn(folder)) {
+      if (!ids.includes(f)) { say('错', cx, '业务', sf, `子主题图上没有 ${f}：在 ${name}.json 的 subs 里加上，或者把这份拿掉`); continue }
+      const sd = load(sf, cx, '业务'); if (!sd) continue
+      if (sd.topic !== name) say('错', cx, '业务', sf, `topic 要写主题号 ${name}，写的是 ${sd.topic}`)
+      if (sd.sub !== f) say('错', cx, '业务', sf, `sub 要写子主题号 ${f}，写的是 ${sd.sub}`)
+    }
+    allSubs.push(...[...new Set(ids.filter(Boolean))].map((i) => ({ id: i, file })))
+  }
+  for (const x of dups(allSubs.map((a) => a.id))) say('错', cx, '业务', allSubs.find((a) => a.id === x).file, `子主题号 ${x} 在几个主题里都用了`)
 
   // —— 界面 ——
   for (const { name, file } of jsonIn(path.join(c, '界面'))) {

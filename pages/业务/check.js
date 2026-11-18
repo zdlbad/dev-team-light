@@ -77,6 +77,23 @@ const covers = (s) => {
 const G6NOW = {"CONTEXTS":["养老系统"],"OPEN":{},"BIZ":{"养老系统":{"MAP":{"topics":[{"id":"g2","title":"建档与服务协议","c":2,"x":2,"y":0,"does":["d"],"concepts":["c"]},{"id":"g4","title":"老人名下的基金","c":4,"x":3,"y":0,"does":["d"],"concepts":["c"]},{"id":"g3","title":"服务清单与价目表","c":3,"x":1,"y":1,"does":["d"],"concepts":["c"]},{"id":"g6","title":"服务发生与扣费","c":2,"x":2,"y":1,"does":["d"],"concepts":["c"]},{"id":"g7","title":"月结单","c":3,"x":3,"y":1,"does":["d"],"concepts":["c"]},{"id":"g8","title":"申报与付款对账","c":4,"x":4,"y":1,"does":["d"],"concepts":["c"]}],"edges":[]},"CONCEPTS":{"g6":{"topic":"g6","title":"服务发生与扣费","summary":"s","concepts":[{"id":"rec","title":"服务记录","by":["照护伙伴"],"order":1,"definition":"d","source":"x"},{"id":"proof","title":"凭据","by":["支持工作者"],"order":2,"definition":"d","source":"x"},{"id":"gc","title":"政府补贴与共付","by":["照护伙伴"],"order":3,"definition":"d","source":"x"},{"id":"inv","title":"外部发票","by":["照护伙伴"],"order":4,"definition":"d","source":"x"},{"id":"reimb","title":"报销","by":["老人","照护伙伴"],"order":5,"definition":"d","source":"x"},{"id":"flow","title":"流转记录","by":["照护伙伴","财务"],"order":6,"definition":"d","source":"x"},{"id":"cm","title":"护理管理记录","by":["照护伙伴"],"order":7,"definition":"d","source":"x"}],"external":[{"id":"svc","title":"服务","topic":"g3"},{"id":"price","title":"协议价","topic":"g2"},{"id":"rate","title":"共付比例","topic":"g2"},{"id":"fund","title":"基金","topic":"g4"},{"id":"cma","title":"护理管理账户","topic":"g4"},{"id":"detail","title":"明细行","topic":"g7"},{"id":"claim","title":"申报行","topic":"g8"},{"id":"agree","title":"服务协议","topic":"g2"}],"edges":[{"id":"1","from":"svc","to":"rec","label":"选清单上她批了的一项","by":["照护伙伴"]},{"id":"2","from":"price","to":"rec","label":"单价照她的协议价取、不加附加费，附加费申报时定"},{"id":"3","from":"proof","to":"rec","label":"一条记录一份凭据","by":["支持工作者"]},{"id":"4","from":"rec","to":"gc","label":"按类别和她的比例拆成政府补的和她出的","by":["照护伙伴"]},{"id":"5","from":"rate","to":"gc","label":"她这类服务的比例"},{"id":"6","from":"rec","to":"fund","label":"写从哪笔扣，挂待申报","by":["照护伙伴"]},{"id":"7","from":"inv","to":"rec","label":"一行一项服务就是一条服务记录，标第三方做的","by":["照护伙伴"],"tree":true},{"id":"8","from":"inv","to":"flow","label":"收到、附件、改、批、付每一步留一条","by":["财务"],"tree":true},{"id":"15","from":"reimb","to":"flow","label":"收到、附件、改、批、付每一步留一条","by":["财务"],"tree":true},{"id":"9","from":"cm","to":"cma","label":"按小时从护理管理账户申报"},{"id":"10","from":"rec","to":"detail","label":"月结单一行一次"},{"id":"11","from":"rec","to":"claim","label":"没申报的一条写成一行","by":["财务"]},{"id":"12","from":"reimb","to":"rec","label":"一行一项服务就是一条服务记录，标第三方做的","by":["照护伙伴"],"tree":true},{"id":"14","from":"agree","to":"reimb","label":"哪些可以她先付再报、她的共付怎么付，照协议上写的"}]}},"FLOWS":[]}}}
 // 两样并列的单据是上一层（tree），下一层两样；左边虚框只连第二样单据，主题框里第二样单据右边还连着自己的一样（照 sample-care 的 g6 搭的）；
 // 再加一条：左边虚框连同一层右边那个（照 a1 的「照护伙伴 → 群」），排序挪不开，得绕
+// 分了子主题：把 G6NOW 里的 g6 拆成两个子主题；g2 有一个虚框指进 g6、没写 sub
+const SPLIT = (() => {
+  const d = JSON.parse(JSON.stringify(G6NOW)), b = d.BIZ['养老系统'], g = b.CONCEPTS.g6
+  const parts = { 'g6-1': ['rec', 'proof', 'gc', 'inv'], 'g6-2': ['reimb', 'flow', 'cm'] }
+  const subOfId = (id) => Object.keys(parts).find((k) => parts[k].includes(id))
+  for (const [k, ids] of Object.entries(parts)) {
+    const edges = g.edges.filter((e) => ids.includes(e.from) || ids.includes(e.to)), ext = []
+    for (const e of edges) for (const id of [e.from, e.to]) if (!ids.includes(id) && !ext.some((x) => x.id === id)) {
+      const o = subOfId(id)
+      ext.push(o ? { id, title: g.concepts.find((n) => n.id === id).title, topic: 'g6', sub: o } : g.external.find((n) => n.id === id))
+    }
+    b.CONCEPTS['g6/' + k] = { topic: 'g6', sub: k, title: k, summary: '子主题 ' + k, concepts: g.concepts.filter((n) => ids.includes(n.id)), external: ext, edges }
+  }
+  b.CONCEPTS.g6 = { topic: 'g6', title: g.title, summary: '拆成两段', subs: [{ id: 'g6-1', title: '服务发生', x: 0, y: 0, does: ['记下做了的服务'], concepts: ['服务记录'] }, { id: 'g6-2', title: '报销', x: 1, y: 0, does: ['她先付再报'], concepts: ['报销'] }], edges: [{ from: 'g6-2', to: 'g6-1', label: '报销的一行就是一条服务记录' }] }
+  b.CONCEPTS.g2 = { topic: 'g2', title: '建档与服务协议', summary: 's', concepts: [{ id: 'agree', title: '服务协议', by: [], order: 1, definition: 'd', source: 'x' }], external: [{ id: 'reimb', title: '报销', topic: 'g6' }], edges: [{ id: '1', from: 'agree', to: 'reimb', label: '照协议上写的' }] }
+  return d
+})()
 const DOCS = { CONTEXTS: ['养老系统'], OPEN: {}, BIZ: { '养老系统': {
   MAP: { topics: [{ id: 'g6', title: '服务发生与扣费', c: 2, x: 0, y: 0, does: ['录'], concepts: ['外部发票'] }, { id: 'g2', title: '建档与服务协议', c: 1, x: 1, y: 0, does: ['签'], concepts: ['服务协议'] }], edges: [] },
   CONCEPTS: { g6: { topic: 'g6', title: '服务发生与扣费', summary: 's',
@@ -286,6 +303,19 @@ const cases = [
     return !!k && !!hw && !!vb && svgW(s) <= 980 - 76 && +hw[1] === +vb[1] && Math.abs(+vb[1] / +vb[2] - +k[1]) < 0.01 && hdAligned(s) && (s.match(/class="btn/g) ?? []).length === 8 },
     "document.getElementById('main').clientWidth = 980; render()", FLOW4],
   ['#flow/00-x', inBounds, "document.getElementById('main').clientWidth = 980; render()", FLOW4],
+  // 子主题：分了子主题的主题先画子主题图（画法同全局图），两个子主题框、一条线，不出画布
+  ['#养老系统/concepts/g6', (s) => topics(s).map((t) => t.id).join() === 'g6-1,g6-2' && s.includes('2 个子主题') && s.includes('报销的一行') && inBounds(s), '', SPLIT],
+  // 左边栏：子主题缩进列在主题下面
+  ['#养老系统/concepts/g6', (s) => /服务发生与扣费<\/a><a [^>]*class="sub2[^"]*"[^>]*>服务发生<\/a><a [^>]*class="sub2[^"]*"[^>]*>报销<\/a>/.test(nav(s)), '', SPLIT],
+  // 子主题的概念图：路径写 全局图 › 主题 › 子主题；自己的数据是实框，另一个子主题的是虚框，小字写「主题 · 子主题」，点了进那个子主题
+  ['#养老系统/concepts/g6/g6-1', (s) => s.includes('<a href="#concepts/g6">服务发生与扣费</a><span class="sep">›</span>服务发生</h1>') && s.includes('data-n="rec"') && Object.keys(stubs(s)).includes('reimb') && s.includes('data-s="g6-2"') && s.includes('服务发生与扣费 · 报销 ›') && inBounds(s), '', SPLIT],
+  ['#养老系统/concepts/g6/g6-1', (s) => s.includes('concepts/g6/g6-2-->'), "openStub({ g: 'g6', s: 'g6-2' }); els.main.innerHTML += '<!--h:' + location.hash + '-->'", SPLIT],
+  // 别的主题指进来、没写 sub：照数据在哪一份找到子主题
+  ['#养老系统/concepts/g2', (s) => s.includes('data-s="g6-2"') && s.includes('服务发生与扣费 · 报销 ›'), '', SPLIT],
+  // 子主题图上指着线：底下那几条从两份子主题概念图里找
+  ['#养老系统/concepts/g6', (s) => s.includes('<!--fine:2-->'), "els.main.innerHTML += '<!--fine:' + fineSubEdges('g6', 'g6-1', 'g6-2').length + '-->'", SPLIT],
+  // 地址里的子主题没有：说一句，不抛错
+  ['#养老系统/concepts/g6/g6-9', (s) => s.includes('里没有子主题 g6-9'), '', SPLIT],
 ];
 let bad = 0;
 for (const [h, ok, tail, data] of cases) {

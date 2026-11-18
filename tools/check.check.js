@@ -38,6 +38,12 @@ function clean() {
     { path: 'backend/tests/account.test.ts', kind: '测试' },
     { path: 'web/src/Open.tsx', kind: '页面', screen: 'N-1/a、N-1/b' }] })
   for (const f of ['backend/src/account.ts', 'backend/src/change.ts', 'web/src/Open.tsx']) write(A + '代码/伪代码/' + f + '.json', { file: f, blocks: [] })
+  // 业务：两个主题，g2 分了两个子主题
+  write(A + '业务/全局图.json', { topics: [{ id: 'g1', title: '开户', x: 0, y: 0, does: [], concepts: [] }, { id: 'g2', title: '记账', x: 1, y: 0, does: [], concepts: [] }], edges: [] })
+  write(A + '业务/概念/g1.json', { topic: 'g1', title: '开户', concepts: [], external: [], edges: [] })
+  write(A + '业务/概念/g2.json', { topic: 'g2', title: '记账', subs: [{ id: 'g2-1', title: '入账', x: 0, y: 0 }, { id: 'g2-2', title: '对账', x: 1, y: 0 }], edges: [{ from: 'g2-1', to: 'g2-2', label: 'x' }] })
+  write(A + '业务/概念/g2/g2-1.json', { topic: 'g2', sub: 'g2-1', title: '入账', concepts: [], external: [], edges: [] })
+  write(A + '业务/概念/g2/g2-2.json', { topic: 'g2', sub: 'g2-2', title: '对账', concepts: [], external: [], edges: [] })
   write(B + '代码/结构.json', { files: [{ path: 'src/Login.tsx', kind: '页面', screen: 'N-2/x' }, { path: 'src/push.ts', kind: '事件处理器', model: { context: '后台', item: 'open' } }] })
   for (const f of ['src/Login.tsx', 'src/push.ts']) write(B + '代码/伪代码/' + f + '.json', { file: f, blocks: [] })
   write('原料/坏的.json', '{ 这不是 JSON')   // 原料不看
@@ -85,6 +91,15 @@ broken('聚合上的问题没写问的是什么', () => edit(A + '模型/g1/聚�
 broken('伪代码上的问题号重复', () => write(A + '代码/伪代码/backend/src/change.ts.json', { file: 'backend/src/change.ts', blocks: [{ name: '换', steps: [], asks: [{ id: 'a-1', q: '甲？' }] }, { name: '查', steps: [], asks: [{ id: 'a-1', q: '乙？' }] }] }), '问题号重复：a-1', 'change.ts.json')
 broken('伪代码上问题的 options 不是一串', () => write(A + '代码/伪代码/backend/src/change.ts.json', { file: 'backend/src/change.ts', blocks: [{ name: '换', steps: [], asks: [{ id: 'a-1', q: '甲？', options: '是' }] }] }), 'options 要写成一串')
 broken('除了测试都要有伪代码', () => fs.rmSync(path.join(P, A, '代码/伪代码/backend/src/change.ts.json')), 'backend/src/change.ts：没有伪代码')
+
+const G2 = A + '业务/概念/g2.json'
+broken('子主题号重复', () => edit(G2, (d) => d.subs.push({ id: 'g2-1', title: '又一个' })), '子主题号重复：g2-1', 'g2.json')
+broken('子主题号跟主题号撞了', () => { edit(G2, (d) => d.subs.push({ id: 'g1', title: '撞了' })); write(A + '业务/概念/g2/g1.json', { topic: 'g2', sub: 'g1' }) }, '子主题号 g1 跟全局图上的主题号撞了')
+broken('子主题没有自己的概念文件', () => fs.rmSync(path.join(P, A, '业务/概念/g2/g2-2.json')), '子主题 g2-2（对账）没有自己的概念文件')
+broken('子主题之间的线一头不是子主题', () => edit(G2, (d) => d.edges.push({ from: 'g2-1', to: 'g9', label: 'x' })), 'g9 不是这个主题的子主题')
+broken('子文件夹里有图上没有的文件', () => write(A + '业务/概念/g2/g2-3.json', { topic: 'g2', sub: 'g2-3' }), '子主题图上没有 g2-3', 'g2-3.json')
+broken('子主题文件的 sub 写错了', () => edit(A + '业务/概念/g2/g2-2.json', (d) => { d.sub = 'g2-1' }), 'sub 要写子主题号 g2-2', 'g2-2.json')
+broken('主题没分子主题却有子文件夹', () => write(A + '业务/概念/g1/g1-1.json', { topic: 'g1', sub: 'g1-1' }), '概念/g1/ 下有子主题的文件', 'g1.json')
 
 clean(); write(A + '界面/N-1/旧的.html', '<p>没人用</p>')
 r = run()

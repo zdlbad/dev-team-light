@@ -164,6 +164,10 @@ const post = (action, body) => fetch('api/' + action, { method: 'POST', headers:
 //      external: [{ id, title, topic, context? }],                                别的主题里连着的数据，画成虚框；只连进来的在左、其余在右，由线定
 //                                                                                 别的上下文的带 context（topic 是那边的主题号）；共享内核里的 topic 写「共享内核」
 //      edges:    [{ id, from, to, label, by?: [角色], source?, tree? }] }           线是关系，by 是做这件事的角色（骑在线上），tree 是上下层级
+//    数据太多、分了子主题的主题，这一份改成子主题图，形状照全局图：
+//    { topic, title, summary, subs: [{ id, title, x, y, does: [两句], concepts: [数据名] }], edges: [{ from, to, label }] }
+//    每个子主题一份 概念/<主题>/<子主题>.json，形状同上面的概念图，多一个 sub（子主题 id）；工作台给的 CONCEPTS 里键是「主题/子主题」
+//    别处指进来的虚框写 sub 就进那个子主题；没写 sub 的，到那个主题的几份子主题里找这样数据在哪一份
 // 3. 流程/<流程名>.json（一段流程一份）
 //    { file, title, summary, parties: [{ id, title, sub }],
 //      steps: [{ id, from, to, title, date, data?: [数据名], due?, source?, note?,
@@ -286,6 +290,18 @@ const BIZ = DATA.BIZ ?? (DATA.MAP ? { [(DATA.CONTEXTS ?? ['养老系统'])[0]]: 
 const SCREENS = DATA.SCREENS ?? { 'N-01/new': { title: '建档', context: '养老系统' } }
 // 主区画的是当前上下文的这三样；render 一开头按 context 换
 let MAP, CONCEPTS, FLOWS, grpOf
+// 分了子主题的主题：它那份概念文件里有 subs
+const subsOf = (topic) => CONCEPTS[topic]?.subs ?? null
+/** 子主题 id 属于哪个主题：{ topic, sub }；不是子主题给 null */
+function subInfo(id) {
+  for (const [k, c] of Object.entries(CONCEPTS)) { const x = (c.subs ?? []).find((y) => y.id === id); if (x) return { topic: c.topic ?? k, sub: x } }
+  return null
+}
+/** 一样数据在分了子主题的主题里落在哪个子主题；那个主题没分、或者找不到，给 null */
+function subFor(topic, conceptId) {
+  for (const x of subsOf(topic) ?? []) if ((CONCEPTS[topic + '/' + x.id]?.concepts ?? []).some((n) => n.id === conceptId)) return x.id
+  return null
+}
 function useCx(cx) {
   const b = BIZ[cx] ?? {}
   MAP = b.MAP ?? { topics: [], edges: [] }; CONCEPTS = b.CONCEPTS ?? {}; FLOWS = b.FLOWS ?? []
@@ -364,7 +380,8 @@ Shell.init({ contexts: CONTEXTS, page: {
     if (!b) return Shell.line('业务还没画', true)
     const flows = b.FLOWS ?? []
     return navGroup(cx, 'map', '全局', [L('map', '全局图')])
-      + navGroup(cx, 'concepts', '概念 · 按主题', (b.MAP?.topics ?? []).map((t) => L('concepts/' + t.id, t.title)))
+      + navGroup(cx, 'concepts', '概念 · 按主题', (b.MAP?.topics ?? []).flatMap((t) => [L('concepts/' + t.id, t.title),
+        ...(b.CONCEPTS?.[t.id]?.subs ?? []).map((x) => { const v = 'concepts/' + t.id + '/' + x.id; return { v, html: Shell.link(href(v), x.title, on(v), 'sub2') } })]))
       // 流程那一行右边：还没答的条数，红点；组折叠时组名右边是合计
       + navGroup(cx, 'flows', '流程', flows.map((f) => { const n = openOf(cx, f.file), v = 'flow/' + f.file; return { v, html: `<a href="${esc(href(v))}" class="sub${on(v) ? ' on' : ''}">${esc(String(f.title ?? f.file).split('：')[0])}${n ? `<i class="open">${n}</i>` : ''}</a>` } }), flows.reduce((a, f) => a + openOf(cx, f.file), 0))
   },
@@ -396,7 +413,13 @@ const tint = (g) => `fill:var(--c${g.c});stroke:var(--c${g.c}l)`
 const textW = (s) => [...String(s ?? '')].reduce((t, c) => t + (/[^\x00-\xff]/.test(c) ? 12 : 6.4), 0)
 /** 按宽度折行：一行不超过 maxW 像素（字号 px）。英文单词、数字、金额算一个整体不从中间断；
  *  先算要几行，再让每行差不多长，断点尽量落在标点、空格后面，这样不会最后一行只剩一两个字 */
+const WRAPPED = new Map()
 function wrapW(text, maxW, px = 12) {
+  const k = String(text ?? '') + ' ' + maxW + ' ' + px
+  if (!WRAPPED.has(k)) WRAPPED.set(k, wrapW0(text, maxW, px))
+  return WRAPPED.get(k).slice()
+}
+function wrapW0(text, maxW, px) {
   const s = String(text ?? '').trim(), tw = (t) => textW(t) * px / 12
   if (!s) return []
   if (tw(s) <= maxW) return [s]
@@ -458,26 +481,52 @@ const TRIES_ON = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.2, 0.8, 0.12, 0.88]
 const TRIES_NEAR = [0.5, 0.35, 0.65, 0.2, 0.8, 0.1, 0.9].flatMap((t) => [[0, -50], [0, 50], [-90, 0], [90, 0], [-90, -50], [90, -50], [-90, 50], [90, 50], [0, -90], [0, 90], [-150, 0], [150, 0], [-150, -60], [150, -60], [-150, 60], [150, 60], [0, -130], [0, 130]].map(([dx, dy]) => [t, dx, dy]))
 // 线旁边的位置：字不压在线上，有虚线指着，上下左右哪儿空放哪儿
 const TRIES_AROUND = [[0.5, -90, -44], [0.5, 90, -44], [0.5, -90, 44], [0.5, 90, 44], [0.35, -90, -44], [0.65, 90, -44], [0.35, -90, 44], [0.65, 90, 44], [0.5, -140, -60], [0.5, 140, -60], [0.5, -140, 60], [0.5, 140, 60], [0.2, -90, -44], [0.8, 90, -44], [0.2, -90, 44], [0.8, 90, 44], [0.5, 0, -80], [0.5, 0, 80]]
-/** 这一点是不是贴着别的线（交叉处附近） */
+/** 一条线在一串 t 上取的点，连同这些点占的范围（x1、y1、x2、y2）。一条线、一种取法只算一次，记在线上。
+ *  near 是查「贴着别的线」用的（每 0.05 取一点），hit 是查「穿过框」「虚线穿线」用的（从 0.02 起每 0.03 取一点） */
+const SAMPLED = new WeakMap()
+function sampled(c, kind) {
+  let m = SAMPLED.get(c)
+  if (!m) SAMPLED.set(c, (m = {}))
+  if (m[kind]) return m[kind]
+  const pts = []
+  if (kind === 'near') for (let t = 0.05; t < 1; t += 0.05) pts.push(c.at(t))
+  else for (let t = 0.02; t < 1; t += 0.03) pts.push(c.at(t))
+  let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity
+  for (const q of pts) { if (q.x < x1) x1 = q.x; if (q.x > x2) x2 = q.x; if (q.y < y1) y1 = q.y; if (q.y > y2) y2 = q.y }
+  return (m[kind] = { pts, x1, y1, x2, y2 })
+}
+/** 这一点是不是贴着别的线（交叉处附近）。离一条线的范围都超过 dist 的，那条线不用逐点比 */
 function nearOther(p, others, dist = 26) {
-  for (const o of others ?? []) for (let t = 0.05; t < 1; t += 0.05) { const q = o.at(t); if (Math.hypot(q.x - p.x, q.y - p.y) < dist) return true }
+  for (const o of others ?? []) {
+    const s = sampled(o, 'near')
+    if (p.x < s.x1 - dist || p.x > s.x2 + dist || p.y < s.y1 - dist || p.y > s.y2 + dist) continue
+    for (const q of s.pts) if (Math.hypot(q.x - p.x, q.y - p.y) < dist) return true
+  }
   return false
 }
-/** 框有没有被哪条线穿过 */
+/** 框有没有被哪条线穿过。线的范围碰不到框的，不用逐点比 */
 function lineHits(box, curves) {
   const b = { x: box.x - 6, y: box.y - 6, w: box.w + 12, h: box.h + 12 }
-  for (const c of curves ?? []) for (let t = 0.02; t < 1; t += 0.03) { const q = c.at(t); if (q.x >= b.x && q.x <= b.x + b.w && q.y >= b.y && q.y <= b.y + b.h) return true }
+  for (const c of curves ?? []) {
+    const s = sampled(c, 'hit')
+    if (s.x2 < b.x || s.x1 > b.x + b.w || s.y2 < b.y || s.y1 > b.y + b.h) continue
+    for (const q of s.pts) if (q.x >= b.x && q.x <= b.x + b.w && q.y >= b.y && q.y <= b.y + b.h) return true
+  }
   return false
 }
 const RINGS = [[-90, -50], [90, -50], [-90, 50], [90, 50], [0, -60], [0, 60], [-140, 0], [140, 0], [-150, -80], [150, -80], [-150, 80], [150, 80], [0, -110], [0, 110], [-220, 0], [220, 0], [-220, -100], [220, -100], [-220, 100], [220, 100], [0, -170], [0, 170], [-300, 0], [300, 0], [-300, -140], [300, -140], [-300, 140], [300, 140], [0, -230], [0, 230], [-150, -200], [150, -200], [-150, 200], [150, 200]]
 const TS = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]
-/** 线上离这个框最近、又不挨着别的线的那一点：虚线就连到这儿 */
-function nearestAnchor(cv, box, others) {
+/** 线上不挨着别的线的那几点（从 0.12 到 0.88 每 0.04 取一点）：只看线，跟卡放在哪无关 */
+function freeAnchors(cv, others) {
+  const free = []
+  for (let t = 0.12; t <= 0.88; t += 0.04) { const p = cv.at(t); if (!nearOther(p, others)) free.push(p) }
+  return free
+}
+/** 线上离这个框最近、又不挨着别的线的那一点：虚线就连到这儿。free 是 freeAnchors 算好的，同一条线试好几处时传进来，不重算 */
+function nearestAnchor(cv, box, others, free = freeAnchors(cv, others)) {
   const cx = box.x + box.w / 2, cy = box.y + box.h / 2
   let best = null
-  for (let t = 0.12; t <= 0.88; t += 0.04) {
-    const p = cv.at(t)
-    if (nearOther(p, others)) continue
+  for (const p of free) {
     const d = Math.hypot(p.x - cx, p.y - cy)
     if (!best || d < best.d) best = { p, d }
   }
@@ -486,9 +535,14 @@ function nearestAnchor(cv, box, others) {
 /** 虚线这一段有没有穿过别的线 */
 function leaderCrosses(a, b, others) {
   const dx = b.x - a.x, dy = b.y - a.y, len2 = dx * dx + dy * dy || 1
-  for (const c of others ?? []) for (let t = 0.02; t < 1; t += 0.03) {
-    const q = c.at(t), u = Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.y - a.y) * dy) / len2))
-    if (Math.hypot(q.x - (a.x + u * dx), q.y - (a.y + u * dy)) < 9) return true
+  const x1 = Math.min(a.x, b.x) - 9, x2 = Math.max(a.x, b.x) + 9, y1 = Math.min(a.y, b.y) - 9, y2 = Math.max(a.y, b.y) + 9
+  for (const c of others ?? []) {
+    const s = sampled(c, 'hit')
+    if (s.x2 < x1 || s.x1 > x2 || s.y2 < y1 || s.y1 > y2) continue
+    for (const q of s.pts) {
+      const u = Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.y - a.y) * dy) / len2))
+      if (Math.hypot(q.x - (a.x + u * dx), q.y - (a.y + u * dy)) < 9) return true
+    }
   }
   return false
 }
@@ -511,6 +565,7 @@ function placeLabel(cv, lines, taken, { roles, others = [], onLine = TRIES_ON, a
   // rings 是数字就只往外找到这个半径为止（概念图不让卡飘太远）
   const cands = [...around]
   if (rings) for (const [dx, dy] of RINGS) if (rings === true || Math.hypot(dx, dy) <= rings) for (const t of TS) cands.push([t, dx, dy])
+  let free = null   // 线上不挨着别的线的点，头一次要用时才算，这张卡只算一次
   for (const tight of [false, true]) {
     for (const t of onLine) {
       const p = cv.at(t)
@@ -523,11 +578,12 @@ function placeLabel(cv, lines, taken, { roles, others = [], onLine = TRIES_ON, a
     for (const [t, dx, dy] of cands) {
       const p = cv.at(t)
       const probe = labelBox(p.x + dx, p.y + dy, lines, null, roles)
-      const lb = labelBox(p.x + dx, p.y + dy, lines, nearestAnchor(cv, probe.box, others), roles)
-      const boxes = press(lb.box, tight)
+      // 框的大小和位置跟虚线连哪无关，压框、出界先拿它算；分数里穿线、虚线穿线只会往上加，已经不小于最好的那处就不必细算
+      const boxes = press(probe.box, tight), out = outside(probe.box)
+      if ((boxes || out) && best && 1 + boxes + out + Math.hypot(dx, dy) / 100 >= best.score) continue
+      const lb = labelBox(p.x + dx, p.y + dy, lines, nearestAnchor(cv, probe.box, others, (free ??= freeAnchors(cv, others))), roles)
       const hits = lineHits(lb.box, [cv, ...others]) ? 1 : 0
       const cross = lb.lead && leaderCrosses(lb.lead, lb.anchor, others) ? 1 : 0
-      const out = outside(lb.box)
       if (!boxes && !hits && !cross && !out) return keep(lb)
       const score = 1 + boxes + hits * 4 + cross * 3 + out + Math.hypot(dx, dy) / 100
       if (!best || score < best.score) best = { lb, score }
@@ -539,32 +595,33 @@ function placeLabel(cv, lines, taken, { roles, others = [], onLine = TRIES_ON, a
 }
 
 // ---------- 上一层：主题之间 ----------
-function drawTop() {
+function drawTop(M = MAP) {
+  const G = Object.fromEntries(M.topics.map((t) => [t.id, t]))
   // 主题框的列宽照主区宽度算：几列塞得下就塞，框不窄过 300。框里的字按列宽折行，框高按最长的那个
   // 格子位置照人排的 x、y（P 里，不改 MAP）；只有一排、主区放不下的，蛇形折行：第一行从左往右，下一行从右往左接着，先后挨着的主题还挨着
   // 折完（或人排了好几排）还是比主区宽的，整张等比缩到主区宽：不截、不横着滚
   const avail = availW(), PAD = 20
   const GX = 190, GY = 210, MIN_TW = 300                        // 列间放得下一张小卡（最宽 138）；行间放得下四行字的小卡
-  const P = Object.fromEntries(MAP.topics.map((t) => [t.id, { x: t.x, y: t.y }]))
-  let cols = Math.max(...MAP.topics.map((t) => t.x)) + 1, rowsN = Math.max(...MAP.topics.map((t) => t.y)) + 1
+  const P = Object.fromEntries(M.topics.map((t) => [t.id, { x: t.x, y: t.y }]))
+  let cols = Math.max(...M.topics.map((t) => t.x)) + 1, rowsN = Math.max(...M.topics.map((t) => t.y)) + 1
   const fitCols = Math.max(1, Math.floor((avail - PAD * 2 + GX) / (MIN_TW + GX)))
   if (rowsN === 1 && cols > fitCols) {
-    const order = [...MAP.topics].sort((a, b) => a.x - b.x)
+    const order = [...M.topics].sort((a, b) => a.x - b.x)
     order.forEach((t, i) => { const r = Math.floor(i / fitCols), c = i % fitCols; P[t.id] = { x: r % 2 ? fitCols - 1 - c : c, y: r } })
     cols = Math.min(fitCols, order.length); rowsN = Math.ceil(order.length / fitCols)
   }
   const pos = (id) => P[id] ?? { x: 0, y: 0 }
   const TW = Math.max(MIN_TW, Math.min(380, Math.floor((avail - PAD * 2 - (cols - 1) * GX) / cols)))
-  const body = Object.fromEntries(MAP.topics.map((g) => [g.id, { does: g.does.map((d) => wrapW(d, TW - 48, 12)), concepts: wrapW(g.concepts.join('、'), TW - 36, 11) }]))
-  const TH = Math.max(...MAP.topics.map((g) => { const b = body[g.id]; return 76 + b.does.reduce((t, l) => t + l.length, 0) * 18 + b.concepts.length * 15 }))
-  for (const t of MAP.topics) { t.tx = pos(t.id).x * (TW + GX); t.ty = pos(t.id).y * (TH + GY) }
+  const body = Object.fromEntries(M.topics.map((g) => [g.id, { does: g.does.map((d) => wrapW(d, TW - 48, 12)), concepts: wrapW(g.concepts.join('、'), TW - 36, 11) }]))
+  const TH = Math.max(...M.topics.map((g) => { const b = body[g.id]; return 76 + b.does.reduce((t, l) => t + l.length, 0) * 18 + b.concepts.length * 15 }))
+  for (const t of M.topics) { t.tx = pos(t.id).x * (TW + GX); t.ty = pos(t.id).y * (TH + GY) }
   const rect = (g) => ({ x: g.tx, y: g.ty, w: TW, h: TH })
   let s = MARK
-  const taken = MAP.topics.map(rect)
+  const taken = M.topics.map(rect)
   // 线：同一行隔着别的主题的，从顶上绕过去（最后一行从底下绕），几条一起绕的一条比一条高；其余的照 curve 走边到边
   const lifts = {}
-  const geo = MAP.edges.map((t) => {
-    const A = pos(t.from), B = pos(t.to), a = rect(grpOf[t.from]), b = rect(grpOf[t.to])
+  const geo = M.edges.map((t) => {
+    const A = pos(t.from), B = pos(t.to), a = rect(G[t.from]), b = rect(G[t.to])
     if (A.y !== B.y || Math.abs(A.x - B.x) < 2) return curve(a, b)
     const below = rowsN > 1 && A.y === rowsN - 1, key = A.y + (below ? 'b' : 't')
     const lift = 60 + (lifts[key] = (lifts[key] ?? -1) + 1) * 70, fwd = B.x > A.x
@@ -574,10 +631,10 @@ function drawTop() {
     return { d: `M ${p0.x} ${p0.y} C ${p1.x} ${p1.y}, ${p2.x} ${p2.y}, ${p3.x} ${p3.y}`, at: (tt) => bez(p0, p1, p2, p3, tt) }
   })
   let labels = ''
-  MAP.edges.forEach((t, i) => {
+  M.edges.forEach((t, i) => {
     const cv = geo[i], k = t.from + '>' + t.to, others = geo.filter((_, j) => j !== i)
     s += `<g class="ed" data-t="${k}"><path class="vis" d="${cv.d}" marker-end="url(#a)"/><path class="hit" d="${cv.d}"/></g>`
-    const A = rect(grpOf[t.from]), B = rect(grpOf[t.to])
+    const A = rect(G[t.from]), B = rect(G[t.to])
     const horizontal = Math.abs(A.y - B.y) < 100, vertical = Math.abs(A.x - B.x) < 100
     // 小卡先骑在线的中点上；骑不上去再挪到线旁边：横线的上下、竖线的左右、斜线的两侧
     const around = horizontal ? [[0.5, 0, -50], [0.5, 0, 50], [0.3, 0, -50], [0.7, 0, -50], [0.3, 0, 50], [0.7, 0, 50], [0.5, 0, -100], [0.5, 0, 100], [0.3, 0, 100], [0.7, 0, 100], [0.3, 0, -100], [0.7, 0, -100]]
@@ -585,7 +642,7 @@ function drawTop() {
       : [[0.25, -150, 0], [0.25, 150, 0], [0.75, -150, 0], [0.75, 150, 0], [0.2, 0, -70], [0.8, 0, 70], [0.25, -220, 0], [0.25, 220, 0], [0.75, -220, 0], [0.75, 220, 0], [0.5, -260, 0], [0.5, 260, 0]]
     labels += placeLabel(cv, t.label.split('；'), taken, { others, around }).svg
   })
-  for (const g of MAP.topics) {
+  for (const g of M.topics) {
     const b = body[g.id]
     let y = g.ty + 56, lines = ''
     for (const d of b.does) d.forEach((l, i) => { lines += `<text class="d" x="${g.tx + 18 + (i ? 12 : 0)}" y="${y}">${i ? '' : '· '}${esc(l)}</text>`; y += 18 })
@@ -596,6 +653,20 @@ function drawTop() {
   }
   s += labels
   return canvas(s, taken, PAD, avail)
+}
+/** 一个主题里两个子主题之间底下那几条细线：从这个主题的几份子主题概念图里找 */
+function fineSubEdges(topic, a, b) {
+  const out = []
+  for (const x of subsOf(topic) ?? []) {
+    const c = CONCEPTS[topic + '/' + x.id]; if (!c) continue
+    const node = (id) => (c.concepts ?? []).find((n) => n.id === id) ?? (c.external ?? []).find((n) => n.id === id)
+    const subOf = (id) => { if ((c.concepts ?? []).some((n) => n.id === id)) return x.id; const n = node(id); return n && !crossOf(n) && n.topic === topic ? n.sub ?? subFor(topic, n.id) : null }
+    for (const e of c.edges ?? []) {
+      const p = subOf(e.from), q = subOf(e.to)
+      if ((p === a && q === b) || (p === b && q === a)) out.push(`${node(e.from).title} → ${node(e.to).title}：${e.label}`)
+    }
+  }
+  return [...new Set(out)]
 }
 /** 两个主题之间底下那几条细线：从各主题的概念页里找 */
 function fineEdges(a, b) {
@@ -627,8 +698,8 @@ const crossOf = (n) => n.topic === '共享内核' ? '共享内核' : n.context &
 /** 概念页的数据换成画图用的形状：自己的数据带 g＝本主题，别的主题的带它自己的 topic；
  *  别的上下文的 g 前面加上下文名，免得主题号跟本上下文的撞上被当成自己的，cx 记它出自哪个上下文 */
 function localData(c) {
-  const nodes = [...(c.concepts ?? []).map((n) => ({ ...n, g: c.topic })),
-    ...(c.external ?? []).map((n) => { const cx = crossOf(n); return { ...n, g: cx ? cx + '/' + n.topic : n.topic, cx } })]
+  const nodes = [...(c.concepts ?? []).map((n) => ({ ...n, g: c.sub ?? c.topic })),
+    ...(c.external ?? []).map((n) => { const cx = crossOf(n); return { ...n, g: cx ? cx + '/' + n.topic : n.sub ?? subFor(n.topic, n.id) ?? n.topic, cx } })]
   return { nodes, edges: c.edges ?? [], byId: Object.fromEntries(nodes.map((n) => [n.id, n])) }
 }
 /** 虚框底下那行小字和颜色：本上下文的写主题名、用主题的颜色；别的上下文的写「上下文 · 主题号」、用那边主题的颜色；共享内核的写「共享内核」、灰的。找不到主题就灰框、写主题号，不抛错 */
@@ -636,6 +707,8 @@ function stubFrom(n) {
   const grey = 'fill:var(--area);stroke:var(--area-line)'
   if (n.cx === '共享内核') return { text: '共享内核', style: grey }
   if (n.cx) { const t = BIZ[n.cx]?.MAP?.topics?.find((x) => x.id === n.topic); return { text: n.cx + ' · ' + n.topic, style: t ? tint(t) : grey } }
+  const si = n.g !== n.topic && subInfo(n.g)
+  if (si) { const t = grpOf[si.topic]; return { text: (t?.title ?? si.topic) + ' · ' + si.sub.title, style: t ? tint(t) : grey } }
   const t = grpOf[n.topic]
   return { text: t?.title ?? n.topic, style: t ? tint(t) : grey }
 }
@@ -643,7 +716,7 @@ function stubFrom(n) {
 function openStub(d) {
   if (d.cx === '共享内核') location.hash = '共享内核/kernel'
   else if (d.cx) { if (CONTEXTS.includes(d.cx)) location.hash = d.cx + '/concepts/' + d.g }
-  else go('concepts/' + d.g)
+  else go('concepts/' + d.g + (d.s ? '/' + d.s : ''))
 }
 function drawLocal(g, c) {
   const { nodes, edges, byId } = localData(c)
@@ -989,7 +1062,7 @@ function drawLocal(g, c) {
   }
   for (const id of outside) {
     const p = pos[id], n = byId[id], from = stubFrom(n)
-    s += `<g class="stub" data-g="${esc(n.topic)}"${n.cx ? ` data-cx="${esc(n.cx)}"` : ''} data-n="${esc(id)}"><rect x="${p.x}" y="${p.y}" width="${W}" height="${p.h}" rx="3" style="${from.style};fill-opacity:.5"/>
+    s += `<g class="stub" data-g="${esc(n.topic)}"${n.cx ? ` data-cx="${esc(n.cx)}"` : ''}${!n.cx && n.g !== n.topic ? ` data-s="${esc(n.g)}"` : ''} data-n="${esc(id)}"><rect x="${p.x}" y="${p.y}" width="${W}" height="${p.h}" rx="3" style="${from.style};fill-opacity:.5"/>
       <text x="${p.x + W / 2}" y="${p.y + 17}" text-anchor="middle">${esc(n.title)}</text><text class="sub" x="${p.x + W / 2}" y="${p.y + 32}" text-anchor="middle">${esc(from.text)} ›</text></g>`
   }
   s += labels
@@ -1265,7 +1338,7 @@ const LEG = {
   qa: `<span><span class="sw" style="background:var(--note);border-color:var(--bad)"></span>每步右边一个框：点标题展开、折叠，有待定的规则、没答的问题就展开，点一个答法就是答了</span><span><span class="sw" style="background:var(--area);border-color:var(--area-line)"></span>全定了的，默认折起来</span>`,
 }
 function render() {
-  const [kind, id] = view.split('/')
+  const [kind, id, subId] = view.split('/')
   useCx(context)
   Shell.current = context; Shell.nav()
   const main = document.getElementById('main')
@@ -1290,16 +1363,28 @@ function render() {
       <tbody>${(n.table.rows ?? []).map((r) => `<tr>${n.table.columns.map((_, i) => `<td>${esc(r[i] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
       ${n.source ? `<div class="src">出处：${esc(n.source)}</div>` : ''}</div>`
   if (kind === 'concepts') {
-    const t = grpOf[id], c = CONCEPTS[id]
+    const t = grpOf[id], top = CONCEPTS[id]
     if (!t) return missing('主题')
-    const h1 = `<h1><a href="#map">全局图</a><span class="sep">›</span>${esc(t.title)}</h1>`
+    const subs = top?.subs
+    // 分了子主题、地址里没写子主题：画子主题图，画法照全局图，颜色用这个主题的
+    if (subs && !subId) {
+      main.innerHTML = `<h1><a href="#map">全局图</a><span class="sep">›</span>${esc(t.title)} <span class="kind">· ${subs.length} 个子主题</span></h1>
+      <p class="sub">${esc(top.summary ?? '')}</p>
+      ${subs.length ? `<div class="diagram">${drawTop({ topics: subs.map((x) => ({ ...x, c: x.c ?? t.c, does: x.does ?? [], concepts: x.concepts ?? [] })), edges: top.edges ?? [] })}</div>` : '<p class="sub">子主题还没分。</p>'}`
+      return
+    }
+    const x = subs && subs.find((y) => y.id === subId)
+    if (subId && !x) { main.innerHTML = `<h1><a href="#map">全局图</a><span class="sep">›</span><a href="#concepts/${esc(id)}">${esc(t.title)}</a><span class="sep">›</span>${esc(subId)}</h1><p class="sub">${esc(t.title)} 里没有子主题 ${esc(subId)}。</p>`; return }
+    const c = x ? CONCEPTS[id + '/' + x.id] : top
+    const h1 = x ? `<h1><a href="#map">全局图</a><span class="sep">›</span><a href="#concepts/${esc(id)}">${esc(t.title)}</a><span class="sep">›</span>${esc(x.title)}</h1>`
+      : `<h1><a href="#map">全局图</a><span class="sep">›</span>${esc(t.title)}</h1>`
     if (!c) { main.innerHTML = `${h1}<p class="sub">还没写。</p>`; return }
-    const sel = c.concepts.find((n) => n.id === selected)
+    const sel = (c.concepts ?? []).find((n) => n.id === selected)
     main.innerHTML = `${h1}
       <p class="sub">${esc(c.summary)}</p>
-      <div class="row"><div class="diagram">${drawLocal(t, c)}</div>${sel ? `<div class="side"><b>${esc(sel.title)}</b>${esc(sel.definition)}<div class="src">出处：${esc(sel.source)}</div></div>` : ''}</div>
+      <div class="row"><div class="diagram">${drawLocal(x ? { ...x, c: t.c } : t, c)}</div>${sel ? `<div class="side"><b>${esc(sel.title)}</b>${esc(sel.definition)}<div class="src">出处：${esc(sel.source)}</div></div>` : ''}</div>
       <div class="legend">${LEG.role}${LEG.data}${LEG.stub}</div>
-      ${c.concepts.filter((n) => n.table?.columns?.length).map(tableOf).join('')}`
+      ${(c.concepts ?? []).filter((n) => n.table?.columns?.length).map(tableOf).join('')}`
   } else if (kind === 'flow') {
     const f = FLOWS.find((x) => x.file === id)
     if (!f) return missing('流程')
@@ -1324,8 +1409,12 @@ function bind() {
     pop.style.left = Math.max(8, px) + 'px'; pop.style.top = Math.max(8, Math.min(y - 20, innerHeight - pop.offsetHeight - 8)) + 'px'
   }
   main.addEventListener('mousemove', (ev) => {
-    const [kind] = view.split('/')
+    const [kind, vid, vsub] = view.split('/')
     const ed = ev.target.closest('.ed[data-t]')
+    if (kind === 'concepts' && !vsub && subsOf(vid) && ed) {
+      const [a, b] = ed.dataset.t.split('>'), items = fineSubEdges(vid, a, b), sa = subsOf(vid).find((x) => x.id === a), sb = subsOf(vid).find((x) => x.id === b)
+      if (items.length) { show(`<h4>${esc(sa?.title ?? a)} ↔ ${esc(sb?.title ?? b)}</h4>` + items.map((t) => `<div>${esc(t)}</div>`).join(''), ev.clientX, ev.clientY); return }
+    }
     if (kind === 'map' && ed) {
       const [a, b] = ed.dataset.t.split('>'), items = fineEdges(a, b)
       if (items.length) { show(`<h4>${esc(grpOf[a].title)} ↔ ${esc(grpOf[b].title)}</h4>` + items.map((t) => `<div>${esc(t)}</div>`).join(''), ev.clientX, ev.clientY); return }
@@ -1349,7 +1438,7 @@ function bind() {
     const cxEl = ev.target.closest('.cxmap [data-cx]')
     if (cxEl) { selected = selected === cxEl.dataset.cx ? null : cxEl.dataset.cx; render(); return }
     const tp = ev.target.closest('.tp'), stub = ev.target.closest('.stub'), nd = ev.target.closest('.nd')
-    if (tp) { go('concepts/' + tp.dataset.g); return }
+    if (tp) { const [k, v] = view.split('/'); go(k === 'concepts' && subsOf(v) ? 'concepts/' + v + '/' + tp.dataset.g : 'concepts/' + tp.dataset.g); return }
     if (stub) { openStub(stub.dataset); return }
     if (nd) { selected = selected === nd.dataset.n ? null : nd.dataset.n; render() }
   })

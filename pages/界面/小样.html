@@ -457,7 +457,12 @@ function bind() {
   document.getElementById('main').addEventListener('click', (ev) => {
     if (ev.target.closest('.gate button.act')) {   // 定下只定当前这一屏
       const c = current(); if (!c) return
-      if (LIVE) { post('定下', { mockup: c.req.req, screen: c.sc.id, context, sig: c.sc.sig }); return }
+      // 工作台记好了就在这一屏上标定下、重画，不整页重载：重载要把所有小样重读一遍，需求多了要等好几秒。这一屏的记号不算定下的日子，标完照旧能答问题
+      if (LIVE) {
+        fetch('api/定下', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mockup: c.req.req, screen: c.sc.id, context, sig: c.sc.sig }) })
+          .then((r) => r.json()).then((o) => { if (!o.ok) return alert(o.error); c.sc.decidedAt = o.date ?? today(); render() })
+        return
+      }
       c.sc.decidedAt = today(); render(); return   // 单开时就地记一下，看看定下之后长什么样
     }
     const ob = ev.target.closest('.ask button.opt')   // 问题卡上的一个选项或「另说」
