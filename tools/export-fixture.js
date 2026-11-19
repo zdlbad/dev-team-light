@@ -13,7 +13,7 @@ const write = (rel, data) => {
   fs.writeFileSync(p, typeof data === 'string' ? data : JSON.stringify(data, null, 2) + '\n')
   console.log('写', rel)
 }
-const CX = '上下文/养老系统/'
+const CX = '上下文/样例系统/'
 
 // 项目、上下文图、共享内核（上下文地图并在业务那份小样里）
 const c = sampleData(W('业务'), ['PROJECT', 'EDGES'])

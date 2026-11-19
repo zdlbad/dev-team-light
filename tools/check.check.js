@@ -44,6 +44,16 @@ function clean() {
   write(A + '业务/概念/g2.json', { topic: 'g2', title: '记账', subs: [{ id: 'g2-1', title: '入账', x: 0, y: 0 }, { id: 'g2-2', title: '对账', x: 1, y: 0 }], edges: [{ from: 'g2-1', to: 'g2-2', label: 'x' }] })
   write(A + '业务/概念/g2/g2-1.json', { topic: 'g2', sub: 'g2-1', title: '入账', concepts: [], external: [], edges: [] })
   write(A + '业务/概念/g2/g2-2.json', { topic: 'g2', sub: 'g2-2', title: '对账', concepts: [], external: [], edges: [] })
+  // 模块业务：g1 一份；两份流程接上：开户的出口接存钱的入口
+  write(A + '业务/模块业务/g1.json', { topic: 'g1', title: '开户', groups: [{ title: '账户', functions: [
+    { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '账户', to: '开着' }, in: ['开户表'], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
+    chains: [{ id: 'c-1', title: '开了以后', after: { title: '账户', to: '开着' }, then: [{ kind: '新记录', title: '卡' }] }],
+    workflows: [{ id: 'w-1', title: '账户', states: [{ id: 's-1', title: '开着' }, { id: 's-2', title: '销了' }], moves: [{ from: 's-1', to: 's-2', label: '销户' }] }],
+    asks: [{ id: 'q-1', q: '一人能开几个？', lean: '一个', options: ['一个', '不限'] }] })
+  edit(A + '业务/流程/01-开户.json', (d) => { d.topic = 'g1'; d.exits = [{ text: '开好了去存钱', step: 2, flow: 'g1-02-存钱' }] })
+  write(A + '业务/流程/g1-02-存钱.json', { file: 'g1-02-存钱', title: '存钱', topic: 'g1', entries: [{ text: '开好了户', step: 1, flow: '01-开户' }], steps: [{ id: 1, title: '存' }, { id: '1a', title: '存不进', alt: '存得进吗', case: '存不进' }] })
+  write(B + '业务/全局图.json', { topics: [{ id: 'm1', title: '登录' }], edges: [] })
+  edit(B + '业务/流程/02-登录.json', (d) => { d.topic = 'm1' })
   write(B + '代码/结构.json', { files: [{ path: 'src/Login.tsx', kind: '页面', screen: 'N-2/x' }, { path: 'src/push.ts', kind: '事件处理器', model: { context: '后台', item: 'open' } }] })
   for (const f of ['src/Login.tsx', 'src/push.ts']) write(B + '代码/伪代码/' + f + '.json', { file: f, blocks: [] })
   write('原料/坏的.json', '{ 这不是 JSON')   // 原料不看
@@ -100,6 +110,29 @@ broken('子主题之间的线一头不是子主题', () => edit(G2, (d) => d.edg
 broken('子文件夹里有图上没有的文件', () => write(A + '业务/概念/g2/g2-3.json', { topic: 'g2', sub: 'g2-3' }), '子主题图上没有 g2-3', 'g2-3.json')
 broken('子主题文件的 sub 写错了', () => edit(A + '业务/概念/g2/g2-2.json', (d) => { d.sub = 'g2-1' }), 'sub 要写子主题号 g2-2', 'g2-2.json')
 broken('主题没分子主题却有子文件夹', () => write(A + '业务/概念/g1/g1-1.json', { topic: 'g1', sub: 'g1-1' }), '概念/g1/ 下有子主题的文件', 'g1.json')
+
+const M1 = A + '业务/模块业务/g1.json', fn1 = (d) => d.groups[0].functions[0]
+broken('功能号重复', () => edit(M1, (d) => d.groups.push({ title: '卡', functions: [{ ...fn1(d), title: '又一项' }] })), '功能号重复：f-1', 'g1.json')
+broken('功能没写核心数据', () => edit(M1, (d) => { delete fn1(d).subject }), '功能 f-1（开立账户）没写核心数据')
+broken('功能没写操作意图', () => edit(M1, (d) => { fn1(d).intent = '' }), '没写操作意图')
+broken('功能指着的流程步没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '01-开户', step: 9 }] }), '「01-开户」第 9 步没有')
+broken('功能指着的流程没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '99-没有', step: 1 }] }), '「99-没有」在 业务/流程/ 下没有')
+broken('内部流程号重复', () => edit(M1, (d) => d.chains.push({ ...d.chains[0] })), '内部流程号重复：c-1')
+broken('工作流程的线一头不是状态', () => edit(M1, (d) => d.workflows[0].moves.push({ from: 's-2', to: 's-9', label: 'x' })), 's-9 不是它的状态')
+broken('模块业务的待定号重复', () => edit(M1, (d) => d.asks.push({ id: 'q-1', q: '又一个？' })), '问题号重复：q-1', 'g1.json')
+broken('模块业务的主题号写错', () => edit(M1, (d) => { d.topic = 'g2' }), 'topic 要写主题号 g1')
+broken('模块业务的文件不是全局图上的主题', () => write(A + '业务/模块业务/g7.json', { topic: 'g7', groups: [] }), 'g7 不是全局图上的主题')
+broken('流程的主题不在全局图上', () => edit(A + '业务/流程/01-开户.json', (d) => { d.topic = 'g9' }), 'topic 写的 g9 不是全局图上的主题')
+broken('出口接的步没有', () => edit(A + '业务/流程/01-开户.json', (d) => { d.exits[0].step = 7 }), '出口「开好了去存钱」接的第 7 步这一份里没有')
+broken('出口那一头没写回来', () => edit(A + '业务/流程/g1-02-存钱.json', (d) => { d.entries = [] }), '出口接着「g1-02-存钱」，那一份的 entries 里没写回到「01-开户」')
+broken('入口写的流程没有', () => edit(A + '业务/流程/g1-02-存钱.json', (d) => { d.entries[0].flow = '00-没有' }), '入口「开好了户」写的流程「00-没有」')
+broken('alt 的步没写 case', () => edit(A + '业务/流程/g1-02-存钱.json', (d) => { delete d.steps[1].case }), '第 1a 步写了 alt，没写 case')
+clean(); edit(A + '业务/流程/01-开户.json', (d) => { delete d.topic })
+r = run()
+check('流程没写 topic：只提醒', r.code === 0 && r.out.includes('提醒') && r.out.includes('没写 topic'), r.out)
+clean(); edit(A + '业务/概念/g1.json', (d) => { d.concepts = [{ id: 'a', title: '账户' }, { id: 'b', title: '卡' }]; d.edges = [{ id: '1', from: 'a', to: 'b', label: '开了发卡' }, { id: '2', from: 'b', to: 'a', label: '卡挂在账户下' }] })
+r = run()
+check('同样两样数据之间两条线：提醒并成一条', r.code === 0 && r.out.includes('a ↔ b 之间有 2 条线'), r.out)
 
 clean(); write(A + '界面/N-1/旧的.html', '<p>没人用</p>')
 r = run()

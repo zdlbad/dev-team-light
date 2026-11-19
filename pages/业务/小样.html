@@ -103,6 +103,58 @@ svg text.sub{font-size:11px;fill:var(--ink-3)}
 .qa a.scr text{fill:var(--accent);pointer-events:auto;cursor:pointer}.qa a.scr:hover text{text-decoration:underline}
 .qa .btn{cursor:pointer}.qa .btn rect{fill:var(--panel);stroke:var(--line);stroke-width:1;rx:4}.qa .btn text{fill:var(--ink);font-size:11.5px}
 .qa .btn.b rect{stroke:var(--accent)}.qa .btn.b text{font-weight:600;fill:var(--accent)}
+/* 业务（模块业务）：三层页签，一屏看完不用上下滚 */
+.mtabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--line);margin:0 0 10px}
+.mtabs a{padding:6px 12px;font-size:13px;color:var(--ink-2);text-decoration:none;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;margin-bottom:-1px}
+.mtabs a:hover{color:var(--ink)}
+.mtabs a.on{background:var(--panel);border-color:var(--line);color:var(--ink);font-weight:600}
+.mtabs a small{color:var(--ink-3);font-weight:400;margin-left:2px}
+.mtabs a.red small{color:var(--bad);font-weight:600}
+.mtabs.l1 a{font-size:14px}.mtabs.l3 a{font-size:12.5px;padding:4px 10px}
+.mhead{display:flex;align-items:baseline;gap:10px;margin:6px 0 2px}.mhead h2{font-size:17px;margin:0}
+.mhead .called{font-size:12px;color:var(--ink-3)}.mhead .fid{font-size:11.5px;color:var(--ink-3);margin-left:auto}
+.mfn{display:flex;align-items:center;gap:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin:8px 0 10px;flex-wrap:wrap}
+.mcol{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mcol.left{width:260px}.mcol.mid{width:240px}.mcol.right{width:240px}
+.mcap{font-size:11.5px;color:var(--ink-3);margin-top:4px}
+.mc{border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13px;background:var(--panel)}
+.mc .mk{font-size:11px;color:var(--ink-3);margin-bottom:2px}
+.mc.intent{background:var(--note);border-color:var(--note-line);color:var(--ink-2)}
+.mc.data{background:var(--data);border-color:var(--data-line)}
+.mc.core{border-width:2px;border-color:var(--accent);padding:10px 14px}.mc.core b{font-size:15px}
+.mc.out{background:var(--area);border-color:var(--area-line)}
+.mc .ft{font-size:12.5px;color:var(--ink-2);margin-top:2px}.mc .when{font-size:12px;color:var(--ink-3);margin-top:2px}
+.marr{flex:1;min-width:70px;max-width:200px;display:flex;flex-direction:column;align-items:center;padding:0 6px}
+.marr i{font-style:normal;font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.3;margin-bottom:3px}
+.marr:after{content:"";display:block;width:100%;height:9px;background:linear-gradient(var(--ink-3),var(--ink-3)) left center/calc(100% - 8px) 1.3px no-repeat;clip-path:polygon(0 3.5px,calc(100% - 8px) 3.5px,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,calc(100% - 8px) 5.5px,0 5.5px)}
+.marr:after{background:var(--ink-3)}
+.mmore{display:flex;flex-wrap:wrap;gap:12px 28px;font-size:13px;color:var(--ink-2)}
+.mmore a{color:var(--accent);text-decoration:none}.mmore a:hover{text-decoration:underline}
+.mmore>div{min-width:240px;max-width:520px}.mmore ul{margin:2px 0 0;padding-left:18px}.mmore li{margin:2px 0}
+.mchain{display:flex;align-items:center;flex-wrap:wrap;row-gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin:8px 0}
+.mchain .mc{width:190px}.mchain .mc.cause{border-color:var(--accent)}
+.mask{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:0 0 10px;max-width:760px;font-size:13px}
+.mask.pending{border-color:var(--bad)}.mask.pending .mk{color:var(--bad)}.mask.done{background:var(--area);color:var(--ink-2)}
+.mask .q{font-size:14px;color:var(--ink);margin-bottom:4px}.mask .mk{font-size:11.5px;font-weight:600;margin-right:6px;color:var(--ink-3)}
+.mask .lean{color:var(--ink-2);margin:2px 0 6px}.mask .ans{color:var(--ink-2)}
+.mbtn{font:inherit;font-size:12.5px;padding:3px 10px;margin:0 6px 4px 0;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);cursor:pointer}
+.mbtn.b{border-color:var(--accent);color:var(--accent);font-weight:600}
+.wf .st rect{fill:var(--panel);stroke:var(--ink-2);stroke-width:1.3;rx:10}.wf .st text{font-size:13px;text-anchor:middle}.wf .st text.sub{font-size:11px;fill:var(--ink-3)}
+.wf path.mv{fill:none;stroke:var(--ink-2);stroke-width:1.3}.wf .ml rect{fill:var(--panel);stroke:none}.wf .ml text{font-size:11.5px;fill:var(--ink-2);text-anchor:middle}
+/* 流程：入口、出口卡在最左边一列，虚线指到接着的那一步；opt、alt 是虚线框，alt 里横虚线隔成格 */
+.end rect{fill:var(--panel);stroke:var(--accent);stroke-width:1.2}.end.out rect{stroke-dasharray:5 3}
+.end text{font-size:12px}.end text.h{font-size:11px;fill:var(--accent)}
+.flow a .end{cursor:pointer}.flow a:hover .end text.h{text-decoration:underline}
+.elead{fill:none;stroke:var(--accent);stroke-width:1;stroke-dasharray:3 3}
+.frame rect.f{fill:none;stroke:var(--ink-3);stroke-width:1.1;stroke-dasharray:6 4}
+.frame rect.tab{fill:var(--area);stroke:var(--ink-3);stroke-width:1}
+.frame text{font-size:12px;fill:var(--ink-2)}.frame text.k{font-weight:600;fill:var(--ink)}.frame text.c{font-size:11.5px;fill:var(--ink-3)}
+.frame line{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:6 4}
+.data.tpc rect{stroke-width:1}.data.tpc text.tn{font-size:10px;fill:var(--ink-3);text-anchor:start}
+/* 流程标题下一排主题：这一份讲的主题在前、加粗，后面是数据卡用到的别的主题 */
+.ftopics{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px}
+.ftopics a{font-size:12px;padding:1px 9px;border:1px solid;border-radius:10px;color:var(--ink);text-decoration:none}
+.ftopics a.own{font-weight:600}
 /* 流程的图框不自己滚（让主区滚），顶上参与方那一排才能 sticky 贴在主区顶上；横着滚时两者一起走 */
 .flowbox{overflow:visible}
 .flowbox svg{margin:0}
@@ -154,7 +206,7 @@ const DATA = (typeof window !== 'undefined' && window.DATA) || {}
 const LIVE = Object.keys(DATA).length > 0
 const post = (action, body) => fetch('api/' + action, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json()).then((o) => { if (o.ok) location.reload(); else alert(o.error) })
 // 业务这个角色的三份输出，一个上下文一套；数据写死在这里，真做时是 上下文/<名>/业务/ 下三种 JSON 文件。
-// 工作台注入 DATA.BIZ = { <上下文名>: { MAP, CONCEPTS, FLOWS } }，有业务的上下文各一项；单开时用下面写死的养老系统和排版系统。三份的形状：
+// 工作台注入 DATA.BIZ = { <上下文名>: { MAP, CONCEPTS, FLOWS } }，有业务的上下文各一项；单开时用下面写死的样例系统和排版系统。三份的形状：
 // 1. 全局图.json
 //    { topics: [{ id, title, c, x, y, does: [两句], concepts: [几样数据名] }],   c 是颜色号 1–5；x、y 是格子位置，从左到右、从上到下是发生的先后
 //      edges:  [{ from, to, label }] }                                          label 是主题之间主要的业务交流，人写的，「；」分句
@@ -169,12 +221,20 @@ const post = (action, body) => fetch('api/' + action, { method: 'POST', headers:
 //    每个子主题一份 概念/<主题>/<子主题>.json，形状同上面的概念图，多一个 sub（子主题 id）；工作台给的 CONCEPTS 里键是「主题/子主题」
 //    别处指进来的虚框写 sub 就进那个子主题；没写 sub 的，到那个主题的几份子主题里找这样数据在哪一份
 // 3. 流程/<流程名>.json（一段流程一份）
-//    { file, title, summary, parties: [{ id, title, sub }],
+//    { file, title, topic, summary, parties: [{ id, title, sub }],          文件名「主题号-两位序号-阶段名」；topic 是这一份讲的主题
+//      entries?: [{ text, step, flow? }], exits?: [{ text, step, flow? }],    入口、出口：接在这一份的哪一步上；flow 是接着的那一份，两边都写
 //      steps: [{ id, from, to, title, date, data?: [数据名], due?, source?, note?,
+//                opt?: 一句话（可能发生的情况）, alt?: 一句话（几支只走一支）, case?: 这一支的情况,   挨着的几步写得一样就画在同一个框里；旁支步号写 9a、9b
 //                rules?: [{ id, text, source?, status: '待定' | '定了', lean?, options?: [], answer?, answeredAt? }],   这一步守的规则；待定的就是问题
 //                asks?:  [{ id, q, lean?, options?: [], answer?, answeredAt?, by?, screen? }] }] }                       这一步上不是规则的问题；答了写 answer
 //                                                                    by 是别的角色问的（如「UI 设计」），screen 是它在界面页哪一屏问的「<需求编号>/<屏 id>」
 
+// 4. 模块业务/<主题>.json（一个主题一份，页面上叫「业务」）：这个主题自己的业务逻辑，换一家公司来用也不变
+//    { topic, title, summary,
+//      groups: [{ title, functions: [{ id, title, called?, does, intent, subject: { title, from?, to }, in: [数据名], out: [{ kind, title, when? }], rules?, uses?: [{ flow, step }], source? }] }],
+//      chains: [{ id, title, after: { title, from?, to, when? }, then: [{ kind, title, from?, to?, when?, note? }] }],     内部流程：一样数据变了，接着哪几样怎么变
+//      workflows: [{ id, title, states: [{ id, title, called? }], moves: [{ from, to, label }], note? }],                 工作流程：一种单据一份状态图
+//      asks?: [{ id, q, lean?, options?, answer?, answeredAt? }] }                                                      待定：标红，点一个答法就是答了
 const SAMPLE_MAP = {
   topics: [
     { id: 'g1', title: '评估与分资金', c: 1, x: 0, y: 0,
@@ -255,7 +315,7 @@ const SAMPLE_FLOWS = [
       { id: '8', from: 'rp', to: 'rp', title: '照护伙伴记下分到资金那天、分到的是全额', date: '01/07/2026', due: '最晚 26/08/2026 开始服务', source: '§6.9 行 625',
         note: '从分到资金那天起 56 天内要开始服务，不然资金收回、重新排队；申请延期到 84 天。' } ] } ]
 
-// 第二个上下文的样例：排版系统，一个主题、一段流程；概念图里连着养老系统的申报行、共享内核的老人
+// 第二个上下文的样例：排版系统，一个主题、一段流程；概念图里连着样例系统的申报行、共享内核的老人
 const SAMPLE_LAYOUT = {
   MAP: { topics: [
     { id: 'p1', title: '申报表排版', c: 1, x: 0, y: 0,
@@ -263,12 +323,12 @@ const SAMPLE_LAYOUT = {
       concepts: ['版式', '申报表'] } ], edges: [] },
   CONCEPTS: {
     p1: { topic: 'p1', title: '申报表排版',
-      summary: '这一块只管把养老系统出的申报行排成版式：表头写老人是谁，一行一笔，只读不改。',
+      summary: '这一块只管把样例系统出的申报行排成版式：表头写老人是谁，一行一笔，只读不改。',
       concepts: [
         { id: 'layout', title: '版式', order: 1, definition: '申报表长什么样：表头几栏、一行几栏、每页几行。', source: '申报格式 v1.14 第 4 节' },
         { id: 'form', title: '申报表', by: ['注册服务方'], order: 2, definition: '一季一张，照版式把申报行排进去，能打印、能上传。', source: '申报格式 v1.14 第 4 节' } ],
       external: [
-        { id: 'claim', title: '申报行', topic: 'g5', context: '养老系统' },
+        { id: 'claim', title: '申报行', topic: 'g5', context: '样例系统' },
         { id: 'old', title: '老人', topic: '共享内核' } ],
       edges: [
         { id: '1', from: 'layout', to: 'form', label: '照版式排' },
@@ -283,13 +343,14 @@ const SAMPLE_LAYOUT = {
           asks: [{ id: 'a-1', q: '一季的行太多时分几页还是一张长表？', lean: '分页，每页表头重复', options: ['分页', '一张长表'], by: 'UI 设计', screen: 'N-09/form' }] },
         { id: '2', from: 'rp', to: 'sa', title: '上传申报表', date: '02/10/2026', data: ['申报表'] } ] } ] }
 
+const SAMPLE_MODULES = { g2: {"topic":"g2","title":"参与者档案与她名下的钱","summary":"注册服务方替老人留一份档案，政府开在她名下的钱也记在这里。哪家公司来用都一样：档案按 My Aged Care 编号认，钱按批了的服务类型分账户。","groups":[{"title":"参与者档案","functions":[{"id":"f-1","title":"照决定通知书建立参与者档案","called":"建档","does":"照决定通知书记下她批了哪一级、哪条路径","intent":"老人交来决定通知书，给她留一份档案，以后签协议、分资金、记服务都记在这一份上。","subject":{"title":"参与者档案","to":"已建档"},"in":["决定通知书","支持计划"],"out":[],"rules":["一位老人只有一份档案，按 My Aged Care 编号认"],"uses":[{"flow":"01-老人注册","step":5}],"source":"手册 v4.4 §3 Participant"},{"id":"f-2","title":"在参与者档案上记下签了的服务协议","does":"记下她跟哪家签了协议、哪天签的","intent":"她跟注册服务方签了服务协议，档案上要看得出她已经签了、签的是哪一份。","subject":{"title":"参与者档案","from":"已建档","to":"已签协议"},"in":["服务协议"],"out":[],"uses":[{"flow":"01-老人注册","step":6}]},{"id":"f-3","title":"记下分到资金并开出她名下的基金","does":"记下分到资金那天和分到的是全额还是一部分，开出她名下的基金","intent":"卫生部来信说她分到了资金，从这一天起钱开在她名下，后面的服务才能从这笔钱里扣。","subject":{"title":"参与者档案","from":"已签协议","to":"分到资金"},"in":["分资金的信"],"out":[{"kind":"新记录","title":"她名下的基金"},{"kind":"新记录","title":"基金账户","when":"批了几类服务就开几个"}],"uses":[{"flow":"01-老人注册","step":8}]}]},{"title":"基金账户","functions":[{"id":"f-4","title":"照申报行从基金账户扣款","does":"按申报行上她的编号和服务类型，从对应的账户扣","intent":"服务做了、申报了，这一行的钱要从她名下对应的那个账户里扣掉。","subject":{"title":"基金账户","from":"扣款前的余额","to":"扣款后的余额"},"in":["申报行"],"out":[{"kind":"状态改变","title":"申报行","when":"扣成了就记成已扣"}],"rules":["只能扣她批了的那一类服务的账户"]}]}],"chains":[{"id":"c-1","title":"分到资金以后","after":{"title":"参与者档案","from":"已签协议","to":"分到资金"},"then":[{"kind":"新记录","title":"她名下的基金","to":"开着"},{"kind":"新记录","title":"基金账户","to":"可以扣款","when":"批了几类服务就开几个","note":"一笔基金一个账户"}]}],"workflows":[{"id":"w-1","title":"参与者档案","states":[{"id":"s-1","title":"已建档"},{"id":"s-2","title":"已签协议"},{"id":"s-3","title":"分到资金"},{"id":"s-4","title":"已停用","called":"离开"}],"moves":[{"from":"s-1","to":"s-2","label":"签了服务协议"},{"from":"s-2","to":"s-3","label":"卫生部来信分到资金"},{"from":"s-1","to":"s-3","label":"还没签协议就分到资金"},{"from":"s-3","to":"s-4","label":"她走了或者换了注册服务方"}],"note":"档案停用以后不删，留着查"}],"asks":[{"id":"q-1","q":"档案上的分级、路径跟决定通知书不一样时，是不让建，还是先建了再标出来？","lean":"不让建，等通知书改了再建","options":["不让建","先建了再标出来"]}]} }
 // 工作台给 BIZ；只给了 MAP/CONCEPTS/FLOWS 的旧数据当第一个上下文的；单开时用写死的两个上下文
-const BIZ = DATA.BIZ ?? (DATA.MAP ? { [(DATA.CONTEXTS ?? ['养老系统'])[0]]: { MAP: DATA.MAP, CONCEPTS: DATA.CONCEPTS ?? {}, FLOWS: DATA.FLOWS ?? [] } }
-  : { '养老系统': { MAP: SAMPLE_MAP, CONCEPTS: SAMPLE_CONCEPTS, FLOWS: SAMPLE_FLOWS }, '排版系统': SAMPLE_LAYOUT })
+const BIZ = DATA.BIZ ?? (DATA.MAP ? { [(DATA.CONTEXTS ?? ['样例系统'])[0]]: { MAP: DATA.MAP, CONCEPTS: DATA.CONCEPTS ?? {}, FLOWS: DATA.FLOWS ?? [] } }
+  : { '样例系统': { MAP: SAMPLE_MAP, CONCEPTS: SAMPLE_CONCEPTS, FLOWS: SAMPLE_FLOWS, MODULES: SAMPLE_MODULES }, '排版系统': SAMPLE_LAYOUT })
 // 界面页的屏名，键「<需求编号>/<屏 id>」：流程里别的角色在界面上问的问题（asks 带 screen）标屏名、链过去用；工作台从 上下文/<名>/界面/ 读
-const SCREENS = DATA.SCREENS ?? { 'N-01/new': { title: '建档', context: '养老系统' } }
+const SCREENS = DATA.SCREENS ?? { 'N-01/new': { title: '建档', context: '样例系统' } }
 // 主区画的是当前上下文的这三样；render 一开头按 context 换
-let MAP, CONCEPTS, FLOWS, grpOf
+let MAP, CONCEPTS, FLOWS, MODULES, grpOf
 // 分了子主题的主题：它那份概念文件里有 subs
 const subsOf = (topic) => CONCEPTS[topic]?.subs ?? null
 /** 子主题 id 属于哪个主题：{ topic, sub }；不是子主题给 null */
@@ -304,7 +365,7 @@ function subFor(topic, conceptId) {
 }
 function useCx(cx) {
   const b = BIZ[cx] ?? {}
-  MAP = b.MAP ?? { topics: [], edges: [] }; CONCEPTS = b.CONCEPTS ?? {}; FLOWS = b.FLOWS ?? []
+  MAP = b.MAP ?? { topics: [], edges: [] }; CONCEPTS = b.CONCEPTS ?? {}; FLOWS = b.FLOWS ?? []; MODULES = b.MODULES ?? {}
   grpOf = Object.fromEntries(MAP.topics.map((t) => [t.id, t]))
 }
 
@@ -314,7 +375,7 @@ function useCx(cx) {
 // 哪个上下文用了共享内核的哪些概念、各上下文到哪一步，都是从文件夹里数出来的，这里写死
 const PROJECT = DATA.PROJECT ?? { name: 'AgedCareProvider', contexts: [
   { id: 'chat', name: '聊天 app', role: '照护伙伴和老人、家属在手机上说话；知道她签了协议、开始服务，不管钱', c: 3 },
-  { id: 'care', name: '养老系统', role: '老人从注册到服务到申报的全流程；档案、基金、服务记录都在它这', c: 2 },
+  { id: 'care', name: '样例系统', role: '老人从注册到服务到申报的全流程；档案、基金、服务记录都在它这', c: 2 },
   { id: 'layout', name: '排版系统', role: '把账单、申报表排成能打印、能上传的版式；只读账目，不改', c: 1 } ],
   kernel: { concepts: ['老人', 'My Aged Care 编号', '照护伙伴', '服务类型'] } }
 const USES = DATA.USES ?? { care: ['老人', 'My Aged Care 编号', '照护伙伴', '服务类型'], chat: ['老人', '照护伙伴'], layout: ['老人', 'My Aged Care 编号', '服务类型'] }
@@ -327,8 +388,10 @@ const EDGES = DATA.EDGES ?? [
 // 还没答的条数：待定的规则 + 没答的问题。工作台注入 DATA.OPEN（键 '<上下文>/<流程文件名>' → 条数）；单开时从写死的 FLOWS 数
 const openIn = (f) => (f.steps ?? []).reduce((t, s) => t + (s.rules ?? []).filter((r) => r.status !== '定了' && !r.answer).length + (s.asks ?? []).filter((a) => !a.answer).length, 0)
 const flowsOf = (cx) => BIZ[cx]?.FLOWS ?? []
-const openOf = (cx, file) => DATA.OPEN ? (DATA.OPEN[cx + '/' + file] ?? 0) : openIn(flowsOf(cx).find((f) => f.file === file) ?? { steps: [] })
-const openCx = (cx) => DATA.OPEN ? Object.entries(DATA.OPEN).reduce((t, [k, n]) => t + (k.startsWith(cx + '/') ? n : 0), 0) : flowsOf(cx).reduce((t, f) => t + openIn(f), 0)
+// 模块业务没答的待定：键 '<上下文>/module/<主题>'
+const openMod = (m) => (m?.asks ?? []).filter((a) => !a.answer).length
+const openOf = (cx, file) => DATA.OPEN ? (DATA.OPEN[cx + '/' + file] ?? 0) : file.startsWith('module/') ? openMod(BIZ[cx]?.MODULES?.[file.slice(7)]) : openIn(flowsOf(cx).find((f) => f.file === file) ?? { steps: [] })
+const openCx = (cx) => DATA.OPEN ? Object.entries(DATA.OPEN).reduce((t, [k, n]) => t + (k.startsWith(cx + '/') ? n : 0), 0) : flowsOf(cx).reduce((t, f) => t + openIn(f), 0) + Object.values(BIZ[cx]?.MODULES ?? {}).reduce((t, m) => t + openMod(m), 0)
 const PROGRESS = DATA.PROGRESS ?? {
   care: { 功能: { total: 4, done: 1 }, 业务: { total: 5, done: 2, unit: '主题' }, 模型: { total: 2, done: 2, unit: '聚合' }, 编码: { total: 3, done: 1, unit: '份伪代码' } },
   chat: { 功能: { total: 2, done: 0 }, 业务: { total: 0, done: 0, unit: '主题' }, 模型: { total: 0, done: 0, unit: '聚合' }, 编码: { total: 0, done: 0, unit: '份伪代码' } },
@@ -337,9 +400,9 @@ const PROGRESS = DATA.PROGRESS ?? {
 // ---------- 通用 ----------
 const W = 150, H = 50      // 概念图里一个数据框的宽高；主题框的宽高在 drawTop 里按主区宽度算
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
-let view = 'map'       // 'map' | 'concepts/<主题>' | 'flow/<流程>' | 'kernel' | 'cxmap'；地址前面带上下文名
+let view = 'map'       // 'map' | 'concepts/<主题>' | 'module/<主题>/…' | 'flow/<流程>' | 'kernel' | 'cxmap'；地址前面带上下文名
 // 上下文：左边栏第一层，折叠展开；地址第一段是上下文名
-const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统', '共享内核']
+const CONTEXTS = DATA.CONTEXTS ?? ['样例系统', '聊天 app', '排版系统', '共享内核']
 // 第一个上下文：头一个有业务的；地址里没带上下文的旧写法（map、concepts/g1、flow/…）落到它
 const FIRST = CONTEXTS.find((c) => BIZ[c]) ?? CONTEXTS[0]
 let context = FIRST
@@ -359,7 +422,7 @@ let navAutoAt = null    // 上一次替哪一页自动展开过它的组
 const navSave = () => { try { localStorage.setItem(NAV_KEY, JSON.stringify(navFold)) } catch {} }
 // links: [{ v, html }]；badge 是折叠时组名右边的红点数
 function navGroup(cx, key, title, links, badge = 0) {
-  const k = cx + '/' + key, here = cx === context && links.some((l) => l.v === view)
+  const k = cx + '/' + key, here = cx === context && links.some((l) => l.v === view || view.startsWith(l.v + '/'))
   if (here && navAutoAt !== context + '/' + view) { navFold[k] = true; navAutoAt = context + '/' + view }
   const open = !!navFold[k]
   return `<div class="gn fold" data-g="${esc(k)}"><span class="tri">${open ? '▾' : '▸'}</span>${esc(title)}${!open && badge ? `<i class="open">${badge}</i>` : ''}</div><div class="gb"${open ? '' : ' hidden'}>${links.map((l) => l.html).join('')}</div>`
@@ -378,12 +441,20 @@ Shell.init({ contexts: CONTEXTS, page: {
     if (cx === '共享内核') return navGroup(cx, 'concepts', '概念', [L('kernel', PROJECT.kernel.concepts.join('、'))])
     const b = BIZ[cx]
     if (!b) return Shell.line('业务还没画', true)
-    const flows = b.FLOWS ?? []
+    const flows = b.FLOWS ?? [], mods = b.MODULES ?? {}, topics = b.MAP?.topics ?? [], known = new Set(topics.map((t) => t.id))
+    const red = (n) => (n ? `<i class="open">${n}</i>` : '')
+    const flowLink = (f) => { const n = openOf(cx, f.file), v = 'flow/' + f.file; return { v, html: `<a href="${esc(href(v))}" class="sub${on(v) ? ' on' : ''}">${esc(String(f.title ?? f.file).split('：')[0])}${red(n)}</a>` } }
+    // 业务：有模块业务的主题一个一行，进去是页签；当前在它的哪个页签上都算这一行
+    const modLinks = topics.filter((t) => mods[t.id]).map((t) => { const v = 'module/' + t.id, here = cx === context && (view === v || view.startsWith(v + '/')); return { v, html: `<a href="${esc(href(v))}" class="sub${here ? ' on' : ''}">${esc(t.title)}${red(openOf(cx, v))}</a>` } })
+    // 流程按主题分组，一个主题一组，默认折着；没写主题的放最后一组
+    const flowGroups = [...topics.map((t) => ['flows/' + t.id, '流程 · ' + t.title, flows.filter((f) => f.topic === t.id)]),
+      ['flows', topics.some((t) => flows.some((f) => f.topic === t.id)) ? '流程 · 没写主题' : '流程', flows.filter((f) => !known.has(f.topic))]].filter((g) => g[2].length)
     return navGroup(cx, 'map', '全局', [L('map', '全局图')])
-      + navGroup(cx, 'concepts', '概念 · 按主题', (b.MAP?.topics ?? []).flatMap((t) => [L('concepts/' + t.id, t.title),
+      + (modLinks.length ? navGroup(cx, 'module', '业务 · 按主题', modLinks, topics.reduce((a, t) => a + (mods[t.id] ? openOf(cx, 'module/' + t.id) : 0), 0)) : '')
+      + navGroup(cx, 'concepts', '概念 · 按主题', topics.flatMap((t) => [L('concepts/' + t.id, t.title),
         ...(b.CONCEPTS?.[t.id]?.subs ?? []).map((x) => { const v = 'concepts/' + t.id + '/' + x.id; return { v, html: Shell.link(href(v), x.title, on(v), 'sub2') } })]))
       // 流程那一行右边：还没答的条数，红点；组折叠时组名右边是合计
-      + navGroup(cx, 'flows', '流程', flows.map((f) => { const n = openOf(cx, f.file), v = 'flow/' + f.file; return { v, html: `<a href="${esc(href(v))}" class="sub${on(v) ? ' on' : ''}">${esc(String(f.title ?? f.file).split('：')[0])}${n ? `<i class="open">${n}</i>` : ''}</a>` } }), flows.reduce((a, f) => a + openOf(cx, f.file), 0))
+      + flowGroups.map(([k, title, fs]) => navGroup(cx, k, title, fs.map(flowLink), fs.reduce((a, f) => a + openOf(cx, f.file), 0))).join('')
   },
   // 换到别的上下文：主题号、流程名各上下文不通用，回到它的全局图（上下文地图那页不动）
   pick: (cx) => { if (cx !== context) { context = cx; if (typeof selected !== 'undefined') selected = null; if (view !== 'cxmap') view = cx === '共享内核' ? 'kernel' : 'map' } go(view); render() } },
@@ -454,9 +525,18 @@ function labelBox(cx, cy, lines0, anchor, roles) {
   const x = cx - w / 2, y = cy - hh / 2, bx = cx - tw / 2, by = y + rh
   let s = '', lead = null
   if (anchor) {
-    const ex = Math.max(x, Math.min(anchor.x, x + w)), ey = Math.max(y, Math.min(anchor.y, y + hh))
+    // 虚线从文字框（不算上面那排角色标签）朝着线的那条边上出发，不从角上出：边上的点照线上那一点投过去，两头各让开一点；
+    // 文字框上面有角色标签的，不从顶边出。线微微弯一点，跟别的直线分得开
+    const L = bx, R = bx + tw, T = by, B = by + th, cl = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
+    const sides = [{ x: L, y: cl(anchor.y, T + 8, B - 8), ok: anchor.x < L }, { x: R, y: cl(anchor.y, T + 8, B - 8), ok: anchor.x > R },
+      { x: cl(anchor.x, L + 10, R - 10), y: B, ok: anchor.y > B }, { x: cl(anchor.x, L + 10, R - 10), y: T, ok: anchor.y < T && !rw }]
+    const dist = (p) => Math.hypot(p.x - anchor.x, p.y - anchor.y)
+    const pick = (list) => list.reduce((a, b) => (!a || dist(b) < dist(a) ? b : a), null)
+    const st = pick(sides.filter((p) => p.ok)) ?? pick(sides.slice(0, rw ? 3 : 4))
+    const ex = st.x, ey = st.y, len = dist(st) || 1, bend = Math.min(16, len * 0.15)
+    const qx = (ex + anchor.x) / 2 - (anchor.y - ey) / len * bend, qy = (ey + anchor.y) / 2 + (anchor.x - ex) / len * bend
     lead = { x: ex, y: ey }
-    s += `<path d="M ${ex} ${ey} L ${anchor.x} ${anchor.y}" marker-end="url(#la)"/>`
+    s += `<path d="M ${ex} ${ey} Q ${qx.toFixed(1)} ${qy.toFixed(1)} ${anchor.x} ${anchor.y}" marker-end="url(#la)"/>`
   }
   s += `<rect x="${bx}" y="${by}" width="${tw}" height="${th}" rx="6"/>` + lines.map((l, i) => `<text x="${cx}" y="${by + 16 + i * 16}" text-anchor="middle">${esc(l)}</text>`).join('')
   if (rw) s += pills(roles, cx - rw / 2, y)
@@ -700,7 +780,18 @@ const crossOf = (n) => n.topic === '共享内核' ? '共享内核' : n.context &
 function localData(c) {
   const nodes = [...(c.concepts ?? []).map((n) => ({ ...n, g: c.sub ?? c.topic })),
     ...(c.external ?? []).map((n) => { const cx = crossOf(n); return { ...n, g: cx ? cx + '/' + n.topic : n.sub ?? subFor(n.topic, n.id) ?? n.topic, cx } })]
-  return { nodes, edges: c.edges ?? [], byId: Object.fromEntries(nodes.map((n) => [n.id, n])) }
+  return { nodes, edges: mergeEdges(c.edges), byId: Object.fromEntries(nodes.map((n) => [n.id, n])) }
+}
+/** 同样两样数据之间（不管方向）只画一条线：方向照头一条，几句话用「；」接起来，做事的角色并在一起 */
+function mergeEdges(edges) {
+  const out = [], at = new Map()
+  for (const e of edges ?? []) {
+    const k = [e.from, e.to].sort().join('\u0000'), hit = at.get(k)
+    if (!hit) { const x = { ...e }; at.set(k, x); out.push(x); continue }
+    if (e.label && e.label !== hit.label) hit.label = hit.label ? hit.label + '；' + e.label : e.label
+    if (e.by?.length) hit.by = [...new Set([...(hit.by ?? []), ...e.by])]
+  }
+  return out
 }
 /** 虚框底下那行小字和颜色：本上下文的写主题名、用主题的颜色；别的上下文的写「上下文 · 主题号」、用那边主题的颜色；共享内核的写「共享内核」、灰的。找不到主题就灰框、写主题号，不抛错 */
 function stubFrom(n) {
@@ -856,9 +947,15 @@ function drawLocal(g, c) {
     const bx1 = Math.min(...own.map((p) => p.x)), by1 = Math.min(...own.map((p) => p.y)), bx2 = Math.max(...own.map((p) => p.x + p.w)), by2 = Math.max(...own.map((p) => p.y + p.h))
     // 主题框只包住自己的数据：左右留 44，顶上留 120（主题名、角色标签、线上的卡都在框里），底下留 110
     frame = { x: bx1 - 44, y: by1 - 120, w: bx2 - bx1 + 88, h: by2 - by1 + 230 }
+    // 虚框的每一列：照排好的先后一个挨一个，整列上下居中、对着主题框的正中
+    const mid = frame.y + frame.h / 2, stubY = {}
+    for (const colRoots of [...leftCols, ...rightCols]) {
+      const ids = colRoots.flatMap((r) => members[r]).sort((a, b) => row[a] - row[b])
+      ids.forEach((id, i) => { stubY[id] = mid - ((ids.length - 1) * ROW + 40) / 2 + i * ROW })
+    }
     // 左边第 1 列贴着主题框，越往外列号越大；k 照从左到右的顺序
-    leftIds.forEach((id) => { const c = stubCol[rootOf(id)]; place(id, 40 + (leftCols.length - c) * (W + GAP), Y0 + row[id] * ROW + 5, -c, null, true) })
-    rightIds.forEach((id) => { const c = stubCol[rootOf(id)]; place(id, frame.x + frame.w + GAP + rightOff(c), Y0 + row[id] * ROW + 5, items.length + c, null, true) })
+    leftIds.forEach((id) => { const c = stubCol[rootOf(id)]; place(id, 40 + (leftCols.length - c) * (W + GAP), stubY[id], -c, null, true) })
+    rightIds.forEach((id) => { const c = stubCol[rootOf(id)]; place(id, frame.x + frame.w + GAP + rightOff(c), stubY[id], items.length + c, null, true) })
   }
   // 重心法：一列里按连着的对端的平均高度排，来回扫几遍，交叉就少了
   const cy = (id) => (pos[id] ? pos[id].y + pos[id].h / 2 : null)
@@ -904,15 +1001,6 @@ function drawLocal(g, c) {
     for (const it of order) { assignRows(it.ids, bandTop[it.band] + H / 2); layout() }
     for (const colRoots of [...leftCols, ...rightCols]) { assignStubRows(colRoots, Y0 + H / 2); layout() }
   }
-  // 收尾：虚框先一整侧、再一列一列往上收几行，挑线竖着拉得最短的那个（比原来短才挪），免得一侧整片吊在主题框下面
-  const vlen = () => edges.reduce((t, e) => t + Math.abs(cy(e.from) - cy(e.to)), 0)
-  const sides = [leftCols, rightCols].map((cs) => cs.flat()).filter((rs) => rs.length)
-  for (let pass = 0; pass < 2; pass++) for (const colRoots of [...sides, ...leftCols, ...rightCols]) {
-    const ids = colRoots.flatMap((r) => members[r]), min = Math.min(...ids.map((id) => row[id]))
-    let best = 0, bestLen = vlen()
-    for (let k = 1; k <= min; k++) { ids.forEach((id) => { row[id]-- }); layout(); const L = vlen(); if (L < bestLen) { best = k; bestLen = L } }
-    ids.forEach((id) => { row[id] += min - best }); layout()
-  }
   // 框的正下方、正上方有没有别的自己的框（折行的线想从底边出、顶边进时要看）
   const clearBelow = (p) => !mine.some((n) => { const q = pos[n.id]; return q !== p && q.y > p.y && q.x < p.x + p.w && q.x + q.w > p.x })
   const clearAbove = (p) => !mine.some((n) => { const q = pos[n.id]; return q !== p && q.y < p.y && q.x < p.x + p.w && q.x + q.w > p.x })
@@ -934,6 +1022,31 @@ function drawLocal(g, c) {
     const segs = []; let L = 0
     for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); segs.push({ a: pts[i - 1], b: pts[i], l }); L += l }
     return { d: 'M ' + pts.map((p) => `${p.x} ${p.y}`).join(' L '), at: (t) => { let d = t * L; for (const s of segs) { if (d <= s.l || s === segs[segs.length - 1]) { const u = s.l ? Math.min(1, d / s.l) : 0; return { x: s.a.x + (s.b.x - s.a.x) * u, y: s.a.y + (s.b.y - s.a.y) * u } } d -= s.l } return pts[pts.length - 1] } }
+  }
+  /** 曲线：照着折线的几个拐点走，每个拐角换成一段弯（从前一段的中点弯到后一段的中点），头尾两小段直着进出框；
+   *  两个点的直线微微弯一点。弯在折线的拐角里面，不会比折线绕得更远。at(t) 照弯好的线取点 */
+  const smooth = (pts0) => {
+    const pts = pts0.filter((p, i) => i === 0 || Math.hypot(p.x - pts0[i - 1].x, p.y - pts0[i - 1].y) > 0.5)
+    const f = (v) => +v.toFixed(1), samples = [pts[0]]
+    const quad = (a, c, b) => { for (let k = 1; k <= 10; k++) { const t = k / 10, m = 1 - t; samples.push({ x: m * m * a.x + 2 * m * t * c.x + t * t * b.x, y: m * m * a.y + 2 * m * t * c.y + t * t * b.y }) } }
+    if (pts.length < 3) {
+      const a = pts[0], b = pts[pts.length - 1], len = Math.hypot(b.x - a.x, b.y - a.y) || 1, bend = Math.min(14, len * 0.12)
+      const c = { x: (a.x + b.x) / 2 - (b.y - a.y) / len * bend, y: (a.y + b.y) / 2 + (b.x - a.x) / len * bend }
+      quad(a, c, b)
+      return { d: `M ${f(a.x)} ${f(a.y)} Q ${f(c.x)} ${f(c.y)}, ${f(b.x)} ${f(b.y)}`, at: poly(samples).at }
+    }
+    const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 })
+    let m0 = mid(pts[0], pts[1]), d = `M ${f(pts[0].x)} ${f(pts[0].y)} L ${f(m0.x)} ${f(m0.y)}`
+    samples.push(m0)
+    for (let i = 1; i < pts.length - 1; i++) {
+      const m1 = mid(pts[i], pts[i + 1])
+      d += ` Q ${f(pts[i].x)} ${f(pts[i].y)}, ${f(m1.x)} ${f(m1.y)}`
+      quad(m0, pts[i], m1); m0 = m1
+    }
+    const end = pts[pts.length - 1]
+    d += ` L ${f(end.x)} ${f(end.y)}`
+    samples.push(end)
+    return { d, at: poly(samples).at }
   }
   let s = MARK
   s += `<g class="grp"><rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="12" style="${tint(g)};fill-opacity:.45"/><text x="${frame.x + 14}" y="${frame.y + 20}">${esc(g.title)}</text></g>`
@@ -969,7 +1082,7 @@ function drawLocal(g, c) {
       else { const x2 = right ? b.x - 2 : b.x + b.w + 2; pts.push({ x: x2 - sg * 20, y: ly }, { x: x2 - sg * 20, y: y2 }, { x: x2, y: y2 }) }
       // 从顶边进、框上有角色标签的，线会压标签，往后挑
       const pill = eb && ly < b.y && byId[idOfPos.get(b)]?.by?.length ? 200 : 0
-      const cv = poly(pts), n = hitsOf(cv, a, b), score = n * 1e6 + lenOf(pts) + (sb ? 40 : 0) + (eb ? 40 : 0) + pill
+      const cv = smooth(pts), n = hitsOf(cv, a, b), score = n * 1e6 + lenOf(pts) + (sb ? 40 : 0) + (eb ? 40 : 0) + pill
       if (!best || score < best.score) best = { cv, n, score }
     }
     return best
@@ -982,7 +1095,7 @@ function drawLocal(g, c) {
     let best = null
     for (const c of chans) {
       const pts = [{ x: x1, y: y1 }, { x: x1, y: yd }, { x: c, y: yd }, { x: c, y: ym }, { x: x2, y: ym }, { x: x2, y: y2 }]
-      const cv = poly(pts), n = hitsOf(cv, a, b), score = n * 1e6 + lenOf(pts)
+      const cv = smooth(pts), n = hitsOf(cv, a, b), score = n * 1e6 + lenOf(pts)
       if (!best || score < best.score) best = { cv, n, score }
     }
     return best
@@ -993,7 +1106,7 @@ function drawLocal(g, c) {
     if (e.tree) {
       // 树的连线：从上一层底边中间直下，横杠放在下一层顶上 36 处（离别的线远），再直下进下一层顶边中间
       const x1 = a.x + a.w / 2, y1 = a.y + a.h, x2 = b.x + b.w / 2, y2 = b.y - 2, ym = y2 - 36
-      cv = poly([{ x: x1, y: y1 }, { x: x1, y: ym }, { x: x2, y: ym }, { x: x2, y: y2 }]); d = cv.d
+      cv = smooth([{ x: x1, y: y1 }, { x: x1, y: ym }, { x: x2, y: ym }, { x: x2, y: y2 }]); d = cv.d
     } else {
       const y1 = slot(e, e.from, a), y2 = slot(e, e.to, b)
       if (a.band != null && b.band != null && a.band !== b.band) {
@@ -1008,7 +1121,7 @@ function drawLocal(g, c) {
             ...(clearAbove(b) ? [{ x: bx, y: gy }, { x: bx, y: b.y - 2 }] : [{ x: b.x - 40, y: gy }, { x: b.x - 40, y: y2 }, { x: b.x - 2, y: y2 }])]
           : [...(clearAbove(a) ? [{ x: ax, y: a.y }, { x: ax, y: gy }] : [{ x: a.x, y: y1 }, { x: a.x - 40, y: y1 }, { x: a.x - 40, y: gy }]),
             ...(clearBelow(b) ? [{ x: bx, y: gy }, { x: bx, y: b.y + b.h + 2 }] : [{ x: b.x + b.w + 40, y: gy }, { x: b.x + b.w + 40, y: y2 }, { x: b.x + b.w + 2, y: y2 }])]
-        cv = poly(pts); d = cv.d
+        cv = smooth(pts); d = cv.d
       } else if (stubColumn(e)) {
         // 同一列的两个虚框：中间没别的框就从上面那个的底边直下（或直上）进另一个；隔着框就从右边绕过去
         const lo = Math.min(a.y, b.y), hi = Math.max(a.y, b.y), down = b.y > a.y, x = a.x + a.w / 2
@@ -1016,7 +1129,7 @@ function drawLocal(g, c) {
         const pts = blocked
           ? [{ x: a.x + a.w, y: a.y + a.h / 2 }, { x: a.x + a.w + 36, y: a.y + a.h / 2 }, { x: a.x + a.w + 36, y: b.y + b.h / 2 }, { x: b.x + b.w + 2, y: b.y + b.h / 2 }]
           : [{ x, y: down ? a.y + a.h : a.y }, { x, y: down ? b.y - 2 : b.y + b.h + 2 }]
-        cv = poly(pts); d = cv.d
+        cv = smooth(pts); d = cv.d
       } else if (b.x > a.x) {
         const x1 = a.x + a.w, x2 = b.x - 2
         if (skipped(a, b)) {
@@ -1024,8 +1137,7 @@ function drawLocal(g, c) {
           const far = b.band != null ? b : a
           const ly = useLane(y2 >= y1 || far === a ? far.y - (ROW - H) / 2 : far.y + far.h + (ROW - H) / 2)
           const pts = [{ x: x1, y: y1 }, { x: x1 + 50, y: y1 }, { x: x1 + 95, y: ly }, { x: x2 - 95, y: ly }, { x: x2 - 50, y: y2 }, { x: x2, y: y2 }]
-          cv = poly(pts)
-          d = `M ${x1} ${y1} C ${x1 + 70} ${y1}, ${x1 + 30} ${ly}, ${x1 + 95} ${ly} L ${x2 - 95} ${ly} C ${x2 - 30} ${ly}, ${x2 - 70} ${y2}, ${x2} ${y2}`
+          cv = smooth(pts); d = cv.d
         } else {
           const dx = (x2 - x1) * 0.5
           const p0 = { x: x1, y: y1 }, p1 = { x: x1 + dx, y: y1 }, p2 = { x: x2 - dx, y: y2 }, p3 = { x: x2, y: y2 }
@@ -1070,6 +1182,17 @@ function drawLocal(g, c) {
 }
 
 // ---------- 流程：时序图 ----------
+/** 数据名 → 它在哪个主题（照这个上下文各份概念图，分了子主题的也算主题的） */
+function dataTopics() {
+  const m = {}
+  for (const [k, c] of Object.entries(CONCEPTS)) for (const n of c.concepts ?? []) m[n.title] ??= c.topic ?? k.split('/')[0]
+  return m
+}
+/** 一份流程碰到的主题：这一份讲的主题在前，再是数据卡用到的别的主题 */
+function flowTopics(f) {
+  const DT = dataTopics(), ids = [f.topic, ...(f.steps ?? []).flatMap((p) => (p.data ?? []).map((d) => DT[d]))]
+  return [...new Set(ids.filter((id) => id && grpOf[id]))]
+}
 function drawFlow(st) {
   const tw = (t, px) => textW(String(t ?? '')) * px / 12       // textW 按 12px 量的，换成别的字号
   const HEAD_H = 46, NOTE_GAP = 36, STEP_GAP = 22
@@ -1084,12 +1207,17 @@ function drawFlow(st) {
   const headW = Math.max(140, ...st.parties.map((p) => Math.max(tw(p.title, 13), tw(p.sub, 11)) + 28))
   const selfLines = (p) => wrapW(p.title, 220, 13)
   const selfW = (p) => Math.max(...selfLines(p).map((l) => tw(l, 13))) + 24
-  const cardW = (d) => tw(d, 11) + 14
+  // 数据卡前面写它在哪个主题、照主题上色；概念图里找不到的照旧绿卡
+  const DT = dataTopics(), cardTopic = (d) => (DT[d] && grpOf[DT[d]]) || null
+  const cardW = (d) => { const t = cardTopic(d); return tw(d, 11) + 14 + (t ? tw(t.title, 10) + 8 : 0) }
   // 第一条泳道左边要放得下「自己对自己」的框和它左边堆的数据卡；最后一条右边要放得下框和框底下的期限，再放说明卡
   const selfAt = (i) => st.steps.filter((p) => idx(p.from) === i && idx(p.to) === i)
   const leftNeed = Math.max(headW / 2 + 10, ...selfAt(0).map((p) => Math.max(selfW(p) / 2 + 8 + Math.max(0, ...(p.data ?? []).map(cardW)) + 10, tw(p.due, 11) / 2 + 24)))
   const rightNeed = Math.max(headW / 2 + 10, 80, ...selfAt(nLanes - 1).map((p) => Math.max(selfW(p) / 2 + 12, tw(p.due, 11) / 2 + 24)))
-  const X0 = Math.max(90, Math.ceil(leftNeed))
+  // 入口、出口：最左边单独一列，卡跟它接着的那一步一样高
+  const ends = [...(st.entries ?? []).map((x) => ({ ...x, kind: 'in' })), ...(st.exits ?? []).map((x) => ({ ...x, kind: 'out' }))]
+  const ENW = ends.length ? 190 : 0, END_W = 160
+  const X0 = Math.max(90, Math.ceil(leftNeed)) + ENW
   const hasSide = st.steps.some((p) => p.note || p.rules?.length || asksOf(p).length)
   // 泳道间距：平时 300 起；参与方多、主区放不下时先收窄泳道（最窄是名牌宽加 20、不窄过 200），说明栏宽度不动（卡上的选项按钮要完整）；
   // 收到最窄还放不下，最后整张等比缩（见 return）
@@ -1099,10 +1227,41 @@ function drawFlow(st) {
   const lx = (i) => X0 + i * LANE
   const noteX = lx(nLanes - 1) + rightNeed + NOTE_GAP
   const width = Math.ceil(hasSide ? noteX + NOTE_W + 20 : lx(nLanes - 1) + rightNeed + 20)
-  const card = (d, x, y) => { const w = cardW(d); return `<g class="data"><rect x="${x}" y="${y}" width="${w}" height="18"/><text x="${x + w / 2}" y="${y + 13}">${esc(d)}</text></g>` }
+  const card = (d, x, y) => {
+    const w = cardW(d), t = cardTopic(d)
+    if (!t) return `<g class="data"><rect x="${x}" y="${y}" width="${w}" height="18"/><text x="${x + w / 2}" y="${y + 13}">${esc(d)}</text></g>`
+    const tw0 = tw(t.title, 10) + 8
+    return `<g class="data tpc"><rect x="${x}" y="${y}" width="${w}" height="18" style="${tint(t)}"/><text class="tn" x="${x + 6}" y="${y + 13}">${esc(t.title)}</text><text x="${x + tw0 + (w - tw0) / 2}" y="${y + 13}">${esc(d)}</text></g>`
+  }
   // 一步一行；每一步先算自己要占多高（标题几行、日子、期限、数据卡几张、右边几张说明卡），下一步从这一步最低的那张卡底下开始
-  let y = HEAD_H + 34, s = ''
+  let y = HEAD_H + 34, s = '', fr = '', open = null, lastBottom = y
+  // opt、alt 框横着从第一条泳道左边到最后一条右边；框顶上一个小标签写 opt / alt 和那一句，alt 每一格左上角写这一支的情况
+  const FL = X0 - Math.ceil(leftNeed) + 4, FR = lx(nLanes - 1) + rightNeed - 4
+  const endCard = (x, top) => {
+    const f = x.flow ? FLOWS.find((g) => g.file === x.flow) : null, name = String(f?.title ?? x.flow ?? '').split('：')[0]
+    const head = x.kind === 'in' ? (x.flow ? `从「${name}」来` : '入口') : (x.flow ? `接着去「${name}」` : '出口')
+    const hl = wrapW(head, END_W - 16, 11), tl = wrapW(x.text ?? '', END_W - 16, 12), h = hl.length * 14 + tl.length * 16 + 12
+    let svg = `<g class="end ${x.kind}"><rect x="10" y="${top}" width="${END_W}" height="${h}" rx="8"/>${hl.map((l, k) => `<text class="h" x="18" y="${top + 15 + k * 14}">${esc(l)}</text>`).join('')}${tl.map((l, k) => `<text x="18" y="${top + 16 + hl.length * 14 + k * 16}">${esc(l)}</text>`).join('')}</g>`
+    if (x.flow) svg = `<a href="#flow/${esc(x.flow)}">${svg}</a>`
+    return { svg, h }
+  }
+  const closeFrame = (bot) => {
+    const o = open; open = null
+    const tab = (o.kind === 'opt' ? 'opt' : 'alt'), tw0 = tw(tab, 12) + 16
+    fr += `<g class="frame ${o.kind}"><rect class="f" x="${FL}" y="${o.top}" width="${FR - FL}" height="${bot + 8 - o.top}" rx="4"/><rect class="tab" x="${FL}" y="${o.top}" width="${tw0}" height="20"/><text class="k" x="${FL + 8}" y="${o.top + 14}">${tab}</text><text x="${FL + tw0 + 8}" y="${o.top + 14}">${esc(o.label)}</text>`
+      + o.cases.map((c, i) => (i ? `<line x1="${FL}" y1="${c.y}" x2="${FR}" y2="${c.y}"/>` : '') + (c.case ? `<text class="c" x="${FL + 8}" y="${c.y + (i ? 15 : 36)}">［${esc(c.case)}］</text>` : '')).join('') + '</g>'
+    y += 12
+  }
   for (const p of st.steps) {
+    const key = p.opt ? 'opt\u0000' + p.opt : p.alt ? 'alt\u0000' + p.alt : null
+    if (open && open.key !== key) closeFrame(lastBottom)
+    if (key && !open) {
+      open = { key, kind: p.opt ? 'opt' : 'alt', label: p.opt ?? p.alt, top: y - 31, cases: [], cur: p.case }
+      y += 24
+      if (open.kind === 'alt') { open.cases.push({ case: p.case, y: open.top }); y += 18 }
+    } else if (open && open.kind === 'alt' && p.case !== open.cur) {
+      open.cases.push({ case: p.case, y: lastBottom + 8 }); open.cur = p.case; y += 20
+    }
     const a = idx(p.from), b = idx(p.to), data = p.data ?? []
     let bottom, lineEnd
     if (a === b) {
@@ -1128,19 +1287,34 @@ function drawFlow(st) {
       bottom = data.length ? ty + 2 + data.length * 24 - 6 : ty
       lineEnd = Math.max(x1, x2) + 8
     }
+    // 入口、出口卡：最左边一列，跟这一步一样高；虚线带箭头，入口指向这一步的起头，出口从这一步的起头指向卡
+    const mine = ends.filter((x) => String(x.step) === String(p.id))
+    if (mine.length) {
+      const sx = a === b ? lx(a) - selfW(p) / 2 - 4 : Math.min(lx(a), lx(b)) - 4
+      let top = y - 16
+      for (const x of mine) {
+        const c = endCard(x, top), cy = top + c.h / 2
+        s += c.svg + (x.kind === 'in' ? `<path class="elead" d="M ${10 + END_W} ${cy} L ${sx} ${y}" marker-end="url(#a)"/>` : `<path class="elead" d="M ${sx} ${y} L ${10 + END_W + 3} ${cy}" marker-end="url(#a)"/>`)
+        top += c.h + 6
+      }
+      bottom = Math.max(bottom, top - 6)
+    }
     // 右边一步一个框：说明、规则、问题列成一张单子，一条虚线带箭头指回这一步那条横线；框多高这一步就占多高，下一步从它底下开始
     if (p.note || p.rules?.length || asksOf(p).length) {
       const c = sideBox({ p, asks: asksOf(p), flow: st.file, x: noteX, top: y - 12, w: NOTE_W, lineEnd, y })
       s += c.svg; bottom = Math.max(bottom, y - 12 + c.h)
     }
+    lastBottom = bottom
     y = bottom + STEP_GAP + 25      // 下一步的箭头线：留出它标题的第一行
   }
+  if (open) closeFrame(lastBottom)
   const height = y - STEP_GAP - 25 + 24
   // 各方的名牌单独一排 html，sticky 贴在主区顶上，往下滚也看得见是谁；横坐标和下面 svg 的泳道对齐。生命线在 svg 里照常跟着内容滚
   const heads = st.parties.map((p, i) => `<div class="hd${p.sub ? '' : ' one'}" style="left:${lx(i) - headW / 2}px;width:${headW}px">${esc(p.title)}${p.sub ? `<small>${esc(p.sub)}</small>` : ''}</div>`).join('')
   const lives = st.parties.map((p, i) => `<line class="life" x1="${lx(i)}" y1="0" x2="${lx(i)}" y2="${height - 10}"/>`).join('')
   // 比主区宽就整张等比缩：svg 用 viewBox 缩，顶上钉住的名牌那一排用同一个比例缩，列位跟 svg 对齐
   const k = width > avail ? avail / width : 1
+  s = fr + s
   if (k === 1) return `<div class="heads" style="width:${width}px">${heads}</div><svg width="${width}" height="${height - HEAD_H}" viewBox="0 ${HEAD_H} ${width} ${height - HEAD_H}">${MARK}<g class="flow">${lives}${s}</g></svg>`
   return `<div class="heads" style="width:${Math.floor(width * k)}px;height:${Math.ceil(50 * k)}px"><div class="hds" style="position:relative;width:${width}px;height:50px;transform:scale(${k.toFixed(4)});transform-origin:0 0">${heads}</div></div><svg width="${Math.floor(width * k)}" height="${Math.ceil((height - HEAD_H) * k)}" viewBox="0 ${HEAD_H} ${width} ${height - HEAD_H}">${MARK}<g class="flow">${lives}${s}</g></svg>`
 }
@@ -1249,6 +1423,108 @@ function answerQa(d) {
   render()
 }
 
+// ---------- 业务（模块业务）：一个主题一份，三层页签 ----------
+// 地址：module/<主题>/功能/<第几组>/<功能号>、module/<主题>/内部流程/<号>、module/<主题>/工作流程/<号>、module/<主题>/待定；没写的落到头一个
+const MTABS = ['功能', '内部流程', '工作流程', '待定']
+const marr = (t) => `<span class="marr"><i>${esc(t ?? '')}</i></span>`
+const fromTo = (x) => (x.from || x.to ? `<div class="ft">${x.from ? esc(x.from) : '新记下'} → ${esc(x.to ?? '')}</div>` : '')
+function renderModule(main, id, tab0, a0, b0) {
+  const t = grpOf[id], m = MODULES[id]
+  if (!t && !m) { main.innerHTML = `<h1><a href="#map">全局图</a><span class="sep">›</span>${esc(id)}</h1><p class="sub">${esc(context)} 里没有主题 ${esc(id)}。</p>`; return }
+  const h1 = `<h1><a href="#map">全局图</a><span class="sep">›</span>${esc(t?.title ?? m.title ?? id)} <span class="kind">· 业务</span></h1>`
+  if (!m) { main.innerHTML = h1 + '<p class="sub">这个主题的业务还没写。</p>'; return }
+  const groups = m.groups ?? [], chains = m.chains ?? [], wfs = m.workflows ?? [], asks = m.asks ?? [], nOpen = openMod(m)
+  const tab = MTABS.includes(tab0) ? tab0 : '功能', base = 'module/' + id + '/'
+  const tabs = (items, cls) => items.length ? `<div class="mtabs ${cls}">${items.map((x) => `<a href="#${esc(x.v)}" class="${x.on ? 'on' : ''}${x.red ? ' red' : ''}">${esc(x.text)}${x.n != null ? ` <small>${esc(x.n)}</small>` : ''}</a>`).join('')}</div>` : ''
+  const count = { 功能: groups.reduce((n, g) => n + (g.functions ?? []).length, 0), 内部流程: chains.length, 工作流程: wfs.length, 待定: nOpen ? nOpen + ' 条没答' : asks.length }
+  let html = h1 + (m.summary ? `<p class="sub">${esc(m.summary)}</p>` : '')
+    + (m.locked ? `<p class="lock">${esc(m.locked.role)}正在改这一份（${esc(m.locked.step)}）。等它交回再答待定：现在答的会被它写回去时盖掉。</p>` : '')
+    + tabs(MTABS.map((k) => ({ v: base + k, text: k, n: count[k], on: k === tab, red: k === '待定' && nOpen })), 'l1')
+  if (tab === '功能') {
+    if (!groups.length) html += '<p class="sub">还没有功能。</p>'
+    else {
+      const gi = Math.min(groups.length, Math.max(1, parseInt(a0, 10) || 1)) - 1, fns = groups[gi].functions ?? [], f = fns.find((x) => x.id === b0) ?? fns[0]
+      html += tabs(groups.map((g, i) => ({ v: base + '功能/' + (i + 1), text: g.title, n: (g.functions ?? []).length, on: i === gi })), 'l2')
+        + tabs(fns.map((x) => ({ v: base + '功能/' + (gi + 1) + '/' + x.id, text: x.title, on: x === f })), 'l3')
+        + (f ? fnView(f) : '<p class="sub">这一组还没有功能。</p>')
+    }
+  } else if (tab === '内部流程') {
+    const ch = chains.find((x) => x.id === a0) ?? chains[0]
+    html += tabs(chains.map((x) => ({ v: base + '内部流程/' + x.id, text: x.title, on: x === ch })), 'l2') + (ch ? chainView(ch) : '<p class="sub">还没有内部流程。</p>')
+  } else if (tab === '工作流程') {
+    const w = wfs.find((x) => x.id === a0) ?? wfs[0]
+    html += tabs(wfs.map((x) => ({ v: base + '工作流程/' + x.id, text: x.title, on: x === w })), 'l2')
+      + (w ? `<div class="diagram wf">${drawStates(w)}</div>${w.note ? `<p class="sub" style="margin-top:8px">${esc(w.note)}</p>` : ''}` : '<p class="sub">还没有工作流程。</p>')
+  } else {
+    html += asks.length ? asks.map((q) => askView(id, q)).join('') : '<p class="sub">没有待定。</p>'
+  }
+  main.innerHTML = html
+}
+/** 一项功能：左边操作意图和要用到的数据，中间核心数据从什么变成什么，右边顺带留下的；动作只是箭头上一行灰字 */
+function fnView(f) {
+  const sj = f.subject ?? {}
+  const ins = (f.in ?? []).map((d) => `<div class="mc data"><b>${esc(d)}</b></div>`).join('')
+  const outs = (f.out ?? []).map((o) => `<div class="mc out"><div class="mk">${esc(o.kind ?? '')}</div><b>${esc(o.title)}</b>${o.when ? `<div class="when">${esc(o.when)}</div>` : ''}</div>`).join('')
+  const rules = (f.rules ?? []).map((r) => `<li>${esc(typeof r === 'string' ? r : r.text)}</li>`).join('')
+  const uses = (f.uses ?? []).map((u) => { const fl = FLOWS.find((x) => x.file === u.flow); return `<li><a href="#flow/${esc(u.flow)}">${esc(String(fl?.title ?? u.flow).split('：')[0])}</a> 第 ${esc(u.step)} 步</li>` }).join('')
+  return `<div class="mhead"><h2>${esc(f.title)}</h2>${f.called ? `<span class="called">页面上叫「${esc(f.called)}」</span>` : ''}<span class="fid">${esc(f.id)}</span></div>
+    ${f.does ? `<p class="sub" style="margin:0">${esc(f.does)}</p>` : ''}
+    <div class="mfn"><div class="mcol left"><div class="mc intent"><div class="mk">操作意图</div>${esc(f.intent ?? '')}</div>${ins ? `<div class="mcap">要用到的数据</div>${ins}` : ''}</div>
+      ${marr(f.title)}<div class="mcol mid"><div class="mc core"><div class="mk">核心数据</div><b>${esc(sj.title ?? '')}</b>${fromTo(sj)}</div></div>
+      ${outs ? `${marr('')}<div class="mcol right"><div class="mcap">顺带留下的</div>${outs}</div>` : ''}</div>
+    <div class="mmore">${rules ? `<div><div class="mcap">规则</div><ul>${rules}</ul></div>` : ''}${uses ? `<div><div class="mcap">用在流程的哪一步</div><ul>${uses}</ul></div>` : ''}${f.source ? `<div><div class="mcap">出处</div>${esc(f.source)}</div>` : ''}</div>`
+}
+/** 内部流程：从左到右一个个数据变化框，箭头上是条件 */
+function chainView(ch) {
+  const a = ch.after ?? {}
+  const box = (x, cls, mk) => `<div class="mc ${cls}"><div class="mk">${esc(mk)}</div><b>${esc(x.title)}</b>${fromTo(x)}${x.note ? `<div class="when">${esc(x.note)}</div>` : ''}</div>`
+  return `<div class="mchain">${box(a, 'cause', '起因' + (a.when ? ' · ' + a.when : ''))}${(ch.then ?? []).map((x) => marr(x.when) + box(x, x.kind === '新记录' ? 'data' : 'out', x.kind ?? '')).join('')}</div>`
+}
+/** 工作流程：状态排一排，往后走的线在上面拱过去、往回的在下面，挨着的两个直着连；线上一行字 */
+function drawStates(w) {
+  const st = w.states ?? [], idx = Object.fromEntries(st.map((x, i) => [x.id, i]))
+  const BW = Math.max(110, ...st.map((x) => Math.max(textW(x.title) * 13 / 12, x.called ? textW('页面上叫' + x.called) * 11 / 12 : 0) + 28)), BH = 46
+  const moves = (w.moves ?? []).filter((m) => idx[m.from] != null && idx[m.to] != null)
+  const adj = moves.filter((m) => idx[m.to] - idx[m.from] === 1)
+  const GAP = Math.min(240, Math.max(110, ...adj.map((m) => Math.min(220, textW(m.label) * 11.5 / 12 + 24))))
+  const X = (i) => 20 + i * (BW + GAP), Y = 140
+  let s = MARK, labels = '', boxes = []
+  const label = (x, y, t) => { const ls = wrapW(t ?? '', 200, 11.5), lw = Math.max(...ls.map((l) => textW(l) * 11.5 / 12)) + 10, h = ls.length * 15 + 4; boxes.push({ x: x - lw / 2, y: y - h / 2, w: lw, h }); labels += `<g class="ml"><rect x="${x - lw / 2}" y="${y - h / 2}" width="${lw}" height="${h}"/>${ls.map((l, k) => `<text x="${x}" y="${y - h / 2 + 13 + k * 15}">${esc(l)}</text>`).join('')}</g>` }
+  const used = {}
+  for (const m of moves) {
+    const i = idx[m.from], j = idx[m.to], span = Math.abs(j - i)
+    if (j - i === 1) {
+      const x1 = X(i) + BW, x2 = X(j) - 3
+      s += `<path class="mv" d="M ${x1} ${Y} C ${x1 + 30} ${Y - 6}, ${x2 - 30} ${Y - 6}, ${x2} ${Y}" marker-end="url(#a)"/>`
+      label((x1 + x2) / 2, Y - 20, m.label)
+      continue
+    }
+    const fwd = j > i, k = (used[(fwd ? 'u' : 'd') + span] = (used[(fwd ? 'u' : 'd') + span] ?? 0) + 1)
+    const h = 40 + span * 26 + (k - 1) * 22, sg = fwd ? -1 : 1
+    const x1 = X(i) + BW / 2 + (fwd ? 12 : -12), x2 = X(j) + BW / 2 + (fwd ? -12 : 12), y0 = Y + sg * BH / 2, y1 = y0 + sg * 3
+    s += `<path class="mv" d="M ${x1} ${y0} C ${x1} ${y0 + sg * h}, ${x2} ${y0 + sg * h}, ${x2} ${y1}" marker-end="url(#a)"/>`
+    label((x1 + x2) / 2, y0 + sg * h * 0.75, m.label)
+  }
+  st.forEach((x, i) => { boxes.push({ x: X(i), y: Y - BH / 2, w: BW, h: BH }); s += `<g class="st"><rect x="${X(i)}" y="${Y - BH / 2}" width="${BW}" height="${BH}"/><text x="${X(i) + BW / 2}" y="${Y + (x.called ? -1 : 5)}">${esc(x.title)}</text>${x.called ? `<text class="sub" x="${X(i) + BW / 2}" y="${Y + 14}">页面上叫${esc(x.called)}</text>` : ''}</g>` })
+  return canvas(s + labels, boxes, 20, availW())
+}
+/** 一条待定：没答的红框，带偏向和几个答法，点一个就是答了；答了的灰框写答案 */
+function askView(topic, q) {
+  if (q.answer) return `<div class="mask done"><div class="q"><span class="mk">${esc(q.id)}</span>${esc(q.q)}</div><div class="ans">答：${esc(q.answer)}${q.answeredAt ? ` <small>（${esc(q.answeredAt)}）</small>` : ''}</div></div>`
+  const btn = (t, b, other) => `<button class="mbtn${b ? ' b' : ''}" data-module="${esc(topic)}" data-ask="${esc(q.id)}"${other ? ' data-other="1"' : ` data-opt="${esc(t)}"`}>${esc(t)}</button>`
+  return `<div class="mask pending"><div class="q"><span class="mk">${esc(q.id)} 待定</span>${esc(q.q)}</div>${q.lean ? `<div class="lean">偏向：${esc(q.lean)}</div>` : ''}<div>${(q.options ?? []).map((o, i) => btn(o, i === 0)).join('')}${btn('另说', false, true)}</div></div>`
+}
+/** 答模块业务上的一条待定：工作台上发给后端写回文件、重载；单开时只改内存里的那条、重画 */
+function answerModule(d) {
+  const text = d.other ? (typeof prompt === 'function' ? prompt('另说：') : '') : d.opt
+  if (!text) return
+  const item = (MODULES[d.module]?.asks ?? []).find((a) => a.id === d.ask)
+  if (LIVE) return post('答', { module: d.module, context, ask: d.ask, text, sig: item?.sig })
+  if (!item) return
+  item.answer = text; item.answeredAt = new Date().toISOString().slice(0, 10)
+  render()
+}
+
 // ---------- 上下文地图 ----------
 // 上下文排一排，框高跟着「管什么」那句撑开、字不截。
 // 相邻两个上下文之间的来往一条一条横线，间距 30（卡高 22，上下至少留 8）：事件在上、查询在下，同类里先排往右的；
@@ -1333,8 +1609,10 @@ function cxTable() {
 const LEG = {
   role: `<span><span class="sw round" style="background:var(--role);border-color:var(--role-line)"></span>角色</span>`,
   data: `<span><span class="sw" style="background:var(--data);border-color:var(--data-line)"></span>数据</span>`,
+  fdata: `<span><span class="sw" style="background:var(--data);border-color:var(--data-line)"></span>数据（前面小字是它在哪个主题，照主题上色）</span>`,
   stub: `<span><span class="sw dash" style="border-color:var(--topic-line)"></span>别的主题、别的上下文里的数据（小字是出处，点它过去）</span>`,
   note: `<span><span class="sw" style="background:var(--note);border-color:var(--note-line)"></span>关键一步的说明</span>`,
+  frame: `<span><span class="sw dash" style="border-color:var(--ink-3)"></span>opt 可能发生的；alt 几支只走一支，横虚线隔开</span><span><span class="sw" style="border-color:var(--accent)"></span>最左边：从哪一份来、接着去哪一份，点它过去</span>`,
   qa: `<span><span class="sw" style="background:var(--note);border-color:var(--bad)"></span>每步右边一个框：点标题展开、折叠，有待定的规则、没答的问题就展开，点一个答法就是答了</span><span><span class="sw" style="background:var(--area);border-color:var(--area-line)"></span>全定了的，默认折起来</span>`,
 }
 function render() {
@@ -1385,14 +1663,18 @@ function render() {
       <div class="row"><div class="diagram">${drawLocal(x ? { ...x, c: t.c } : t, c)}</div>${sel ? `<div class="side"><b>${esc(sel.title)}</b>${esc(sel.definition)}<div class="src">出处：${esc(sel.source)}</div></div>` : ''}</div>
       <div class="legend">${LEG.role}${LEG.data}${LEG.stub}</div>
       ${(c.concepts ?? []).filter((n) => n.table?.columns?.length).map(tableOf).join('')}`
+  } else if (kind === 'module') {
+    renderModule(main, ...view.split('/').slice(1))
   } else if (kind === 'flow') {
     const f = FLOWS.find((x) => x.file === id)
     if (!f) return missing('流程')
+    const tps = flowTopics(f)
     main.innerHTML = `<h1>${esc(f.title)}</h1>
+      ${tps.length ? `<div class="ftopics">${tps.map((id) => { const t = grpOf[id]; return `<a href="#concepts/${esc(id)}" class="${id === f.topic ? 'own' : ''}" style="background:var(--c${t.c});border-color:var(--c${t.c}l)">${esc(t.title)}</a>` }).join('')}</div>` : ''}
       <p class="sub">${esc(f.summary)}</p>
       ${f.locked ? `<p class="lock">${esc(f.locked.role)}正在改这份流程（${esc(f.locked.step)}）。等它交回再答上面的问题：现在答的会被它写回去时盖掉。</p>` : ''}
       <div class="diagram flowbox">${drawFlow(f)}</div>
-      <div class="legend">${LEG.role}${LEG.data}${LEG.note}${LEG.qa}</div>`
+      <div class="legend">${LEG.role}${LEG.fdata}${LEG.note}${LEG.qa}${LEG.frame}</div>`
   } else {
     main.innerHTML = MAP.topics.length ? `<h1>全局图 <span class="kind">· ${esc(context)}</span></h1>
       <div class="diagram">${drawTop()}</div>` : `<h1>全局图 <span class="kind">· ${esc(context)}</span></h1><p class="sub">全局图还没画。</p>`
@@ -1421,7 +1703,7 @@ function bind() {
     }
     const st = ev.target.closest('.msg,.self')
     if (kind === 'flow' && st) {
-      const f = FLOWS.find((x) => x.file === view.split('/')[1]), p = f.steps.find((x) => x.id === st.dataset.id)
+      const f = FLOWS.find((x) => x.file === view.split('/')[1]), p = f.steps.find((x) => String(x.id) === st.dataset.id)
       const who = (i) => f.parties.find((x) => x.id === i).title
       show(`<h4>${esc(p.id)}. ${esc(p.title)}</h4><div>${esc(who(p.from))}${p.from !== p.to ? ' → ' + esc(who(p.to)) : ''}</div>${p.date ? `<div>例子 ${esc(p.date)}</div>` : ''}${p.due ? `<div>期限 ${esc(p.due)}</div>` : ''}${p.source ? `<div>出处 ${esc(p.source)}</div>` : ''}<div>编号 ${esc(f.title.split('：')[0])} #${esc(p.id)}</div>`, ev.clientX, ev.clientY)
       return
@@ -1432,6 +1714,8 @@ function bind() {
   main.addEventListener('click', (ev) => {
     const btn = ev.target.closest('.qa .btn')
     if (btn) { answerQa(btn.dataset); return }
+    const mb = ev.target.closest('.mbtn')
+    if (mb) { answerModule(mb.dataset); return }
     const tog = ev.target.closest('.qa .tog')
     if (tog) { toggleSide(tog.dataset); return }
     if (ev.target.closest('a[href]')) return

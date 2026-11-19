@@ -8,7 +8,7 @@ dev-team-lite 是一个轻量的、模型驱动的开发团队，由六个角色
 
 | 角色 | 管什么 | 文件 |
 |---|---|---|
-| 业务 | 上下文地图、全局图、概念图、流程 | [roles/业务.md](roles/业务.md) |
+| 业务 | 上下文地图、全局图、概念图、模块业务、流程 | [roles/业务.md](roles/业务.md) |
 | 项目管理 | 需求清单、日程、里程碑 | [roles/项目管理.md](roles/项目管理.md) |
 | 建模 | 聚合、调动清单与流程 | [roles/建模.md](roles/建模.md) |
 | UI 设计 | 项目界面的小样：写代码之前，你照着小样把操作按一遍，用来细化、确定、发现需求 | [roles/UI 设计.md](roles/UI%20设计.md) |
@@ -25,7 +25,7 @@ dev-team-lite 是一个轻量的、模型驱动的开发团队，由六个角色
   项目管理/需求.json  日程.json
   代码/规范/全局结构.json            整个项目一份：用的人、前端、后端、存储、外部系统，谁找谁（软件工程师写）
   共享内核/业务/概念.json
-  上下文/<名>/业务/   全局图.json  概念/<主题>.json  流程/<流程名>.json
+  上下文/<名>/业务/   全局图.json  概念/<主题>.json  模块业务/<主题>.json  流程/<流程名>.json
   上下文/<名>/界面/   <需求编号>.json  <需求编号>/<屏 id>.html      UI 设计写，一条需求一份，里面按视角分屏
   上下文/<名>/模型/   全图.json  留言.json                         聚合之间谁指向谁；你在建模页属性后面留的话
   上下文/<名>/模型/<主题>/   聚合/<聚合名>.json  调动/清单.json  调动/<流程名>.json
@@ -33,7 +33,7 @@ dev-team-lite 是一个轻量的、模型驱动的开发团队，由六个角色
   现场.json  派工/<日期>-<序号>.json  日志/<日期>.jsonl
 ```
 
-项目下面一层是上下文（比如 养老系统、聊天 app、排版系统），各有自己的业务、模型、代码；共用的概念写进共享内核；上下文之间只靠事件和查询来往。
+项目下面一层是上下文（比如 样例系统、聊天 app、排版系统），各有自己的业务、模型、代码；共用的概念写进共享内核；上下文之间只靠事件和查询来往。
 
 这个目录是工作区，里面只留到伪代码。代码和测试，软件工程师写进项目自己的代码库，不放进工作区。
 
@@ -79,4 +79,4 @@ node workbench.js <项目目录> [<项目目录>…] [--port 4870] [--now "2026-
 
 `sample/` 是一个做好的小项目：六页里写死的样例数据按上面的布局落成的，`node tools/export-fixture.js` 重新生成；角色拿不准一样东西写成什么样就看它，`node workbench.js sample` 可以对着它看页面。它要过得了 `node tools/check.js sample`。
 
-`templates/` 是软件工程师定规范时拿来的默认，形状和项目里存的一样：全局结构一份，技术选型一份，结构设计和文件命名各两份（后端一份、前端一份）。`pages/` 里每一页的文件夹带一个 `check.js` 能跑；`node tools/check.js <项目目录>` 查一个项目里角色交出的文件有没有硬伤：读不出的 JSON、指不到的屏和步、缺的小样和伪代码、子主题和它的概念文件对不上；角色交回之前跑，指挥收活时再跑。`node tools/scene.check.js` 查指挥记现场用的 `tools/scene.js`，`node tools/workbench.check.js` 查工作台写回文件的那几样，`node tools/check.check.js` 查 `tools/check.js` 自己。截图工具 `tools/shot.js` 和编码页的检查要用机器上的 Chrome 或 Edge，Windows、macOS、Linux 上常见的安装位置都找（找法在 `tools/browser.js`，`node tools/browser.check.js` 查它）；装在别处的，用环境变量 `DEV_TEAM_BROWSER` 写明浏览器可执行文件的完整路径。
+`templates/` 是软件工程师定规范时拿来的默认，形状和项目里存的一样：全局结构一份，技术选型一份，结构设计和文件命名各两份（后端一份、前端一份）。`pages/` 里每一页的文件夹带一个 `check.js` 能跑；`node tools/check.js <项目目录>` 查一个项目里角色交出的文件有没有硬伤：读不出的 JSON、指不到的屏和步、缺的小样和伪代码、子主题和它的概念文件对不上、模块业务的号重复或指着的流程步不在、两份流程的入口出口没对上；角色交回之前跑，指挥收活时再跑。`node tools/scene.check.js` 查指挥记现场用的 `tools/scene.js`，`node tools/workbench.check.js` 查工作台写回文件的那几样，`node tools/check.check.js` 查 `tools/check.js` 自己。截图工具 `tools/shot.js` 和编码页的检查要用机器上的 Chrome 或 Edge，Windows、macOS、Linux 上常见的安装位置都找（找法在 `tools/browser.js`，`node tools/browser.check.js` 查它）；装在别处的，用环境变量 `DEV_TEAM_BROWSER` 写明浏览器可执行文件的完整路径。

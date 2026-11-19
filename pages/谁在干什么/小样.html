@@ -139,47 +139,47 @@ const post = (action, body) => fetch('api/' + action, { method: 'POST', headers:
 // 指挥在派工书和日志上写 task 和 stage，进度图就能点出谁在干哪个任务的哪一段。
 // 左边栏按上下文折叠展开，每个上下文下面是它现在有没有人在干、有几个在等你答、任务完成了几个
 
-const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统', '共享内核']
+const CONTEXTS = DATA.CONTEXTS ?? ['样例系统', '聊天 app', '排版系统', '共享内核']
 const NOW_TS = DATA.NOW_TS ?? '2026-11-09 16:20'
 const RECENT = DATA.RECENT ?? []   // 最近 3 天的流水，一天一组 { date, rows }；单开时只有今天
 const SCENE = DATA.SCENE ?? {
   now: [   // 同时在干的每个角色一项；页面按 since 先后排
-    { role: '建模', context: '养老系统', task: 'N-02.2', stage: '建模', step: '照流程「服务发生与申报」拆解调动，补进清单', since: '2026-11-09 15:40', reads: ['业务/流程/03-服务发生与申报.json', '模型/g2/聚合/参与者档案.json', '模型/g2/调动/清单.json'], writes: ['模型/g5/调动/清单.json', '模型/g5/调动/03-服务发生与申报.json'], stop: '清单里新加的每条都有 call 和 out，流程页能画出来；碰到清单里没有的行为停下来问' },
-    { role: '业务', context: '聊天 app', task: 'N-07.2', stage: '业务', step: '照 N-07 拆出的功能，写聊天 app 的概念「聊天」和它听的事件「协议已签」', since: '2026-11-09 15:55', reads: ['项目管理/需求.json', '上下文/养老系统/业务/流程/02-签服务协议.json'], writes: ['业务/概念/聊天.json', '业务/概念/协议已签.json'], stop: '两个概念各有一句定义和出处；原料没说的别编，停下来问' } ],
+    { role: '建模', context: '样例系统', task: 'N-02.2', stage: '建模', step: '照流程「服务发生与申报」拆解调动，补进清单', since: '2026-11-09 15:40', reads: ['业务/流程/03-服务发生与申报.json', '模型/g2/聚合/参与者档案.json', '模型/g2/调动/清单.json'], writes: ['模型/g5/调动/清单.json', '模型/g5/调动/03-服务发生与申报.json'], stop: '清单里新加的每条都有 call 和 out，流程页能画出来；碰到清单里没有的行为停下来问' },
+    { role: '业务', context: '聊天 app', task: 'N-07.2', stage: '业务', step: '照 N-07 拆出的功能，写聊天 app 的概念「聊天」和它听的事件「协议已签」', since: '2026-11-09 15:55', reads: ['项目管理/需求.json', '上下文/样例系统/业务/流程/02-签服务协议.json'], writes: ['业务/概念/聊天.json', '业务/概念/协议已签.json'], stop: '两个概念各有一句定义和出处；原料没说的别编，停下来问' } ],
   waiting: [
-    { id: 'q-1', role: '建模', context: '养老系统', q: '「扣」是基金账户的行为，还是基金的？', why: '扣一笔要先看所有账户加起来没超这一季的钱，这条规则在基金那一层；但钱是从一个账户里扣的。', lean: { pick: '基金.扣(账户类型, 金额)', why: '让根守总额，根再调账户减；账户不单独对外' }, options: ['基金.扣(账户类型, 金额)', '基金账户.扣(金额)', '两层都有'], goto: { page: '建模', hash: '养老系统/agg/fund' } },
-    { id: 'q-2', role: '业务', context: '聊天 app', q: '聊天 app 的业务主题从原料的哪一份读？', why: '原料里只有养老系统的政策文件，没有 app 的；要么你口述，要么先不画它的全局图。', lean: { pick: '先不画', why: '没有原料的东西写出来是编的' }, options: ['先不画', '我口述你记', '从养老系统的流程里抽'], goto: null },
-    { id: 'q-3', role: '项目管理', context: null, q: 'N-07 开聊天要不要分到第二期？', why: '它依赖 N-01 建档，建档第一期就完；但聊天 app 一个字都还没开。', lean: { pick: '第二期', why: '第一期只做养老系统，别把 app 拖进来' }, options: ['第二期', '第三期', '不做'], goto: { page: '项目管理', hash: '' } } ],
+    { id: 'q-1', role: '建模', context: '样例系统', q: '「扣」是基金账户的行为，还是基金的？', why: '扣一笔要先看所有账户加起来没超这一季的钱，这条规则在基金那一层；但钱是从一个账户里扣的。', lean: { pick: '基金.扣(账户类型, 金额)', why: '让根守总额，根再调账户减；账户不单独对外' }, options: ['基金.扣(账户类型, 金额)', '基金账户.扣(金额)', '两层都有'], goto: { page: '建模', hash: '样例系统/agg/fund' } },
+    { id: 'q-2', role: '业务', context: '聊天 app', q: '聊天 app 的业务主题从原料的哪一份读？', why: '原料里只有样例系统的政策文件，没有 app 的；要么你口述，要么先不画它的全局图。', lean: { pick: '先不画', why: '没有原料的东西写出来是编的' }, options: ['先不画', '我口述你记', '从样例系统的流程里抽'], goto: null },
+    { id: 'q-3', role: '项目管理', context: null, q: 'N-07 开聊天要不要分到第二期？', why: '它依赖 N-01 建档，建档第一期就完；但聊天 app 一个字都还没开。', lean: { pick: '第二期', why: '第一期只做样例系统，别把 app 拖进来' }, options: ['第二期', '第三期', '不做'], goto: { page: '项目管理', hash: '' } } ],
   today: [
-    { ts: '09:12', kind: '派出', role: '业务', context: '养老系统', task: 'N-02.2', stage: '业务', text: '画流程「服务发生与申报」', files: ['业务/流程/03-服务发生与申报.json'] },
-    { ts: '10:05', kind: '交回', role: '业务', context: '养老系统', text: '流程画好，14 步；两处原料没说的标了「问」' },
-    { ts: '10:05', kind: '问', role: '业务', context: '养老系统', q: 'q-0', text: '上门服务的签到由谁记？原料只说「服务后记录」' },
-    { ts: '10:30', kind: '答', role: '指挥', context: '养老系统', q: 'q-0', text: '你答：照护伙伴回来录，不做现场签到' },
-    { ts: '10:31', kind: '派出', role: '业务', context: '养老系统', task: 'N-02.2', stage: '业务', text: '照答案改流程第 6 步' },
-    { ts: '10:40', kind: '交回', role: '业务', context: '养老系统', text: '改了第 6 步' },
-    { ts: '10:45', kind: '定下', role: '你', context: '养老系统', task: 'N-02.2', stage: '业务', text: '你在业务页按了定下，日程里 N-02.2 的业务填 11-09', files: ['项目管理/日程.json'] },
+    { ts: '09:12', kind: '派出', role: '业务', context: '样例系统', task: 'N-02.2', stage: '业务', text: '画流程「服务发生与申报」', files: ['业务/流程/03-服务发生与申报.json'] },
+    { ts: '10:05', kind: '交回', role: '业务', context: '样例系统', text: '流程画好，14 步；两处原料没说的标了「问」' },
+    { ts: '10:05', kind: '问', role: '业务', context: '样例系统', q: 'q-0', text: '上门服务的签到由谁记？原料只说「服务后记录」' },
+    { ts: '10:30', kind: '答', role: '指挥', context: '样例系统', q: 'q-0', text: '你答：照护伙伴回来录，不做现场签到' },
+    { ts: '10:31', kind: '派出', role: '业务', context: '样例系统', task: 'N-02.2', stage: '业务', text: '照答案改流程第 6 步' },
+    { ts: '10:40', kind: '交回', role: '业务', context: '样例系统', text: '改了第 6 步' },
+    { ts: '10:45', kind: '定下', role: '你', context: '样例系统', task: 'N-02.2', stage: '业务', text: '你在业务页按了定下，日程里 N-02.2 的业务填 11-09', files: ['项目管理/日程.json'] },
     { ts: '11:20', kind: '派出', role: '项目管理', context: null, text: '把 N-07 拆成功能、标上下文', files: ['需求.json', '日程.json'] },
-    { ts: '11:50', kind: '交回', role: '项目管理', context: null, text: '拆成两个功能：养老系统发事件、聊天 app 听事件开聊天' },
+    { ts: '11:50', kind: '交回', role: '项目管理', context: null, text: '拆成两个功能：样例系统发事件、聊天 app 听事件开聊天' },
     { ts: '11:50', kind: '问', role: '项目管理', context: null, q: 'q-3', text: 'N-07 分到第二期？' },
     { ts: '14:00', kind: '派出', role: '业务', context: '聊天 app', text: '读原料画聊天 app 的全局图' },
     { ts: '14:20', kind: '交回', role: '业务', context: '聊天 app', text: '原料里没有 app 的内容，停下' },
     { ts: '14:20', kind: '问', role: '业务', context: '聊天 app', q: 'q-2', text: '聊天 app 的业务主题从哪读？' },
-    { ts: '15:40', kind: '派出', role: '建模', context: '养老系统', task: 'N-02.2', stage: '建模', text: '照流程「服务发生与申报」拆解调动', files: ['模型/g5/调动/清单.json'] },
+    { ts: '15:40', kind: '派出', role: '建模', context: '样例系统', task: 'N-02.2', stage: '建模', text: '照流程「服务发生与申报」拆解调动', files: ['模型/g5/调动/清单.json'] },
     { ts: '15:55', kind: '派出', role: '业务', context: '聊天 app', task: 'N-07.2', stage: '业务', text: '照 N-07 拆出的功能写聊天 app 的概念「聊天」和事件「协议已签」', files: ['业务/概念/聊天.json', '业务/概念/协议已签.json'] },
-    { ts: '16:05', kind: '问', role: '建模', context: '养老系统', q: 'q-1', text: '「扣」是基金账户的行为还是基金的？' } ] }
+    { ts: '16:05', kind: '问', role: '建模', context: '样例系统', q: 'q-1', text: '「扣」是基金账户的行为还是基金的？' } ] }
 if (!Array.isArray(SCENE.now)) SCENE.now = []   // 新建项目的 现场.json 里 now 还是 null 时，当没人在干
 
 // 项目管理那两份的节选：需求.json 的功能（编号、标题、上下文、状态）＋ 日程.json 的里程碑与任务
 const ITEMS = DATA.ITEMS ?? {
-  'N-01': { title: '给参与者建档，记下决定通知书', context: '养老系统' },
+  'N-01': { title: '给参与者建档，记下决定通知书', context: '样例系统' },
   'N-02': { title: '记下分到她名下的基金和额度', context: null },
-  'N-03': { title: '录一笔服务记录，扣她的基金', context: '养老系统' },
-  'N-04': { title: '按季度给她做预算', context: '养老系统' },
+  'N-03': { title: '录一笔服务记录，扣她的基金', context: '样例系统' },
+  'N-04': { title: '按季度给她做预算', context: '样例系统' },
   'N-05': { title: '月底给她出月结单', context: null },
   'N-07': { title: '签了协议，聊天 app 上开一个聊天', context: null } }
 // 等你定：lib/project.js 的 pendingDecisions 算好的，只有界面的小样，一条需求一条 { page, title, hash, ref?, note? }；点了去界面页那一屏按定下；不按期过滤
 const DECIDES = DATA.DECIDES ?? [
-  { page: '界面', title: '给参与者建档，记下决定通知书 · 小样', hash: '养老系统/N-01/c-list', ref: 'N-01', note: '3 / 7 屏没定' } ]
+  { page: '界面', title: '给参与者建档，记下决定通知书 · 小样', hash: '样例系统/N-01/c-list', ref: 'N-01', note: '3 / 7 屏没定' } ]
 const STAGES = ['业务', '建模', '界面', '编码']
 // 每段的值是做完那天的日期或 null；_doing 是工作台算好的正在做的那几段（建模和界面可以同时在做）。单开时写死的数据没有 _doing：有一段做完了、还没全完，就当头一个没完的那段在做
 const doingOf = (st) => !st ? [] : st._doing ?? (STAGES.some((k) => st[k]) && !STAGES.every((k) => st[k]) ? [STAGES.find((k) => !st[k])] : [])
@@ -190,18 +190,18 @@ const PLAN = DATA.PLAN ?? {
     { id: 'M1', title: '第一期：建档、分钱、录一笔服务', date: '2026-11-21', items: [
       { id: 'N-01', start: '2026-11-01', end: '2026-11-05', stages: { 业务: '2026-11-02', 建模: '2026-11-03', 编码: '2026-11-05' } },
       { id: 'N-02', start: '2026-11-04', end: '2026-11-12', tasks: [
-        { id: 'N-02.1', context: '养老系统', title: '照通知书记下每笔基金和额度', start: '2026-11-04', end: '2026-11-06', stages: { 业务: '2026-11-04', 建模: '2026-11-05', 编码: '2026-11-06' } },
-        { id: 'N-02.2', context: '养老系统', title: '看她名下各笔基金还剩多少', start: '2026-11-07', end: '2026-11-10', stages: { 业务: '2026-11-09', 建模: null, 编码: null } },
-        { id: 'N-02.3', context: '养老系统', title: '来了新通知书，改额度', start: '2026-11-10', end: '2026-11-12', stages: { 业务: null, 建模: null, 编码: null } } ] },
+        { id: 'N-02.1', context: '样例系统', title: '照通知书记下每笔基金和额度', start: '2026-11-04', end: '2026-11-06', stages: { 业务: '2026-11-04', 建模: '2026-11-05', 编码: '2026-11-06' } },
+        { id: 'N-02.2', context: '样例系统', title: '看她名下各笔基金还剩多少', start: '2026-11-07', end: '2026-11-10', stages: { 业务: '2026-11-09', 建模: null, 编码: null } },
+        { id: 'N-02.3', context: '样例系统', title: '来了新通知书，改额度', start: '2026-11-10', end: '2026-11-12', stages: { 业务: null, 建模: null, 编码: null } } ] },
       { id: 'N-03', start: '2026-11-12', end: '2026-11-21', stages: { 业务: null, 建模: null, 编码: null } } ] },
     { id: 'M2', title: '第二期：季度预算', date: '2026-12-05', items: [
       { id: 'N-04', start: '2026-11-24', end: '2026-12-05', stages: { 业务: null, 建模: null, 编码: null } },
       { id: 'N-07', start: '2026-11-26', end: '2026-12-05', tasks: [
-        { id: 'N-07.1', context: '养老系统', title: '签了协议发一个事件出去', start: '2026-11-26', end: '2026-11-28', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-07.1', context: '样例系统', title: '签了协议发一个事件出去', start: '2026-11-26', end: '2026-11-28', stages: { 业务: null, 建模: null, 编码: null } },
         { id: 'N-07.2', context: '聊天 app', title: '听到协议已签，开聊天', start: '2026-11-29', end: '2026-12-05', stages: { 业务: null, 建模: null, 编码: null } } ] } ] },
     { id: 'M3', title: '第三期：月结单', date: '2026-12-19', items: [
       { id: 'N-05', start: '2026-12-08', end: '2026-12-19', tasks: [
-        { id: 'N-05.1', context: '养老系统', title: '算出这个月花了哪些、剩多少', start: '2026-12-08', end: '2026-12-12', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-05.1', context: '样例系统', title: '算出这个月花了哪些、剩多少', start: '2026-12-08', end: '2026-12-12', stages: { 业务: null, 建模: null, 编码: null } },
         { id: 'N-05.2', context: '排版系统', title: '排成能打印的月结单', start: '2026-12-15', end: '2026-12-19', stages: { 业务: null, 建模: null, 编码: null } } ] } ] } ],
   drift: [{ milestone: 'M1', days: 3, why: 'N-02 的基金账户类型比预想的多，建模多花了三天' }] }
 for (const m of PLAN.milestones) for (const it of m.items) for (const x of [it, ...(it.tasks ?? [])]) if (x.stages && !('界面' in x.stages)) x.stages = { 业务: x.stages.业务, 建模: x.stages.建模, 界面: x.stages.编码 ?? null, 编码: x.stages.编码 }

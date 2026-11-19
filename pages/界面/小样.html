@@ -132,9 +132,9 @@ const post = (action, body) => fetch('api/' + action, { method: 'POST', headers:
 // sig 是工作台给每一屏带出来的「这一版的记号」，按的时候带回去：屏在页面开着的时候改过了，工作台不记、提示刷新。req.locked 是角色正在改这条需求的小样，这时候先按不了
 // 点问题卡上的一个选项或「另说」= post('答', { mockup: 需求编号, screen: 问题所在的屏 id, ask: 问题 id, context, text })，写回那条问题
 
-const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统', '共享内核']
+const CONTEXTS = DATA.CONTEXTS ?? ['样例系统', '聊天 app', '排版系统', '共享内核']
 const REQS = DATA.REQS ?? {
-  '养老系统': [
+  '样例系统': [
     { req: 'N-01', title: '给老人建档，记下支持计划和决定通知书', flow: '01-老人注册',
       views: [
         { who: '案例经理', screens: [
@@ -295,7 +295,7 @@ const num = (i) => NUM[i] ?? `${i + 1}.`
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
 
 // 上下文：左边栏第一层；地址 #<上下文>/<需求编号>/<屏 id>，视角不进地址，从屏 id 推出来（屏 id 在一条需求里不重复）
-let context = '养老系统'
+let context = '样例系统'
 let view = ''          // '<需求编号>/<屏 id>'
 let finished = false   // 小样里按到了「完」
 let pendingFlash = null   // 右边一栏点了一条：{ screen, ask }，下一次画到那一屏时在小样上闪那个圆点、弹出气泡

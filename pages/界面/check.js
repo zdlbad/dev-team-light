@@ -26,8 +26,8 @@ const GATE = '<span class="badge">未定</span><button class="act">定下</butto
 const clickOpt = (d) => `els.main.handlers.click({ target: { closest: (s) => s === '.ask button.opt' ? { dataset: ${JSON.stringify(d)} } : null } })`;
 const click = (sel, go) => `els.main.handlers.click({ target: { closest: (s) => s === ${JSON.stringify(sel)} ? { dataset: { go: ${JSON.stringify(go ?? '')} } } : null } })`;
 // 工作台注入：N-01 对着流程 01-老人建档，屏带 step 和 stepTitle；问题在屏自己的 asks 上，一条没答、一条答了；open 是 DATA.OPEN
-const WBDATA = (open) => ({ CONTEXTS: ['养老系统', '共享内核'], MOCKS: {}, WB: { base: '/sample-care', project: '养老', pages: ['业务', '界面'] }, ...(open ? { OPEN: open } : {}),
-  REQS: { '养老系统': [{ req: 'N-01', title: '给老人建档', flow: '01-老人建档', views: [{ who: '照护伙伴', screens: [
+const WBDATA = (open) => ({ CONTEXTS: ['样例系统', '共享内核'], MOCKS: {}, WB: { base: '/sample-care', project: '养老', pages: ['业务', '界面'] }, ...(open ? { OPEN: open } : {}),
+  REQS: { '样例系统': [{ req: 'N-01', title: '给老人建档', flow: '01-老人建档', views: [{ who: '照护伙伴', screens: [
     { id: 'notice', title: '照通知书填', file: 'notice.html', step: '3', stepTitle: '照护伙伴照通知书填分级', shows: ['分级'], does: [{ act: '下一步', to: '完' }],
       asks: [{ id: 'a-1', q: '分级下拉还是抄？', lean: '下拉', options: ['下拉', '照抄'] },
         { id: 'a-2', q: '优先级几档？', lean: '四档', options: ['四档', '三档'], answer: '照手册四档', answeredAt: '2026-11-02' }] }] }] }] } })
@@ -37,9 +37,9 @@ const WBMULTI = () => ({ CONTEXTS: ['沟通 app', '共享内核'], MOCKS: {}, WB
     { id: 'group', title: '拉群', file: 'group.html', step: '00-管理员找人建群/2', stepFlow: '管理员找人建群', stepNo: '2', stepTitle: '管理员拉群', shows: [], does: [{ act: '下一步', to: 'fill' }] },
     { id: 'fill', title: '填表', file: 'fill.html', step: '01-群里发起登记表/1', stepFlow: '群里发起登记表', stepNo: '1', stepTitle: '她自己填', shows: [], does: [{ act: '交', to: '完' }] }] }] }] } })
 // 钉问题用的工作台数据：一屏四条问题，a-1、a-3 标在同一个下拉上，a-4 没标，a-2 答过了（页面当没有）；输入框标的 a-9 不是这一屏的问题
-const WBPIN = () => ({ CONTEXTS: ['养老系统', '共享内核'], WB: { base: '/sample-care', project: '养老', pages: ['业务', '界面'] },
+const WBPIN = () => ({ CONTEXTS: ['样例系统', '共享内核'], WB: { base: '/sample-care', project: '养老', pages: ['业务', '界面'] },
   MOCKS: { 'N-01/notice': '<h1>照通知书填</h1><select data-ask="a-1 a-3"><option>HCP 3 级</option></select><input data-ask="a-9"><a href="#go:完">下一步</a>' },
-  REQS: { '养老系统': [{ req: 'N-01', title: '给老人建档', views: [{ who: '照护伙伴', screens: [
+  REQS: { '样例系统': [{ req: 'N-01', title: '给老人建档', views: [{ who: '照护伙伴', screens: [
     { id: 'notice', title: '照通知书填', file: 'notice.html', shows: ['分级'], does: [{ act: '下一步', to: '完' }],
       asks: [{ id: 'a-1', q: '分级下拉还是抄？', lean: '下拉', options: ['下拉', '照抄'] },
         { id: 'a-2', q: '优先级几档？', lean: '四档', options: ['四档', '三档'], answer: '照手册四档', answeredAt: '2026-11-02' },
@@ -74,45 +74,45 @@ const cases = [
     && main.includes('<li>My Aged Care 编号</li>') && count(main, /class="ask"/g) === 3 && main.includes('偏向 <b>下拉选，手册 7 级 + 过渡</b>') && main.includes('class="scr">② 建档</span>') && main.includes('class="scr">老人/家属 · ① 我的档案</span><div class="q">家属能看到支持计划的金额吗？')
     && count(main, /class="step( on)?" data-go=/g) === 3 && main.includes('class="step on" data-go="list">① 老人列表') && main.includes('class="step end">完') && main.includes('建档 <span class="to">→ <b>建档</b>') && main.includes('需求候选</span><span>老人列表要能按状态筛') && main.includes('需求候选</span><span><span class="scr">老人/家属 · ① 我的档案</span>家属要有登录入口')
     && main.includes('disabled>‹ 上一屏</button>') && main.includes('data-go="new">下一屏 建档 ›')],
-  ['切到第二屏（hash 规则）', '', ({ main }) => global.location.hash === '#养老系统/N-01/new' && main.includes('class="step on" data-go="new">② 建档') && main.includes('title="建档" srcdoc="') && main.includes('支持计划日期') && main.includes('data-go="list">‹ 上一屏 老人列表') && main.includes('data-go="file">下一屏 档案页 ›') && main.includes('取消 <span class="to">→ <b>老人列表</b>') && count(main, /class="ask"/g) === 3 && !main.includes('class="scr">② 建档') && main.includes('<span class="badge ok">已定 2026-11-02</span>'),
+  ['切到第二屏（hash 规则）', '', ({ main }) => global.location.hash === '#样例系统/N-01/new' && main.includes('class="step on" data-go="new">② 建档') && main.includes('title="建档" srcdoc="') && main.includes('支持计划日期') && main.includes('data-go="list">‹ 上一屏 老人列表') && main.includes('data-go="file">下一屏 档案页 ›') && main.includes('取消 <span class="to">→ <b>老人列表</b>') && count(main, /class="ask"/g) === 3 && !main.includes('class="scr">② 建档') && main.includes('<span class="badge ok">已定 2026-11-02</span>'),
     "go('N-01/new'); window.handlers.hashchange()"],
-  ['地址直接给第三屏：没定、交棒那条标视角、下一屏不跨视角', '#养老系统/N-01/file', ({ main }) => main.includes('class="step on" data-go="file">③ 档案页') && main.includes(GATE) && main.includes('<span class="n">③</span>档案页<span class="gate">')
+  ['地址直接给第三屏：没定、交棒那条标视角、下一屏不跨视角', '#样例系统/N-01/file', ({ main }) => main.includes('class="step on" data-go="file">③ 档案页') && main.includes(GATE) && main.includes('<span class="n">③</span>档案页<span class="gate">')
     && main.includes('记签协议 <span class="to">→ <b>完</b></span> <span class="badge nt">下一条需求</span>') && main.includes('给家属看 <span class="to">→ <b>我的档案</b></span> <span class="hand">→ 老人/家属</span> <span class="badge nt">交棒</span>')
     && main.includes('disabled>下一屏 ›') && main.includes('data-go="new">‹ 上一屏 建档') && main.includes('class="scr">② 建档</span>')],
-  ['视角切换：按「老人/家属」进那个视角第一屏', '#养老系统/N-01/file', ({ main, nav }) => global.location.hash === '#养老系统/N-01/mine' && main.includes('class="vw" data-go="list">案例经理') && main.includes('class="vw on" data-go="mine">老人/家属')
+  ['视角切换：按「老人/家属」进那个视角第一屏', '#样例系统/N-01/file', ({ main, nav }) => global.location.hash === '#样例系统/N-01/mine' && main.includes('class="vw" data-go="list">案例经理') && main.includes('class="vw on" data-go="mine">老人/家属')
     && count(main, /class="step( on)?" data-go=/g) === 1 && main.includes('class="step on" data-go="mine">① 我的档案') && main.includes('class="step end">完') && main.includes('<h3>谁在用</h3><span class="who">老人/家属</span>') && main.includes('title="我的档案" srcdoc="') && main.includes('决定通知书')
     && main.includes('disabled>‹ 上一屏</button>') && main.includes('disabled>下一屏 ›') && main.includes('看通知书 <span class="to">→ <b>完</b></span></li>') && !main.includes('class="hand"')
-    && main.includes(CARD('ask', 'mine/a-3', 1) + '<div class="q">家属能看到支持计划的金额吗？') && main.includes('class="scr">案例经理 · ② 建档</span>') && nav.includes('class="sub2 vw on">' + TRI('养老系统/N-01/老人/家属', 1) + '老人/家属</a>') && nav.includes('class="sub2 scr on"><small>①</small>我的档案' + DOT(1) + '</a>'),
+    && main.includes(CARD('ask', 'mine/a-3', 1) + '<div class="q">家属能看到支持计划的金额吗？') && main.includes('class="scr">案例经理 · ② 建档</span>') && nav.includes('class="sub2 vw on">' + TRI('样例系统/N-01/老人/家属', 1) + '老人/家属</a>') && nav.includes('class="sub2 scr on"><small>①</small>我的档案' + DOT(1) + '</a>'),
     click('[data-go]', 'mine') + '; window.handlers.hashchange()'],
-  ['本视角的上一屏 / 下一屏：从档案页按上一屏回建档，再按下一屏回来', '#养老系统/N-01/file', ({ main, snap }) => snap[0] === '#养老系统/N-01/new' && snap[1].includes('class="step on" data-go="new">② 建档') && global.location.hash === '#养老系统/N-01/file' && main.includes('class="step on" data-go="file">③ 档案页') && main.includes('class="vw on" data-go="list">案例经理'),
+  ['本视角的上一屏 / 下一屏：从档案页按上一屏回建档，再按下一屏回来', '#样例系统/N-01/file', ({ main, snap }) => snap[0] === '#样例系统/N-01/new' && snap[1].includes('class="step on" data-go="new">② 建档') && global.location.hash === '#样例系统/N-01/file' && main.includes('class="step on" data-go="file">③ 档案页') && main.includes('class="vw on" data-go="list">案例经理'),
     click('[data-go]', 'new') + '; window.handlers.hashchange(); snap.push(location.hash, els.main.innerHTML); ' + click('[data-go]', 'file') + '; window.handlers.hashchange()'],
-  ['小样里按「建档」跳屏', '', ({ main }) => global.location.hash === '#养老系统/N-01/new' && main.includes('class="step on" data-go="new">② 建档'),
+  ['小样里按「建档」跳屏', '', ({ main }) => global.location.hash === '#样例系统/N-01/new' && main.includes('class="step on" data-go="new">② 建档'),
     "window.handlers.message({ data: { go: 'new' } }); window.handlers.hashchange()"],
-  ['小样里按「给家属看」交棒：切到老人/家属视角、选中我的档案', '#养老系统/N-01/file', ({ main, nav }) => global.location.hash === '#养老系统/N-01/mine' && main.includes('class="vw on" data-go="mine">老人/家属') && main.includes('class="vw" data-go="list">案例经理') && main.includes('class="step on" data-go="mine">① 我的档案') && main.includes('title="我的档案" srcdoc="') && main.includes('<h3>谁在用</h3><span class="who">老人/家属</span>') && nav.includes('class="sub2 scr on"><small>①</small>我的档案' + DOT(1) + '</a>') && nav.includes('class="sub2 scr"><small>③</small>档案页</a>'),
+  ['小样里按「给家属看」交棒：切到老人/家属视角、选中我的档案', '#样例系统/N-01/file', ({ main, nav }) => global.location.hash === '#样例系统/N-01/mine' && main.includes('class="vw on" data-go="mine">老人/家属') && main.includes('class="vw" data-go="list">案例经理') && main.includes('class="step on" data-go="mine">① 我的档案') && main.includes('title="我的档案" srcdoc="') && main.includes('<h3>谁在用</h3><span class="who">老人/家属</span>') && nav.includes('class="sub2 scr on"><small>①</small>我的档案' + DOT(1) + '</a>') && nav.includes('class="sub2 scr"><small>③</small>档案页</a>'),
     "window.handlers.message({ data: { go: 'mine' } }); window.handlers.hashchange()"],
-  ['小样里按到「完」', '#养老系统/N-01/file', ({ main }) => main.includes('class="step end on">完') && main.includes('案例经理 这一串按完了：N-01 到「记签协议」，下一条需求。') && main.includes('href="#N-01/list">回第一屏') && !main.includes('class="step on"'),
+  ['小样里按到「完」', '#样例系统/N-01/file', ({ main }) => main.includes('class="step end on">完') && main.includes('案例经理 这一串按完了：N-01 到「记签协议」，下一条需求。') && main.includes('href="#N-01/list">回第一屏') && !main.includes('class="step on"'),
     "window.handlers.message({ data: { go: '完' } })"],
-  ['N-03：三个视角，照护伙伴那串没有「完」', '', ({ main, nav }) => global.location.hash === '#养老系统/N-03/log' && main.includes('<span class="id">N-03</span> · 录一笔服务记录，扣她的基金') && main.includes('<span class="cnt">已定 0/4 屏</span>') && main.includes('照护伙伴&lt;/i&gt;录一笔服务')
+  ['N-03：三个视角，照护伙伴那串没有「完」', '', ({ main, nav }) => global.location.hash === '#样例系统/N-03/log' && main.includes('<span class="id">N-03</span> · 录一笔服务记录，扣她的基金') && main.includes('<span class="cnt">已定 0/4 屏</span>') && main.includes('照护伙伴&lt;/i&gt;录一笔服务')
     && count(main, /class="vw( on)?" data-go=/g) === 3 && main.includes('class="vw on" data-go="log">照护伙伴<small>0/2</small>') && main.includes('class="vw" data-go="review">案例经理') && main.includes('class="vw" data-go="balance">老人/家属')
     && count(main, /class="step( on)?" data-go=/g) === 2 && !main.includes('class="step end') && count(main, /class="ask"/g) === 2 && main.includes('偏向 <b>协议价</b>') && main.includes('class="scr">案例经理 · ① 待核的服务记录</span><div class="q">每笔都要核还是抽核？') && main.includes('<li>单价（自动带出）</li>')
     && main.includes('需求候选</span><span><span class="scr">老人/家属 · ① 我的基金余额</span>家属要收到扣款通知') && main.includes(GATE) && nav.includes('class="sub2 scr on"><small>①</small>录一笔服务'),
     "go('N-03/log'); window.handlers.hashchange()"],
-  ['N-03 录完那屏：交棒给案例经理，下一屏不跨视角', '#养老系统/N-03/after', ({ main }) => main.includes('class="step on" data-go="after">② 录完') && main.includes('交给案例经理核 <span class="to">→ <b>待核的服务记录</b></span> <span class="hand">→ 案例经理</span> <span class="badge nt">交棒</span>') && main.includes('再录一笔 <span class="to">→ <b>录一笔服务</b></span></li>') && main.includes('data-go="log">下一屏 录一笔服务 ›') && !main.includes('data-go="review">下一屏') && main.includes('data-go="log">‹ 上一屏 录一笔服务')],
-  ['N-03 小样里交棒：录完 → 待核，切到案例经理视角', '#养老系统/N-03/after', ({ main }) => global.location.hash === '#养老系统/N-03/review' && main.includes('class="vw on" data-go="review">案例经理') && main.includes('class="vw" data-go="log">照护伙伴') && count(main, /class="step( on)?" data-go=/g) === 1 && main.includes('class="step on" data-go="review">① 待核的服务记录') && main.includes('class="step end">完') && main.includes('案例经理&lt;/i&gt;待核的服务记录') && main.includes(CARD('ask', 'review/a-2', 1) + '<div class="q">每笔都要核还是抽核？') && main.includes('class="scr">照护伙伴 · ① 录一笔服务</span><div class="q">单价按协议价'),
+  ['N-03 录完那屏：交棒给案例经理，下一屏不跨视角', '#样例系统/N-03/after', ({ main }) => main.includes('class="step on" data-go="after">② 录完') && main.includes('交给案例经理核 <span class="to">→ <b>待核的服务记录</b></span> <span class="hand">→ 案例经理</span> <span class="badge nt">交棒</span>') && main.includes('再录一笔 <span class="to">→ <b>录一笔服务</b></span></li>') && main.includes('data-go="log">下一屏 录一笔服务 ›') && !main.includes('data-go="review">下一屏') && main.includes('data-go="log">‹ 上一屏 录一笔服务')],
+  ['N-03 小样里交棒：录完 → 待核，切到案例经理视角', '#样例系统/N-03/after', ({ main }) => global.location.hash === '#样例系统/N-03/review' && main.includes('class="vw on" data-go="review">案例经理') && main.includes('class="vw" data-go="log">照护伙伴') && count(main, /class="step( on)?" data-go=/g) === 1 && main.includes('class="step on" data-go="review">① 待核的服务记录') && main.includes('class="step end">完') && main.includes('案例经理&lt;/i&gt;待核的服务记录') && main.includes(CARD('ask', 'review/a-2', 1) + '<div class="q">每笔都要核还是抽核？') && main.includes('class="scr">照护伙伴 · ① 录一笔服务</span><div class="q">单价按协议价'),
     "window.handlers.message({ data: { go: 'review' } }); window.handlers.hashchange()"],
   ['聊天 app 没小样', '#聊天 app', ({ main, nav }) => main.includes('还没有小样') && !main.includes('<iframe') && nav.includes('class="cx on" data-cx="聊天 app"') && !nav.includes('聊天 app<small>')],
-  ['左边栏：两条需求，默认只展开正在看的 N-01（两个视角、四屏），N-03 收起；定过的标 ✓', '', ({ nav }) => nav.includes('data-cx="养老系统"') && nav.includes('养老系统<small>2 条需求</small>')
-    && nav.includes(REQ('养老系统', 'N-01/list', N01, { on: 1, open: 1, n: 3, dc: '2/4' })) && nav.includes(REQ('养老系统', 'N-03/log', N03, { open: 0, n: 2, dc: '0/4' }))
-    && count(nav, /class="sub2 vw( on)?"/g) === 2 && nav.includes('href="#N-01/list" class="sub2 vw on">' + TRI('养老系统/N-01/案例经理', 1) + '案例经理</a>') && nav.includes('href="#N-01/mine" class="sub2 vw">' + TRI('养老系统/N-01/老人/家属', 1) + '老人/家属</a>') && !nav.includes('href="#N-03/review" class="sub2')
+  ['左边栏：两条需求，默认只展开正在看的 N-01（两个视角、四屏），N-03 收起；定过的标 ✓', '', ({ nav }) => nav.includes('data-cx="样例系统"') && nav.includes('样例系统<small>2 条需求</small>')
+    && nav.includes(REQ('样例系统', 'N-01/list', N01, { on: 1, open: 1, n: 3, dc: '2/4' })) && nav.includes(REQ('样例系统', 'N-03/log', N03, { open: 0, n: 2, dc: '0/4' }))
+    && count(nav, /class="sub2 vw( on)?"/g) === 2 && nav.includes('href="#N-01/list" class="sub2 vw on">' + TRI('样例系统/N-01/案例经理', 1) + '案例经理</a>') && nav.includes('href="#N-01/mine" class="sub2 vw">' + TRI('样例系统/N-01/老人/家属', 1) + '老人/家属</a>') && !nav.includes('href="#N-03/review" class="sub2')
     && count(nav, /class="sub2 scr( on)?"/g) === 4 && nav.includes('href="#N-01/list" class="sub2 scr on"><small>①</small>老人列表<i title="已定 2026-11-01">✓ 11-01</i></a>') && nav.includes('href="#N-01/new" class="sub2 scr"><small>②</small>建档' + DOT(2) + '<i title="已定 2026-11-02">✓ 11-02</i></a>') && nav.includes('href="#N-01/file" class="sub2 scr"><small>③</small>档案页</a>') && !nav.includes('我的基金余额') && count(nav, /✓ /g) === 2],
-  ['单开按定下：只定当前这一屏，计数加一，别的屏还是没定', '#养老系统/N-01/file', ({ main, nav, snap }) => !snap[0].includes(GATE) && /<span class="n">③<\/span>档案页<span class="gate"><span class="badge ok">已定 \d{4}-\d\d-\d\d<\/span>/.test(snap[0]) && snap[0].includes('<span class="cnt">已定 3/4 屏</span>') && snap[0].includes('案例经理<small>3/3</small>')
-    && global.location.hash === '#养老系统/N-01/mine' && main.includes(GATE) && main.includes('<span class="n">①</span>我的档案<span class="gate">' + GATE) && main.includes('<span class="cnt">已定 3/4 屏</span>') && /href="#N-01\/file" class="sub2 scr"><small>③<\/small>档案页<i title="已定 \d{4}-\d\d-\d\d">✓ \d\d-\d\d<\/i>/.test(nav) && nav.includes('<small>①</small>我的档案' + DOT(1) + '</a>') && count(nav, /✓ /g) === 3,
+  ['单开按定下：只定当前这一屏，计数加一，别的屏还是没定', '#样例系统/N-01/file', ({ main, nav, snap }) => !snap[0].includes(GATE) && /<span class="n">③<\/span>档案页<span class="gate"><span class="badge ok">已定 \d{4}-\d\d-\d\d<\/span>/.test(snap[0]) && snap[0].includes('<span class="cnt">已定 3/4 屏</span>') && snap[0].includes('案例经理<small>3/3</small>')
+    && global.location.hash === '#样例系统/N-01/mine' && main.includes(GATE) && main.includes('<span class="n">①</span>我的档案<span class="gate">' + GATE) && main.includes('<span class="cnt">已定 3/4 屏</span>') && /href="#N-01\/file" class="sub2 scr"><small>③<\/small>档案页<i title="已定 \d{4}-\d\d-\d\d">✓ \d\d-\d\d<\/i>/.test(nav) && nav.includes('<small>①</small>我的档案' + DOT(1) + '</a>') && count(nav, /✓ /g) === 3,
     click('.gate button.act') + "; snap.push(els.main.innerHTML); go('N-01/mine'); window.handlers.hashchange()"],
-  ['工作台按定下：post 定下，带需求、屏、上下文、记号；不整页重载', '#养老系统/N-01/notice', () => global.posted.length === 1 && global.posted[0].url === 'api/定下' && global.posted[0].body.mockup === 'N-01' && global.posted[0].body.screen === 'notice' && global.posted[0].body.context === '养老系统' && !global.reloaded,
+  ['工作台按定下：post 定下，带需求、屏、上下文、记号；不整页重载', '#样例系统/N-01/notice', () => global.posted.length === 1 && global.posted[0].url === 'api/定下' && global.posted[0].body.mockup === 'N-01' && global.posted[0].body.screen === 'notice' && global.posted[0].body.context === '样例系统' && !global.reloaded,
     'location.reload = () => { global.reloaded = true }; ' + click('.gate button.act'), WBDATA()],
   // ---- 问题在这一屏旁边答 ----
-  ['样例：建档那屏对着流程第 5 步；没有「去流程页答」', '#养老系统/N-01/new', ({ main }) => main.includes('<span class="n">②</span>建档<span class="stp">对着流程第 5 步</span><span class="gate">') && !main.includes('toflow') && !main.includes('去流程页答') && !main.includes('<span class="n">①</span>老人列表<span class="stp">')],
-  ['红框卡：问题、偏向、选项（第一个加粗）、另说；别的屏的问题按钮带那一屏，没有 options 的给「照偏向」', '#养老系统/N-01/new', ({ main }) => count(main, /class="ask"/g) === 3 && count(main, /class="ask done"/g) === 0 && count(main, /<button class="opt/g) === 8
+  ['样例：建档那屏对着流程第 5 步；没有「去流程页答」', '#样例系统/N-01/new', ({ main }) => main.includes('<span class="n">②</span>建档<span class="stp">对着流程第 5 步</span><span class="gate">') && !main.includes('toflow') && !main.includes('去流程页答') && !main.includes('<span class="n">①</span>老人列表<span class="stp">')],
+  ['红框卡：问题、偏向、选项（第一个加粗）、另说；别的屏的问题按钮带那一屏，没有 options 的给「照偏向」', '#样例系统/N-01/new', ({ main }) => count(main, /class="ask"/g) === 3 && count(main, /class="ask done"/g) === 0 && count(main, /<button class="opt/g) === 8
     && main.includes(CARD('ask', 'new/a-1', 1) + '<div class="q">分级与路径是通知书上抄还是下拉选？</div><div class="lean">偏向 <b>下拉选，手册 7 级 + 过渡</b></div><div class="opts"><button class="opt b" data-screen="new" data-ask="a-1" data-opt="下拉选，手册 7 级 + 过渡">下拉选，手册 7 级 + 过渡</button><button class="opt" data-screen="new" data-ask="a-1" data-opt="照通知书原样抄">照通知书原样抄</button><button class="opt other" data-screen="new" data-ask="a-1" data-other="1">另说</button></div></div>')
     && main.includes('<div class="q">家属能看到支持计划的金额吗？</div><div class="lean">偏向 <b>能</b></div><div class="opts"><button class="opt b" data-screen="mine" data-ask="a-3" data-opt="能">照偏向</button><button class="opt other" data-screen="mine" data-ask="a-3" data-other="1">另说</button></div>')
     && main.includes('3 条，带着偏向')],
@@ -120,15 +120,15 @@ const cases = [
     && count(main, /class="ask"/g) === 1 && !main.includes('class="ask done"') && main.includes('<div class="q">分级下拉还是抄？</div><div class="lean">偏向 <b>下拉</b></div><div class="opts"><button class="opt b" data-screen="notice" data-ask="a-1" data-opt="下拉">下拉</button><button class="opt" data-screen="notice" data-ask="a-1" data-opt="照抄">照抄</button><button class="opt other" data-screen="notice" data-ask="a-1" data-other="1">另说</button></div>')
     && !main.includes('优先级几档') && !main.includes('照手册四档') && !main.includes('data-ask="a-2"') && !main.includes('toflow') && main.includes('1 条，带着偏向'), '', WBDATA()],
   ['工作台点一个选项：post 答，带需求、屏、问题、上下文和选的那句', '', ({ main }) => global.posted.length === 1 && global.posted[0].url === 'api/答'
-    && same(global.posted[0].body, { mockup: 'N-01', screen: 'notice', ask: 'a-1', context: '养老系统', text: '照抄' }) && count(main, /class="ask"/g) === 1,
+    && same(global.posted[0].body, { mockup: 'N-01', screen: 'notice', ask: 'a-1', context: '样例系统', text: '照抄' }) && count(main, /class="ask"/g) === 1,
     clickOpt({ screen: 'notice', ask: 'a-1', opt: '照抄' }), WBDATA()],
-  ['工作台按另说：prompt 里写的那句发出去；prompt 取消就不发', '', () => global.posted.length === 1 && same(global.posted[0].body, { mockup: 'N-01', screen: 'notice', ask: 'a-1', context: '养老系统', text: '另一个说法' }),
+  ['工作台按另说：prompt 里写的那句发出去；prompt 取消就不发', '', () => global.posted.length === 1 && same(global.posted[0].body, { mockup: 'N-01', screen: 'notice', ask: 'a-1', context: '样例系统', text: '另一个说法' }),
     clickOpt({ screen: 'notice', ask: 'a-1', other: '1' }) + '; prompt = () => null; ' + clickOpt({ screen: 'notice', ask: 'a-1', other: '1' }), WBDATA()],
-  ['单开点选项：不发 post，本地记成答了，那条从一栏里拿掉，红点条数跟着少', '#养老系统/N-01/new', ({ main, nav }) => global.posted.length === 0
+  ['单开点选项：不发 post，本地记成答了，那条从一栏里拿掉，红点条数跟着少', '#样例系统/N-01/new', ({ main, nav }) => global.posted.length === 0
     && !main.includes('分级与路径是通知书上抄还是下拉选') && count(main, /class="ask"/g) === 2 && !main.includes('class="ask done"') && !main.includes('data-ask="a-1"') && main.includes('2 条，带着偏向')
     && nav.includes('N-01 ' + N01 + '</span>' + DOT(2) + '<span class="dc"') && nav.includes('<small>②</small>建档' + DOT(1) + '<i title="已定'),
     clickOpt({ screen: 'new', ask: 'a-1', opt: '照通知书原样抄' })],
-  ['单开在建档屏答别的屏（我的档案）的问题：那条不列了，那一屏的红点没了', '#养老系统/N-01/new', ({ main, nav }) => !main.includes('家属能看到支持计划的金额吗？') && count(main, /class="ask"/g) === 2
+  ['单开在建档屏答别的屏（我的档案）的问题：那条不列了，那一屏的红点没了', '#样例系统/N-01/new', ({ main, nav }) => !main.includes('家属能看到支持计划的金额吗？') && count(main, /class="ask"/g) === 2
     && nav.includes('<small>①</small>我的档案</a>') && nav.includes('N-01 ' + N01 + '</span>' + DOT(2) + '<span class="dc"'),
     clickOpt({ screen: 'mine', ask: 'a-3', other: '1' })],
   ['左边栏红点：需求那行是各屏之和（折着也有），屏那行是这一屏的，没有没答的不标', '', ({ nav }) => count(nav, /class="open"/g) === 4
@@ -136,8 +136,8 @@ const cases = [
     && nav.includes('<small>②</small>建档' + DOT(2) + '<i title="已定 2026-11-02">') && nav.includes('<small>①</small>老人列表<i title="已定 2026-11-01">') && nav.includes('<small>①</small>我的档案' + DOT(1) + '</a>')
     && !nav.includes('<small>①</small>录一笔服务')],
   ['N-03 展开后屏那行各自的红点', '', ({ nav }) => nav.includes('<small>①</small>录一笔服务' + DOT(1) + '</a>') && nav.includes('<small>①</small>待核的服务记录' + DOT(1) + '</a>') && nav.includes('<small>②</small>录完</a>') && count(nav, /class="open"/g) === 6,
-    "navClick({ key: '养老系统/N-03', open: '0' })"],
-  ['工作台左边栏红点照 OPEN（键 上下文/需求编号/屏 id）', '', ({ nav }) => nav.includes(REQ('养老系统', 'N-01/notice', '给老人建档', { on: 1, open: 1, n: 1, dc: '0/1' })) && nav.includes('<small>①</small>照通知书填' + DOT(1) + '</a>') && !nav.includes('sub2 vw'), '', WBDATA({ '养老系统/N-01/notice': 1 })],
+    "navClick({ key: '样例系统/N-03', open: '0' })"],
+  ['工作台左边栏红点照 OPEN（键 上下文/需求编号/屏 id）', '', ({ nav }) => nav.includes(REQ('样例系统', 'N-01/notice', '给老人建档', { on: 1, open: 1, n: 1, dc: '0/1' })) && nav.includes('<small>①</small>照通知书填' + DOT(1) + '</a>') && !nav.includes('sub2 vw'), '', WBDATA({ '样例系统/N-01/notice': 1 })],
   ['工作台 OPEN 里没有的屏不标红点（不再从 REQS 数）', '', ({ nav }) => count(nav, /class="open"/g) === 0 && nav.includes('<small>①</small>照通知书填</a>'), '', WBDATA({})],
   // ---- 问题钉在小样上 ----
   ['钉问题：标了 data-ask 的元素右上角一个带编号的红点；同一处两条错开；没标的、指不到元素的摞在右上角；答过的不钉', '', () => {
@@ -145,7 +145,7 @@ const cases = [
     return same(Object.keys(L), ['a-1', 'a-3', 'a-4']) && same(L['a-1'], { cls: '', at: 'el', left: 391, top: 191, n: 1 }) && same(L['a-3'], { cls: '', at: 'el', left: 369, top: 191, n: 2 })
       && same(L['a-4'], { cls: '', at: 'corner', left: 572, top: 6, n: 3 }) && !p.layer.innerHTML.includes('__bub')
   }, '', WBPIN()],
-  ['样例：建档屏两条钉在编号输入框和分级下拉上；待核那屏的问题没标，在右上角；没问题的屏不注钉问题那段', '#养老系统/N-01/new', ({ main, snap }) => {
+  ['样例：建档屏两条钉在编号输入框和分级下拉上；待核那屏的问题没标，在右上角；没问题的屏不注钉问题那段', '#样例系统/N-01/new', ({ main, snap }) => {
     const L = pins(main, { 'a-1': { top: 200, right: 400 }, 'a-2': { top: 60, right: 380 } }).list()
     const R = pins(snap[0]).list()
     return same(L['a-1'], { cls: '', at: 'el', left: 391, top: 191, n: 1 }) && same(L['a-2'], { cls: '', at: 'el', left: 371, top: 51, n: 2 }) && Object.keys(L).length === 2
@@ -167,9 +167,9 @@ const cases = [
     p.click('#__asks .__pin', { 'data-id': 'a-3' }); p.click('#__asks .__opt', { 'data-id': 'a-3', 'data-other': '1' })
     const ok1 = same(p.msgs, [{ answer: { screen: 'notice', ask: 'a-1', opt: '照抄' } }, { answer: { screen: 'notice', ask: 'a-3', other: '1' } }])
     p.msgs.forEach((m) => window.handlers.message({ data: m }))
-    return ok1 && same(global.posted.map((x) => [x.url, x.body]), [['api/答', { mockup: 'N-01', screen: 'notice', ask: 'a-1', context: '养老系统', text: '照抄' }], ['api/答', { mockup: 'N-01', screen: 'notice', ask: 'a-3', context: '养老系统', text: '另一个说法' }]])
+    return ok1 && same(global.posted.map((x) => [x.url, x.body]), [['api/答', { mockup: 'N-01', screen: 'notice', ask: 'a-1', context: '样例系统', text: '照抄' }], ['api/答', { mockup: 'N-01', screen: 'notice', ask: 'a-3', context: '样例系统', text: '另一个说法' }]])
   }, '', WBPIN()],
-  ['单开在气泡里答：本地记上，重画后那个圆点不钉了、旁边一栏也不列，剩下的重新编号', '#养老系统/N-01/new', ({ main }) => {
+  ['单开在气泡里答：本地记上，重画后那个圆点不钉了、旁边一栏也不列，剩下的重新编号', '#样例系统/N-01/new', ({ main }) => {
     const p = pins(main); p.click('#__asks .__pin', { 'data-id': 'a-1' }); p.click('#__asks .__opt', { 'data-id': 'a-1', 'data-opt': '照通知书原样抄' })
     window.handlers.message({ data: p.msgs[0] })
     const after = els.main.innerHTML, L = pins(after).list()
@@ -182,7 +182,7 @@ const cases = [
       && main.includes(CARD('ask', 'notice/a-1', 1)) && main.includes(CARD('ask', 'notice/a-3', 2)) && main.includes(CARD('ask', 'notice/a-4', 3)) && L['a-3'].n === 2 && L['a-4'].n === 3
   }, '', WBPIN()],
   ['一条要问的都没有：「问了什么」写「没有要问的」，小样上方不出那一行', '', ({ main }) => main.includes('<h3>问了什么 <small></small></h3><span class="none">没有要问的</span>') && !main.includes('class="ask"') && !main.includes('pinbar'),
-    '', (() => { const d = WBPIN(); for (const a of d.REQS['养老系统'][0].views[0].screens[0].asks) a.answer ??= '答了'; return d })()],
+    '', (() => { const d = WBPIN(); for (const a of d.REQS['样例系统'][0].views[0].screens[0].asks) a.answer ??= '答了'; return d })()],
   ['旁边一栏点一条：那个圆点闪一下、弹出气泡；下一次重画不再闪也不弹', '', () => {
     clickMain('.ask[data-pin]', { pin: 'notice/a-3' })
     const p1 = pins(els.main.innerHTML), L1 = p1.list()
@@ -190,30 +190,30 @@ const cases = [
     const L2 = pins(els.main.innerHTML).list()
     return L1['a-3'].cls === ' on flash' && p1.layer.innerHTML.includes('<div class="__bub" data-id="a-3"') && p1.layer.innerHTML.includes('data-opt="单列">照偏向</button>') && L2['a-3'].cls === ''
   }, '', WBPIN()],
-  ['样例：在建档屏点「我的档案」那条，切过去、那个圆点闪', '#养老系统/N-01/new', () => {
+  ['样例：在建档屏点「我的档案」那条，切过去、那个圆点闪', '#样例系统/N-01/new', () => {
     clickMain('.ask[data-pin]', { pin: 'mine/a-3' }); window.handlers.hashchange()
     const L = pins(els.main.innerHTML).list()
-    return global.location.hash === '#养老系统/N-01/mine' && L['a-3'].cls === ' on flash' && L['a-3'].at === 'el'
+    return global.location.hash === '#样例系统/N-01/mine' && L['a-3'].cls === ' on flash' && L['a-3'].at === 'el'
   }],
   // ---- 左边栏折叠 ----
-  ['点 N-01 的三角收起：视角和屏都不见，需求那行红点和已定照旧；再点展开回来', '', ({ snap, nav }) => !snap[0].includes('class="sub2') && snap[0].includes(REQ('养老系统', 'N-01/list', N01, { on: 1, open: 0, n: 3, dc: '2/4' }))
-    && snap[0].includes(REQ('养老系统', 'N-03/log', N03, { open: 0, n: 2, dc: '0/4' })) && !global.location.hash.includes('N-03')
-    && count(nav, /class="sub2 scr( on)?"/g) === 4 && nav.includes(REQ('养老系统', 'N-01/list', N01, { on: 1, open: 1, n: 3, dc: '2/4' })),
-    "navClick({ key: '养老系统/N-01', open: '1' }); snap.push(els.nav.innerHTML); navClick({ key: '养老系统/N-01', open: '0' })"],
-  ['点没在看的 N-03 的三角：只展开它，不切过去，N-01 照旧展开', '', ({ nav }) => !global.location.hash.includes('N-03') && nav.includes(REQ('养老系统', 'N-03/log', N03, { open: 1, n: 2, dc: '0/4' }))
+  ['点 N-01 的三角收起：视角和屏都不见，需求那行红点和已定照旧；再点展开回来', '', ({ snap, nav }) => !snap[0].includes('class="sub2') && snap[0].includes(REQ('样例系统', 'N-01/list', N01, { on: 1, open: 0, n: 3, dc: '2/4' }))
+    && snap[0].includes(REQ('样例系统', 'N-03/log', N03, { open: 0, n: 2, dc: '0/4' })) && !global.location.hash.includes('N-03')
+    && count(nav, /class="sub2 scr( on)?"/g) === 4 && nav.includes(REQ('样例系统', 'N-01/list', N01, { on: 1, open: 1, n: 3, dc: '2/4' })),
+    "navClick({ key: '样例系统/N-01', open: '1' }); snap.push(els.nav.innerHTML); navClick({ key: '样例系统/N-01', open: '0' })"],
+  ['点没在看的 N-03 的三角：只展开它，不切过去，N-01 照旧展开', '', ({ nav }) => !global.location.hash.includes('N-03') && nav.includes(REQ('样例系统', 'N-03/log', N03, { open: 1, n: 2, dc: '0/4' }))
     && count(nav, /class="sub2 scr( on)?"/g) === 8 && count(nav, /class="sub2 vw( on)?"/g) === 5 && nav.includes('<small>①</small>我的基金余额</a>'),
-    "navClick({ key: '养老系统/N-03', open: '0' })"],
-  ['视角那层也能折：折起案例经理，它的三屏不见，那行带它们没答的红点；老人/家属照旧', '', ({ nav }) => nav.includes('class="sub2 vw on">' + TRI('养老系统/N-01/案例经理', 0) + '案例经理' + DOT(2) + '</a>')
+    "navClick({ key: '样例系统/N-03', open: '0' })"],
+  ['视角那层也能折：折起案例经理，它的三屏不见，那行带它们没答的红点；老人/家属照旧', '', ({ nav }) => nav.includes('class="sub2 vw on">' + TRI('样例系统/N-01/案例经理', 0) + '案例经理' + DOT(2) + '</a>')
     && !nav.includes('老人列表') && !nav.includes('>建档<') && nav.includes('<small>①</small>我的档案' + DOT(1) + '</a>') && count(nav, /class="sub2 scr( on)?"/g) === 1,
-    "navClick({ key: '养老系统/N-01/案例经理', open: '1' })"],
+    "navClick({ key: '样例系统/N-01/案例经理', open: '1' })"],
   ['切需求：点 N-03 那行切过去，N-03 自动展开，没动过的 N-01 收起；手动开过的保持开', '', ({ nav, snap }) =>
-    snap[0].includes(REQ('养老系统', 'N-03/log', N03, { on: 1, open: 1, n: 2, dc: '0/4' })) && snap[0].includes(REQ('养老系统', 'N-01/list', N01, { open: 0, n: 3, dc: '2/4' })) && count(snap[0], /class="sub2 scr( on)?"/g) === 4
-    && global.location.hash === '#养老系统/N-03/after' && nav.includes(REQ('养老系统', 'N-01/list', N01, { open: 1, n: 3, dc: '2/4' })) && count(nav, /class="sub2 scr( on)?"/g) === 8,
-    "navClick(null, '#N-03/log'); window.handlers.hashchange(); snap.push(els.nav.innerHTML); navClick({ key: '养老系统/N-01', open: '0' }); go('N-03/after'); window.handlers.hashchange()"],
-  ['正在看的需求点那行本身也是折/展；手动折起后切走再切回来，又自动展开', '', ({ snap, nav }) => !snap[0].includes('class="sub2') && snap[0].includes(REQ('养老系统', 'N-01/list', N01, { on: 1, open: 0, n: 3, dc: '2/4' }))
-    && !global.location.hash.includes('N-03') && nav.includes(REQ('养老系统', 'N-01/list', N01, { on: 1, open: 1, n: 3, dc: '2/4' })) && nav.includes(REQ('养老系统', 'N-03/log', N03, { open: 0, n: 2, dc: '0/4' })),
-    "navClick({ key: '养老系统/N-01', open: '1' }); snap.push(els.nav.innerHTML); go('N-03/log'); window.handlers.hashchange(); go('N-01/list'); window.handlers.hashchange()"],
-  ['一条需求只有一个视角：不出视角那一层，屏直接挂在需求下面', '', ({ nav }) => !nav.includes('sub2 vw') && nav.includes('<small>①</small>照通知书填') && nav.includes(TRI('养老系统/N-01', 1)), '', WBDATA()],
+    snap[0].includes(REQ('样例系统', 'N-03/log', N03, { on: 1, open: 1, n: 2, dc: '0/4' })) && snap[0].includes(REQ('样例系统', 'N-01/list', N01, { open: 0, n: 3, dc: '2/4' })) && count(snap[0], /class="sub2 scr( on)?"/g) === 4
+    && global.location.hash === '#样例系统/N-03/after' && nav.includes(REQ('样例系统', 'N-01/list', N01, { open: 1, n: 3, dc: '2/4' })) && count(nav, /class="sub2 scr( on)?"/g) === 8,
+    "navClick(null, '#N-03/log'); window.handlers.hashchange(); snap.push(els.nav.innerHTML); navClick({ key: '样例系统/N-01', open: '0' }); go('N-03/after'); window.handlers.hashchange()"],
+  ['正在看的需求点那行本身也是折/展；手动折起后切走再切回来，又自动展开', '', ({ snap, nav }) => !snap[0].includes('class="sub2') && snap[0].includes(REQ('样例系统', 'N-01/list', N01, { on: 1, open: 0, n: 3, dc: '2/4' }))
+    && !global.location.hash.includes('N-03') && nav.includes(REQ('样例系统', 'N-01/list', N01, { on: 1, open: 1, n: 3, dc: '2/4' })) && nav.includes(REQ('样例系统', 'N-03/log', N03, { open: 0, n: 2, dc: '0/4' })),
+    "navClick({ key: '样例系统/N-01', open: '1' }); snap.push(els.nav.innerHTML); go('N-03/log'); window.handlers.hashchange(); go('N-01/list'); window.handlers.hashchange()"],
+  ['一条需求只有一个视角：不出视角那一层，屏直接挂在需求下面', '', ({ nav }) => !nav.includes('sub2 vw') && nav.includes('<small>①</small>照通知书填') && nav.includes(TRI('样例系统/N-01', 1)), '', WBDATA()],
   ['一条需求跨两段流程：页头列两段，屏头写「对着流程「名」第几步：标题」', '#沟通 app/N-34/group', ({ main }) => main.includes('· 对着流程 00-管理员找人建群、01-群里发起登记表</span>')
     && main.includes('<span class="stp">对着流程「管理员找人建群」第 2 步：管理员拉群</span>') && !main.includes('第 00-管理员找人建群/2 步'), '', WBMULTI()],
   ['跨两段流程：另一段的屏写那一段的名字和步号', '#沟通 app/N-34/fill', ({ main }) => main.includes('<span class="stp">对着流程「群里发起登记表」第 1 步：她自己填</span>'), '', WBMULTI()],

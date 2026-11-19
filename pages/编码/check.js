@@ -28,7 +28,7 @@ global.fetch = (url, o) => { SENT = { url, body: JSON.parse(o.body) }; return { 
 // 关系图里的框：两两不重叠（外面的东西多于一样时竖着排，不叠在一处）
 const rectsOf = (s) => [...s.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => m.slice(1, 5).map(Number));
 const apart = (rs) => rs.every(([x, y, w, h], i) => rs.slice(i + 1).every(([x2, y2, w2, h2]) => x + w <= x2 || x2 + w2 <= x || y + h <= y2 || y2 + h2 <= y));
-const SAMPLE_STRUCT = `${__dirname}/../../sample/上下文/养老系统/代码/规范/结构设计.json`;
+const SAMPLE_STRUCT = `${__dirname}/../../sample/上下文/样例系统/代码/规范/结构设计.json`;
 const cases = [
   ['#tree', (s) => s.includes('class="tree"') && s.includes('participant-file.ts') && s.includes('共 21 个文件') && s.includes('清单 <b>建档</b>') && s.includes('左边点一个文件') && s.split('<!--nav-->')[1].includes('技术选型') && !s.split('<!--nav-->')[1].includes('走通一段')],
   ['#spec/结构设计', (s) => s.includes('<svg class="arch"') && (s.match(/<rect x="200"/g) || []).length === 3 && (s.match(/marker-end/g) || []).length === 6 && s.includes('政府门户') && s.includes('>银行<') && rectsOf(s).length === 6 && apart(rectsOf(s)) && s.includes('class="code tree-sample"') && s.includes('<span class="p">in-memory-participant-file-repository.ts</span>') && s.includes('style="--ind:4ch"') && !s.includes('class="decide"') && !s.includes('等你定') && !s.includes(' 定下</span>'), 'delete STRUCTURE.modules; render()'],
@@ -39,7 +39,7 @@ const cases = [
   // 模块再多也只画一个，不列「还有几个」、不出主题名
   ['#spec/结构设计', (s) => (s.match(/class="fr mod"/g) || []).length === 1 && !s.includes('还有 ') && !s.includes('g9') && s.includes('data-to="别的模块"'), "STRUCTURE.modules = [1,2,3,4,5,6,7].map((i) => ({ topic: 'g' + i, dir: 'm' + i })); MODEL.aggs.push({ id: 'x', title: 'x', topic: 'g9', members: [] }); render()"],
   // 全局结构：左边栏顶上一条；四层一层一行；十个框（两个是嵌在父框里的小框）、虚框四个；线八条，线上几个字、note 停上去看；图例按上下文；定下按钮不带上下文
-  ['#全局结构', (s) => s.includes('<svg class="glob"') && s.split('<!--nav-->')[1].includes('class="cx proj on" href="#全局结构"') && ['用的人', '前端', '后端', '存储与外部'].every((r) => s.includes('class="rw" x="14"') && s.includes('>' + r + '</text>')) && (s.match(/<g class="n /g) || []).length === 10 && (s.match(/<rect class="c"/g) || []).length === 2 && (s.match(/ later/g) || []).length === 4 && s.includes('原型没有：正式化时接') && (s.match(/<path class="e /g) || []).length === 8 && s.includes('>群和消息</text>') && s.includes('带着凭证调沟通模块的口') && s.includes('class="sw t0"></i>养老系统') && s.includes('class="sw t1"></i>沟通 app') && !s.includes('class="decide"') && !s.includes('等你定') && !s.includes(' 定下</span>') && !s.includes('class="badge">模板')],
+  ['#全局结构', (s) => s.includes('<svg class="glob"') && s.split('<!--nav-->')[1].includes('class="cx proj on" href="#全局结构"') && ['用的人', '前端', '后端', '存储与外部'].every((r) => s.includes('class="rw" x="14"') && s.includes('>' + r + '</text>')) && (s.match(/<g class="n /g) || []).length === 10 && (s.match(/<rect class="c"/g) || []).length === 2 && (s.match(/ later/g) || []).length === 4 && s.includes('原型没有：正式化时接') && (s.match(/<path class="e /g) || []).length === 8 && s.includes('>群和消息</text>') && s.includes('带着凭证调沟通模块的口') && s.includes('class="sw t0"></i>样例系统') && s.includes('class="sw t1"></i>沟通 app') && !s.includes('class="decide"') && !s.includes('等你定') && !s.includes(' 定下</span>') && !s.includes('class="badge">模板')],
   // 四层从上到下；写了 in 的在父框里面；外部和数据库同一行、排在右边
   ['#全局结构', (s) => { const R = Object.fromEntries([...s.matchAll(/<g class="n[^"]*" data-id="([^"]+)"[^>]*>(?:<title>[^<]*<\/title>)?<rect class="[bc]" x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => [m[1], { x: +m[2], y: +m[3], w: +m[4], h: +m[5] }])); const ins = (k, p) => R[k].x >= R[p].x && R[k].y >= R[p].y && R[k].x + R[k].w <= R[p].x + R[p].w && R[k].y + R[k].h <= R[p].y + R[p].h; return R.cp.y < R.web.y && R.web.y < R.api.y && R.api.y < R.db.y && R.db.y === R.gov.y && R.gov.x > R.files.x && ins('dlg', 'web') && ins('chat', 'api') && s.includes('data-in="web"') && s.includes('data-in="api"') }],
   // 旧数据：没有 in、label 一长句没有 note：照样画，线上取第一小句截短，整句停上去看
@@ -51,16 +51,16 @@ const cases = [
   ['#tree/src/participant-file/participant-file.ts', (s) => s.includes('class="tree"') && s.includes('class="f on"') && s.includes('class="psrow"') && s.includes('class="code ps tests"') && s.includes('抛 通知书不全') && s.includes('给  通知书 编号为空') && s.includes('style="--ind:4ch">编号 ← 通知书.编号')],
   ['#tree/src/participant-file/register.ts', (s) => s.includes('参与者登记.查唯一')],
   // 文件的 model.context 指到别的上下文：聚合名从那个上下文的模型里来，前面带上下文名；结构设计里这个模块标出归哪个上下文
-  ['#tree', (s) => s.includes('聊天 app › 群 › <b>群</b>') && s.includes('data-key="聊天 app:agg/grp/root"'), "MODELS['聊天 app'] = { topics: {}, aggs: [{ id: 'grp', title: '群', topic: 'a1', members: [{ id: 'root', name: '群', kind: '根' }] }], items: [], flows: [] }; STRUCT.files.push({ path: 'src/communication/group.ts', kind: '聚合根', model: { context: '聊天 app', aggregate: 'grp', member: 'root' } }); treeToggle('养老系统:src/communication'); render()"],
+  ['#tree', (s) => s.includes('聊天 app › 群 › <b>群</b>') && s.includes('data-key="聊天 app:agg/grp/root"'), "MODELS['聊天 app'] = { topics: {}, aggs: [{ id: 'grp', title: '群', topic: 'a1', members: [{ id: 'root', name: '群', kind: '根' }] }], items: [], flows: [] }; STRUCT.files.push({ path: 'src/communication/group.ts', kind: '聚合根', model: { context: '聊天 app', aggregate: 'grp', member: 'root' } }); treeToggle('样例系统:src/communication'); render()"],
   ['#spec/结构设计', (s) => s.includes('class="xcx"') && s.includes('modules/communication/</b>：模型在「聊天 app」上下文'), "STRUCTURE.modules.push({ dir: 'communication', context: '聊天 app', holds: '群和消息' }); render()"],
   ['#tree/src/fund/fund.ts', (s) => s.includes('开立') && s.includes('季度结束') && !s.includes('还没写伪代码')],
   ['#tree/src/fund/fund.test.ts', (s) => s.includes('测试文件不另写伪代码')],
   // 文件树：默认只开当前文件那一串；点文件夹只开合；收起后同一个文件重画不撑开；换了文件那一串再开
   ['#tree', (s) => s.includes('data-tg="src" title="收起"') && s.includes('data-tg="src/participant-file" title="收起"') && s.includes('data-tg="src/fund" title="展开"') && !s.includes('data-path="src/fund/fund.ts"') && s.includes('class="card tree-box"')],
   ['#tree/src/fund/fund.ts', (s) => s.includes('data-tg="src/fund" title="收起"') && s.includes('data-tg="src/participant-file" title="展开"') && s.includes('class="f on') && !s.includes('data-path="src/participant-file/register.ts"')],
-  ['#tree/src/fund/fund.ts', (s) => s.includes('data-tg="src/fund" title="展开"') && !s.includes('data-path="src/fund/fund.ts"'), "treeToggle('养老系统:src/fund'); render(); render()"],
-  ['#tree/src/fund/fund.ts', (s) => s.includes('data-tg="src/fund" title="收起"') && s.includes('data-path="src/fund/fund-account.ts"'), "treeToggle('养老系统:src/fund'); render(); view = 'tree/src/fund/fund-account.ts'; render()"],
-  ['#tree/src/fund/fund.ts', (s) => s.includes('data-tg="src/participant-file" title="收起"') && s.includes('data-tg="src/fund" title="收起"'), "treeToggle('养老系统:src/participant-file'); render()"],
+  ['#tree/src/fund/fund.ts', (s) => s.includes('data-tg="src/fund" title="展开"') && !s.includes('data-path="src/fund/fund.ts"'), "treeToggle('样例系统:src/fund'); render(); render()"],
+  ['#tree/src/fund/fund.ts', (s) => s.includes('data-tg="src/fund" title="收起"') && s.includes('data-path="src/fund/fund-account.ts"'), "treeToggle('样例系统:src/fund'); render(); view = 'tree/src/fund/fund-account.ts'; render()"],
+  ['#tree/src/fund/fund.ts', (s) => s.includes('data-tg="src/participant-file" title="收起"') && s.includes('data-tg="src/fund" title="收起"'), "treeToggle('样例系统:src/participant-file'); render()"],
   // 树栏整栏收起：默认展开、头上有收起钮；收起后只剩窄边、记进本机；换文件仍收着；再展开回来
   ['#tree/src/fund/fund.ts', (s) => s.includes('class="l tree-col"') && s.includes('data-tree-hide') && s.includes('data-tree-show')],
   ['#tree/src/fund/fund.ts', (s) => s.includes('class="l tree-col hide"') && s.includes('<!--ls:1-->'), "globalThis.localStorage = { m: {}, getItem(k) { return this.m[k] ?? null }, setItem(k, v) { this.m[k] = String(v) } }; treeHide(true); render(); els.main.innerHTML += '<!--ls:' + localStorage.m['dev-team-lite/编码/文件树收起'] + '-->'"],
@@ -78,7 +78,7 @@ const cases = [
   // 单开时点一个选项：这条问题收起，红点没了
   ['#tree/src/fund/fund-account.ts', (s) => !s.includes('class="ask"') && !s.includes('class="open"'), "answerAsk({ ask: 'a-1', opt: '不算：直接返回，不发事件' })"],
   // 工作台上：样板项目照样摆；别的有文件结构的上下文也看得到它的文件、伪代码和问题，答的时候带着它自己的上下文名
-  ['#养老系统/tree/src/fund/fund-account.ts', (s) => s.includes('软件工程师问的是 扣 这一块') && s.includes('共 21 个文件'), '', TWO],
+  ['#样例系统/tree/src/fund/fund-account.ts', (s) => s.includes('软件工程师问的是 扣 这一块') && s.includes('共 21 个文件'), '', TWO],
   ['#聊天 app/tree', (s) => s.includes('共 1 个文件') && s.includes('chat.ts') && s.includes('伪代码上有 1 条问题没答') && s.split('<!--nav-->')[1].includes('app/'), '', TWO],
   ['#聊天 app/tree/app/chat.ts', (s) => s.includes('发不出去要不要重试') && s.includes('照偏向') && !s.includes('fund-account'), '', TWO],
   ['#聊天 app/tree/app/chat.ts', () => SENT.body?.context === '聊天 app' && SENT.body.pseudo === 'app/chat.ts' && SENT.body.ask === 'a-1' && SENT.body.sig === 'abcdefabcdef' && SENT.body.text === '要：重试三次', "answerAsk({ ask: 'a-1', opt: '要：重试三次' })", TWO],
@@ -152,7 +152,7 @@ for (const [h, ok, tail, data] of cases) {
     modules: [{ dir: 'chat', holds: '群和消息' }, { dir: 'files', holds: '传文件' }], parts: [{ dir: 'pages/', layer: '外壳', holds: '屏' }, { dir: 'api/', layer: '应用', holds: '调后端' }],
     top: [{ dir: 'bootstrap/', holds: '入口' }], buses: [], outside: [{ name: '推送服务', how: '锁屏提醒' }], sample: [{ line: 'src/' }, { line: '  modules/' }, { line: '    chat/' }, { line: '      pages/' }] }
   const naming = { sample: [{ line: 'src/' }, { line: '  app/main.tsx', kind: '入口', exports: 'main' }, { line: '  modules/chat/pages/ChatPage.tsx', kind: '技术件' }] }
-  const sets = [['写死的', { CONTEXTS: ['养老系统', '沟通 app', '共享内核'], SPECS: { '沟通 app': { '结构设计': own, '文件命名': naming } } }]]
+  const sets = [['写死的', { CONTEXTS: ['样例系统', '沟通 app', '共享内核'], SPECS: { '沟通 app': { '结构设计': own, '文件命名': naming } } }]]
   if (process.env.CHECK_PROJECT) sets.push(['真项目 ' + path.basename(process.env.CHECK_PROJECT), require('../../lib/project.js').pageData(process.env.CHECK_PROJECT, '编码')])
   for (const [name, data] of sets) {
     const errs = []
@@ -177,7 +177,7 @@ for (const [h, ok, tail, data] of cases) {
   const front = T('结构设计-前端'), fnaming = T('文件命名-前端')
   const errs = []
   try {
-    for (const [where, data, hash] of [['本上下文', { STRUCTURE: front, NAMING: fnaming }, '#spec/结构设计'], ['别的上下文', { CONTEXTS: ['养老系统', '沟通 app', '共享内核'], SPECS: { '沟通 app': { '结构设计': front, '文件命名': fnaming } } }, '#沟通 app/spec/结构设计']]) {
+    for (const [where, data, hash] of [['本上下文', { STRUCTURE: front, NAMING: fnaming }, '#spec/结构设计'], ['别的上下文', { CONTEXTS: ['样例系统', '沟通 app', '共享内核'], SPECS: { '沟通 app': { '结构设计': front, '文件命名': fnaming } } }, '#沟通 app/spec/结构设计']]) {
       global.window.DATA = data
       const m = run(hash).split('<!--nav-->')[0]
       if (!m.includes('<svg class="struct front"')) errs.push(where + ' 没画前端的图')

@@ -5,6 +5,10 @@
 // 查什么：
 //   全部    每份 .json 读不读得出（原料/、_wip/ 不看）
 //   业务    一份流程里步号、规则号、问题号有没有重复；分了子主题的主题：子主题号重不重复、撞不撞主题号，每个子主题有没有概念文件，子主题之间的线两头在不在，子文件夹里有没有图上没有的文件
+//           流程：topic 是不是全局图上的主题（没写是提醒）；入口、出口接的步在不在，写了 flow 的那一份在不在、那一份有没有写回来对上；alt 的步写没写 case
+//           概念图：同样两样数据之间有几条线（提醒，并成一条）
+//           模块业务：主题号对不对；功能号、内部流程号、工作流程号、待定号有没有重复；每项功能写没写核心数据（subject 带 to）和操作意图（intent）；
+//           功能指着的流程步在不在；工作流程的线两头是不是它的状态
 //   界面    屏号、问题号有没有重复；每一屏的小样文件在不在；does 的 to 指不指得到屏；flow 那份流程在不在、step 那一步在不在；
 //           小样里 data-ask 标的问题在不在这一屏的 asks 里；文件夹里有没有哪一屏都不用的小样文件（提醒）
 //   模型    清单项的号有没有重复；清单项调的聚合、行为在不在；流程索引引的清单项在不在本主题清单里、对着的流程和步在不在；
@@ -119,6 +123,55 @@ for (const cx of names) {
     allSubs.push(...[...new Set(ids.filter(Boolean))].map((i) => ({ id: i, file })))
   }
   for (const x of dups(allSubs.map((a) => a.id))) say('错', cx, '业务', allSubs.find((a) => a.id === x).file, `子主题号 ${x} 在几个主题里都用了`)
+
+  // 概念图：同样两样数据之间只画一条线；业务容易从两头各记一遍同一件事
+  const conceptJson = [...jsonIn(cdir), ...dirsIn(cdir).flatMap((t) => jsonIn(path.join(cdir, t)))]
+  for (const { file } of conceptJson) {
+    const d = load(file, cx, '业务'); if (!d || Array.isArray(d.subs)) continue
+    const pairs = (d.edges ?? []).map((e) => [e.from, e.to].sort().join(' ↔ '))
+    for (const x of dups(pairs)) say('提醒', cx, '业务', file, `${x} 之间有 ${pairs.filter((p) => p === x).length} 条线：同样两样数据之间并成一条，几句话写进一个 label`)
+  }
+
+  // 流程：主题、入口出口、旁支
+  for (const [fname, { file, data }] of Object.entries(IDX[cx].flows)) {
+    if (data.topic == null) say('提醒', cx, '业务', file, '没写 topic：这一份讲的是哪个主题里的哪一段')
+    else if (topicIds.length && !topicIds.includes(data.topic)) say('错', cx, '业务', file, `topic 写的 ${data.topic} 不是全局图上的主题`)
+    for (const s of data.steps ?? []) if (s.alt && !s.case) say('错', cx, '业务', file, `第 ${s.id} 步写了 alt，没写 case：这一支是什么情况`)
+    for (const [key, back, word] of [['entries', 'exits', '入口'], ['exits', 'entries', '出口']]) for (const x of data[key] ?? []) {
+      if (!stepIn(cx, fname, x.step)) say('错', cx, '业务', file, `${word}「${x.text ?? ''}」接的第 ${x.step} 步这一份里没有`)
+      if (x.flow == null) continue
+      const other = IDX[cx].flows[x.flow]
+      if (!other) { say('错', cx, '业务', file, `${word}「${x.text ?? ''}」写的流程「${x.flow}」在 业务/流程/ 下没有`); continue }
+      if (!(other.data[back] ?? []).some((y) => y.flow === fname)) say('错', cx, '业务', file, `${word}接着「${x.flow}」，那一份的 ${back} 里没写回到「${fname}」：两边都要写`)
+    }
+  }
+
+  // 模块业务：一个主题一份
+  for (const { name, file } of jsonIn(path.join(c, '业务', '模块业务'))) {
+    const d = load(file, cx, '业务'); if (!d) continue
+    if (d.topic !== name) say('错', cx, '业务', file, `topic 要写主题号 ${name}，写的是 ${d.topic}`)
+    if (topicIds.length && !topicIds.includes(name)) say('错', cx, '业务', file, `${name} 不是全局图上的主题`)
+    const fns = (d.groups ?? []).flatMap((g) => g.functions ?? [])
+    for (const x of dups(fns.map((f) => f.id))) say('错', cx, '业务', file, `功能号重复：${x}`)
+    for (const f of fns) {
+      const who = `功能 ${f.id ?? '?'}（${f.title ?? ''}）`
+      if (!f.id) say('错', cx, '业务', file, `有一项功能没写号（id）：${f.title ?? ''}`)
+      if (!f.subject?.title || !f.subject?.to) say('错', cx, '业务', file, `${who}没写核心数据：subject 写它主要动的那样数据（title）和变成什么（to）`)
+      if (!String(f.intent ?? '').trim()) say('错', cx, '业务', file, `${who}没写操作意图（intent）`)
+      for (const u of f.uses ?? []) {
+        if (!IDX[cx].flows[u.flow]) say('错', cx, '业务', file, `${who}指着的流程「${u.flow}」在 业务/流程/ 下没有`)
+        else if (!stepIn(cx, u.flow, u.step)) say('错', cx, '业务', file, `${who}指着的「${u.flow}」第 ${u.step} 步没有`)
+      }
+    }
+    for (const x of dups((d.chains ?? []).map((ch) => ch.id))) say('错', cx, '业务', file, `内部流程号重复：${x}`)
+    for (const x of dups((d.workflows ?? []).map((w) => w.id))) say('错', cx, '业务', file, `工作流程号重复：${x}`)
+    for (const w of d.workflows ?? []) {
+      const ids = (w.states ?? []).map((st) => st.id)
+      for (const x of dups(ids)) say('错', cx, '业务', file, `工作流程 ${w.id}（${w.title ?? ''}）的状态号重复：${x}`)
+      for (const m of w.moves ?? []) for (const end of [m.from, m.to]) if (!ids.includes(end)) say('错', cx, '业务', file, `工作流程 ${w.id}（${w.title ?? ''}）的线 ${m.from} → ${m.to}：${end} 不是它的状态`)
+    }
+    askCheck(d.asks ?? [], cx, '业务', file)
+  }
 
   // —— 界面 ——
   for (const { name, file } of jsonIn(path.join(c, '界面'))) {

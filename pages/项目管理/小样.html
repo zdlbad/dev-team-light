@@ -235,12 +235,12 @@ const post = (action, body) => fetch('api/' + action, { method: 'POST', headers:
 // 需求的 source 是这条需求的出处，一句话：出自原料的哪一处；或者他是哪一天说的，加上他的原话；或者是做哪条需求的时候、哪个角色发现的。点开一条需求时摆在「做完后」下面
 const 需求 = DATA.需求 ?? {
   "items": [
-    { "id": "N-01", "context": "养老系统", "title": "给参与者建档，记下决定通知书", "scenario": "案例经理拿到黄太太的决定通知书，给她建档，记下她批了哪一级、哪条路径。", "outcome": "案例经理打开一位老人，看到她批了哪一级、哪条路径、允许哪些服务", "value": 5, "cost": 2, "roi": 2.5, "phase": 1, "decision": "做", "moscow": "Must", "dependsOn": [], "source": "手册 v4.4 §6.6：决定通知书上写着她批了哪一级、哪条路径"},
+    { "id": "N-01", "context": "样例系统", "title": "给参与者建档，记下决定通知书", "scenario": "案例经理拿到黄太太的决定通知书，给她建档，记下她批了哪一级、哪条路径。", "outcome": "案例经理打开一位老人，看到她批了哪一级、哪条路径、允许哪些服务", "value": 5, "cost": 2, "roi": 2.5, "phase": 1, "decision": "做", "moscow": "Must", "dependsOn": [], "source": "手册 v4.4 §6.6：决定通知书上写着她批了哪一级、哪条路径"},
     { "id": "N-02", "title": "记下分到她名下的基金和额度", "scenario": "通知书上写着她分到哪几笔基金、各多少钱，案例经理记到她名下。", "outcome": "每位老人名下有几笔基金、各多少钱，一眼看到", "value": 5, "cost": 2, "roi": 2.5, "phase": 1, "decision": "做", "moscow": "Must", "dependsOn": ["N-01"], "source": "手册 v4.4 §6.8：通知书上分到她名下的每一笔基金"},
-    { "id": "N-03", "context": "养老系统", "title": "录一笔服务记录，扣她的基金", "scenario": "照护伙伴给黄太太上门清洁两小时，回来录这一笔：哪天、什么服务、多少钱；她名下的基金少掉这笔。", "outcome": "照护伙伴回来录一笔，基金余额当场减掉", "value": 5, "cost": 3, "roi": 1.7, "phase": 1, "decision": "做", "moscow": "Must", "dependsOn": ["N-02"], "source": "他 2026-10-30 说的：「照护伙伴回来要能当场录，余额当场就减」"},
-    { "id": "N-04", "context": "养老系统", "title": "按季度给她做预算", "scenario": "每季开头，案例经理照她的照护计划给这一季做预算，分到各项服务上。", "outcome": "每季开头有一份按服务分好的预算，录服务时对着它看", "value": 3, "cost": 3, "roi": 1, "phase": 2, "decision": "做", "moscow": "Should", "dependsOn": ["N-02"], "source": "手册 v4.4 §7.1：每季开头按照护计划做预算"},
+    { "id": "N-03", "context": "样例系统", "title": "录一笔服务记录，扣她的基金", "scenario": "照护伙伴给黄太太上门清洁两小时，回来录这一笔：哪天、什么服务、多少钱；她名下的基金少掉这笔。", "outcome": "照护伙伴回来录一笔，基金余额当场减掉", "value": 5, "cost": 3, "roi": 1.7, "phase": 1, "decision": "做", "moscow": "Must", "dependsOn": ["N-02"], "source": "他 2026-10-30 说的：「照护伙伴回来要能当场录，余额当场就减」"},
+    { "id": "N-04", "context": "样例系统", "title": "按季度给她做预算", "scenario": "每季开头，案例经理照她的照护计划给这一季做预算，分到各项服务上。", "outcome": "每季开头有一份按服务分好的预算，录服务时对着它看", "value": 3, "cost": 3, "roi": 1, "phase": 2, "decision": "做", "moscow": "Should", "dependsOn": ["N-02"], "source": "手册 v4.4 §7.1：每季开头按照护计划做预算"},
     { "id": "N-05", "title": "月底给她出月结单", "scenario": "月底财务给黄太太出一张月结单：这个月花了哪些、剩多少。", "outcome": "月底每位老人一张月结单，不用财务手算", "value": 2, "cost": 3, "roi": 0.7, "phase": 3, "decision": "做", "moscow": "Could", "dependsOn": ["N-03"], "source": "他 2026-10-30 说的：「月底财务不想再一张张手算月结单」"},
-    { "id": "N-06", "context": "养老系统", "title": "自动向政府申报", "scenario": "财务把这个月的服务记录汇总，报给政府系统申请拨款。", "outcome": "月底一键把服务记录报给政府", "value": 4, "cost": 5, "roi": 0.8, "phase": null, "decision": "不做", "moscow": "Won't", "dependsOn": ["N-03"], "source": "申报格式 v1.14 第 4 节：服务记录按月汇总报给政府"},
+    { "id": "N-06", "context": "样例系统", "title": "自动向政府申报", "scenario": "财务把这个月的服务记录汇总，报给政府系统申请拨款。", "outcome": "月底一键把服务记录报给政府", "value": 4, "cost": 5, "roi": 0.8, "phase": null, "decision": "不做", "moscow": "Won't", "dependsOn": ["N-03"], "source": "申报格式 v1.14 第 4 节：服务记录按月汇总报给政府"},
     { "id": "N-07", "title": "签了协议，聊天 app 上给她和照护伙伴开一个聊天", "scenario": "黄太太签了服务协议，手机上装的 app 里自动出现她和照护伙伴的聊天，不用再加好友。", "outcome": "老人签了协议，手机上就能和照护伙伴说话", "value": 3, "cost": 2, "roi": 1.5, "phase": 2, "decision": "做", "moscow": "Should", "dependsOn": ["N-01"], "source": "做「给参与者建档，记下决定通知书」这条需求的时候，业务发现的：签了协议以后老人要能和照护伙伴说话"}
   ]
 };
@@ -248,11 +248,11 @@ const 日程 = DATA.日程 ?? {
   "updatedAt": "2026-11-09",
   "milestones": [
     { "id": "M1", "phase": 1, "title": "第一期：建档、分钱、录一笔服务", "goal": "一个老人能建档、分到钱、录上第一笔服务并扣掉", "date": "2026-11-21",
-      "items": [ { "id": "N-01", "start": "2026-11-01", "end": "2026-11-05", "stages": { "业务": "2026-11-02", "建模": "2026-11-03", "编码": "2026-11-05" } }, { "id": "N-02", "start": "2026-11-04", "end": "2026-11-12", "tasks": [ { "id": "N-02.1", "context": "养老系统", "title": "照通知书记下每笔基金和额度", "scenario": "案例经理照通知书上写的，把黄太太分到的每一笔基金、各多少钱记到她名下。", "start": "2026-11-04", "end": "2026-11-06", "stages": { "业务": "2026-11-04", "建模": "2026-11-05", "编码": "2026-11-06" } }, { "id": "N-02.2", "context": "养老系统", "title": "看她名下各笔基金还剩多少", "scenario": "案例经理打开黄太太的档案，一眼看到她每笔基金的额度、花了多少、还剩多少。", "start": "2026-11-07", "end": "2026-11-10", "stages": { "业务": "2026-11-09", "建模": null, "编码": null } }, { "id": "N-02.3", "context": "养老系统", "title": "来了新通知书，改额度", "scenario": "评估代表寄来新的通知书，额度变了，案例经理照新的改，旧的留着能查。", "start": "2026-11-10", "end": "2026-11-12", "stages": { "业务": null, "建模": null, "编码": null } } ]}, { "id": "N-03", "start": "2026-11-12", "end": "2026-11-21", "stages": { "业务": null, "建模": null, "编码": null } } ] },
+      "items": [ { "id": "N-01", "start": "2026-11-01", "end": "2026-11-05", "stages": { "业务": "2026-11-02", "建模": "2026-11-03", "编码": "2026-11-05" } }, { "id": "N-02", "start": "2026-11-04", "end": "2026-11-12", "tasks": [ { "id": "N-02.1", "context": "样例系统", "title": "照通知书记下每笔基金和额度", "scenario": "案例经理照通知书上写的，把黄太太分到的每一笔基金、各多少钱记到她名下。", "start": "2026-11-04", "end": "2026-11-06", "stages": { "业务": "2026-11-04", "建模": "2026-11-05", "编码": "2026-11-06" } }, { "id": "N-02.2", "context": "样例系统", "title": "看她名下各笔基金还剩多少", "scenario": "案例经理打开黄太太的档案，一眼看到她每笔基金的额度、花了多少、还剩多少。", "start": "2026-11-07", "end": "2026-11-10", "stages": { "业务": "2026-11-09", "建模": null, "编码": null } }, { "id": "N-02.3", "context": "样例系统", "title": "来了新通知书，改额度", "scenario": "评估代表寄来新的通知书，额度变了，案例经理照新的改，旧的留着能查。", "start": "2026-11-10", "end": "2026-11-12", "stages": { "业务": null, "建模": null, "编码": null } } ]}, { "id": "N-03", "start": "2026-11-12", "end": "2026-11-21", "stages": { "业务": null, "建模": null, "编码": null } } ] },
     { "id": "M2", "phase": 2, "title": "第二期：季度预算", "goal": "案例经理能按季度给每个老人做预算、看超没超", "date": "2026-12-05",
-      "items": [ { "id": "N-04", "start": "2026-11-24", "end": "2026-12-05", "stages": { "业务": null, "建模": null, "编码": null } }, { "id": "N-07", "start": "2026-11-26", "end": "2026-12-05", "tasks": [ { "id": "N-07.1", "context": "养老系统", "title": "签了协议发一个事件出去", "scenario": "养老系统记下签协议那一刻，发「协议已签」，带她的编号。", "start": "2026-11-26", "end": "2026-11-28", "stages": { "业务": null, "建模": null, "编码": null } }, { "id": "N-07.2", "context": "聊天 app", "title": "听到协议已签，开聊天", "scenario": "app 听到「协议已签」，给黄太太和她的照护伙伴开一个聊天。", "start": "2026-11-29", "end": "2026-12-05", "stages": { "业务": null, "建模": null, "编码": null } } ]} ] },
+      "items": [ { "id": "N-04", "start": "2026-11-24", "end": "2026-12-05", "stages": { "业务": null, "建模": null, "编码": null } }, { "id": "N-07", "start": "2026-11-26", "end": "2026-12-05", "tasks": [ { "id": "N-07.1", "context": "样例系统", "title": "签了协议发一个事件出去", "scenario": "样例系统记下签协议那一刻，发「协议已签」，带她的编号。", "start": "2026-11-26", "end": "2026-11-28", "stages": { "业务": null, "建模": null, "编码": null } }, { "id": "N-07.2", "context": "聊天 app", "title": "听到协议已签，开聊天", "scenario": "app 听到「协议已签」，给黄太太和她的照护伙伴开一个聊天。", "start": "2026-11-29", "end": "2026-12-05", "stages": { "业务": null, "建模": null, "编码": null } } ]} ] },
     { "id": "M3", "phase": 3, "title": "第三期：月结单", "goal": "每个月能给老人和家属出一份结单", "date": "2026-12-19",
-      "items": [ { "id": "N-05", "start": "2026-12-08", "end": "2026-12-19", "tasks": [ { "id": "N-05.1", "context": "养老系统", "title": "算出这个月花了哪些、剩多少", "scenario": "财务按月把黄太太的服务记录和基金余额汇成一张单。", "start": "2026-12-08", "end": "2026-12-12", "stages": { "业务": null, "建模": null, "编码": null } }, { "id": "N-05.2", "context": "排版系统", "title": "排成能打印的月结单", "scenario": "排版系统拿到这张单，排成能打印、能发给家属的版式。", "start": "2026-12-15", "end": "2026-12-19", "stages": { "业务": null, "建模": null, "编码": null } } ]} ] }
+      "items": [ { "id": "N-05", "start": "2026-12-08", "end": "2026-12-19", "tasks": [ { "id": "N-05.1", "context": "样例系统", "title": "算出这个月花了哪些、剩多少", "scenario": "财务按月把黄太太的服务记录和基金余额汇成一张单。", "start": "2026-12-08", "end": "2026-12-12", "stages": { "业务": null, "建模": null, "编码": null } }, { "id": "N-05.2", "context": "排版系统", "title": "排成能打印的月结单", "scenario": "排版系统拿到这张单，排成能打印、能发给家属的版式。", "start": "2026-12-15", "end": "2026-12-19", "stages": { "业务": null, "建模": null, "编码": null } } ]} ] }
   ],
   "drift": [ { "milestone": "M1", "days": 3, "why": "N-02 的基金账户类型比预想的多，建模多花了三天" } ]
 };
@@ -261,39 +261,39 @@ const 日程 = DATA.日程 ?? {
 //   milestones: [{ id, title, goal, due, items: [{ id, title, context, decision, moscow, outcome?, stages: { 业务, 建模, 编码 } }] }],   title 是「第几期：短名」，goal 是项目级的，上下文各自没有目标
 //   unplanned?: [同上的需求] }]   unplanned 是没排进任何一期的需求（不做的、再看还没定期的），只为了「共几条」数得全
 const PROJECTS = DATA.PROJECTS ?? [
-  // 示例项目两个上下文：养老系统、沟通 app；三期的截止是项目的，沟通 app 每一期都接在养老系统那一期做出来的东西后面
-  { dir: 'sample-care', name: '养老系统',
-    contexts: [{ id: 'c1', name: '养老系统' }, { id: 'c2', name: '沟通 app' }],
+  // 示例项目两个上下文：样例系统、沟通 app；三期的截止是项目的，沟通 app 每一期都接在样例系统那一期做出来的东西后面
+  { dir: 'sample-care', name: '样例系统',
+    contexts: [{ id: 'c1', name: '样例系统' }, { id: 'c2', name: '沟通 app' }],
     scene: { now: [], waiting: [] },
     milestones: [
       { id: 'M1', title: '第一期：建档记账与聊天', goal: '能给一位老人建档、签协议、记下她名下的基金，录一笔服务后看到还剩多少钱；签了协议，老人和家属有一个聊天', due: '2026-12-11', items: [
-        { id: 'N-01', title: '给老人建档，记下支持计划和决定通知书', context: '养老系统', decision: '做', moscow: 'Must', stages: { 业务: '2026-10-28', 建模: '2026-10-30', 编码: '2026-11-01' } },
-        { id: 'N-02', title: '跟老人签服务协议', context: '养老系统', decision: '做', moscow: 'Must', stages: { 业务: '2026-11-01', 建模: null, 编码: null } },
-        { id: 'N-03', title: '维护公司价目表和每位老人的协议价', context: '养老系统', decision: '做', moscow: 'Should', stages: { 业务: '2026-11-02', 建模: null, 编码: null } },
-        { id: 'N-04', title: '记下老人名下的每一笔基金和额度', context: '养老系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-05', title: '录一笔做了的服务，从老人的基金里扣', context: '养老系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-06', title: '看老人的基金还剩多少', context: '养老系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-01', title: '给老人建档，记下支持计划和决定通知书', context: '样例系统', decision: '做', moscow: 'Must', stages: { 业务: '2026-10-28', 建模: '2026-10-30', 编码: '2026-11-01' } },
+        { id: 'N-02', title: '跟老人签服务协议', context: '样例系统', decision: '做', moscow: 'Must', stages: { 业务: '2026-11-01', 建模: null, 编码: null } },
+        { id: 'N-03', title: '维护公司价目表和每位老人的协议价', context: '样例系统', decision: '做', moscow: 'Should', stages: { 业务: '2026-11-02', 建模: null, 编码: null } },
+        { id: 'N-04', title: '记下老人名下的每一笔基金和额度', context: '样例系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-05', title: '录一笔做了的服务，从老人的基金里扣', context: '样例系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-06', title: '看老人的基金还剩多少', context: '样例系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
         { id: 'N-21', title: '签了协议，给老人和家属开一个聊天', context: '沟通 app', decision: '做', moscow: 'Should', stages: { 业务: '2026-11-02', 建模: null, 编码: null } },
         { id: 'N-22', title: '家属在聊天里看到她的协议和基金', context: '沟通 app', decision: '做', moscow: 'Could', stages: { 业务: null, 建模: null, 编码: null } } ] },
       { id: 'M2', title: '第二期：预算与月结单', goal: '照护计划和季度预算排得出来，每笔服务算清政府补多少、老人出多少，月底出得了月结单并推到家属的聊天里，季度能翻篇', due: '2027-02-05', items: [
-        { id: 'N-07', title: '给老人做照护计划', context: '养老系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-08', title: '照基金给老人排一季的预算', context: '养老系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-11', title: '季度翻篇：新一季的钱到账，上季没花完的结转', context: '养老系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-09', title: '算每笔服务政府补多少、老人自己出多少', context: '养老系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-12', title: '记护理管理的小时，从公司的护理管理账户扣', context: '养老系统', decision: '做', moscow: 'Could', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-10', title: '月底给老人出月结单', context: '养老系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-07', title: '给老人做照护计划', context: '样例系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-08', title: '照基金给老人排一季的预算', context: '样例系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-11', title: '季度翻篇：新一季的钱到账，上季没花完的结转', context: '样例系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-09', title: '算每笔服务政府补多少、老人自己出多少', context: '样例系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-12', title: '记护理管理的小时，从公司的护理管理账户扣', context: '样例系统', decision: '做', moscow: 'Could', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-10', title: '月底给老人出月结单', context: '样例系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
         { id: 'N-23', title: '月结单出了，推到家属的聊天里', context: '沟通 app', decision: '做', moscow: 'Could', stages: { 业务: null, 建模: null, 编码: null } } ] },
       { id: 'M3', title: '第三期：申报与付款', goal: '做了的服务报得上去、付款单对得上账，外面的发票和老人垫的钱录得进来、付得出去，付款走到哪一步家属在聊天里看得到', due: '2027-03-19', items: [
-        { id: 'N-13', title: '向 Services Australia 申报做了的服务', context: '养老系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-14', title: '收政府的付款单，跟申报的对账', context: '养老系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-15', title: '录外面供应商的发票和老人自己垫的钱', context: '养老系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
-        { id: 'N-16', title: '给关联服务方和供应商付钱，记下每一步', context: '养老系统', decision: '做', moscow: 'Could', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-13', title: '向 Services Australia 申报做了的服务', context: '样例系统', decision: '做', moscow: 'Must', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-14', title: '收政府的付款单，跟申报的对账', context: '样例系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-15', title: '录外面供应商的发票和老人自己垫的钱', context: '样例系统', decision: '做', moscow: 'Should', stages: { 业务: null, 建模: null, 编码: null } },
+        { id: 'N-16', title: '给关联服务方和供应商付钱，记下每一步', context: '样例系统', decision: '做', moscow: 'Could', stages: { 业务: null, 建模: null, 编码: null } },
         { id: 'N-24', title: '付款走到哪一步，在聊天里告诉家属', context: '沟通 app', decision: '做', moscow: 'Could', stages: { 业务: null, 建模: null, 编码: null } } ] } ],
     unplanned: [
-      { id: 'N-17', title: '老人临时取消服务，按规矩收取消费', context: '养老系统', decision: '不做', moscow: "Won't", stages: { 业务: null, 建模: null, 编码: null } },
-      { id: 'N-18', title: '辅助器具和家居改造：从报价到装好', context: '养老系统', decision: '不做', moscow: "Won't", stages: { 业务: null, 建模: null, 编码: null } },
-      { id: 'N-19', title: '老人暂停服务、换服务方、退出', context: '养老系统', decision: '不做', moscow: "Won't", stages: { 业务: null, 建模: null, 编码: null } },
-      { id: 'N-20', title: '直接对接政府 B2G 接口申报', context: '养老系统', decision: '不做', moscow: "Won't", stages: { 业务: null, 建模: null, 编码: null } } ] },
+      { id: 'N-17', title: '老人临时取消服务，按规矩收取消费', context: '样例系统', decision: '不做', moscow: "Won't", stages: { 业务: null, 建模: null, 编码: null } },
+      { id: 'N-18', title: '辅助器具和家居改造：从报价到装好', context: '样例系统', decision: '不做', moscow: "Won't", stages: { 业务: null, 建模: null, 编码: null } },
+      { id: 'N-19', title: '老人暂停服务、换服务方、退出', context: '样例系统', decision: '不做', moscow: "Won't", stages: { 业务: null, 建模: null, 编码: null } },
+      { id: 'N-20', title: '直接对接政府 B2G 接口申报', context: '样例系统', decision: '不做', moscow: "Won't", stages: { 业务: null, 建模: null, 编码: null } } ] },
   { dir: 'sample-chat', name: '聊天 app',
     contexts: [{ id: 'c1', name: '消息' }, { id: 'c2', name: '通讯录' }],
     scene: {
@@ -339,7 +339,7 @@ const doneAtOf = (r) => { const ts = planOf[r.id]?.tasks; return ts?.length ? (s
 const segBar = (stages, left, width, extra = '') => `<div class="bar seg" style="left:${left};width:${width}" title="${STAGES.map((k) => k + (stages[k] ? ' ' + stages[k] : ' 没做完')).join('　')}">${STAGES.map((k) => `<i class="s${stages[k] ? ' done' : doingOf(stages).includes(k) ? ' doing' : ''}"></i>`).join('')}${extra}</div>`;
 const stageChips = (stages) => `<small class="stg">${STAGES.map((k) => `${k} ${stages[k] ? '✓' : doingOf(stages).includes(k) ? '●' : '○'}`).join(' ')}</small>`;
 // 上下文：功能各标一个；需求跨了哪几个，从它的功能数出来，没拆功能的看自己那一栏。左边栏点一个只看它的
-const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统'];
+const CONTEXTS = DATA.CONTEXTS ?? ['样例系统', '聊天 app', '排版系统'];
 let view = 'pm';   // 主区现在显示哪个：'pm' 是甘特图 + 需求清单，'overview' 是总览
 let filter = null;   // null 是全项目
 let selected = null, selFrom = null;   // 点中的需求编号、在哪儿点的（gantt / table）

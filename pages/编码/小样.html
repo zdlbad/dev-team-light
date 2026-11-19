@@ -366,10 +366,10 @@ const NAMING = DATA.NAMING ?? { decidedAt: '2026-11-01', sample: [
 const GLOBAL = DATA.GLOBAL ?? { nodes: [
   { id: 'cp', name: '照护伙伴', kind: '用户', holds: '在电脑和平板的浏览器上用' },
   { id: 'fam', name: '老人和家属', kind: '用户', holds: '在手机上用' },
-  { id: 'web', name: '养老系统 web', kind: '前端', context: '养老系统', holds: '登记、建档、签协议、记服务', tech: 'React + Vite + Ant Design' },
+  { id: 'web', name: '样例系统 web', kind: '前端', context: '样例系统', holds: '登记、建档、签协议、记服务', tech: 'React + Vite + Ant Design' },
   { id: 'dlg', name: '沟通对话框', kind: '前端', context: '沟通 app', in: 'web', holds: '我在的群、群聊', later: '第三期' },
   { id: 'app', name: '沟通 app', kind: '前端', context: '沟通 app', holds: '聊天、看余额和服务计划', later: '第三期' },
-  { id: 'api', name: '养老系统后端', kind: '后端', context: '养老系统', holds: '各模块的命令、查询、事件；HTTP 口给前端', tech: 'Node 24 + Express' },
+  { id: 'api', name: '样例系统后端', kind: '后端', context: '样例系统', holds: '各模块的命令、查询、事件；HTTP 口给前端', tech: 'Node 24 + Express' },
   { id: 'chat', name: '沟通模块', kind: '后端', context: '沟通 app', in: 'api', holds: '群、消息、推送', later: '沟通 app 建模时再定' },
   { id: 'db', name: '数据库', kind: '数据库', holds: '各模块的仓储', tech: 'Prisma', later: '正式化时接；原型阶段仓储在内存' },
   { id: 'files', name: '文件存储', kind: '存储', holds: '登记表上的手写签名图', tech: '原型存本机文件夹' },
@@ -639,7 +639,7 @@ const memberName = (aid, mid) => aggOf[aid]?.members.find((m) => m.id === mid)?.
 const MODELS = DATA.MODELS ?? {}
 // 上面那五样（MODEL、STRUCT、PROGRESS、PSEUDO、CODE）是 CODE_CX 那个上下文的；别的有文件结构的上下文在 DATA.BY_CX 里各一份，换上下文时换着用。
 // 规范（结构设计、文件命名、技术选型）不跟着换：CODE_CX 的是顶层那三份，别的上下文的在 SPECS 里
-const CODE_CX = DATA.CODE_CX ?? '养老系统'
+const CODE_CX = DATA.CODE_CX ?? '样例系统'
 const FIRST = { MODEL, STRUCT, PROGRESS, PSEUDO, CODE }
 const cxData = (cx) => cx === CODE_CX ? FIRST : (DATA.BY_CX && DATA.BY_CX[cx]) || null
 function useCx(cx) {
@@ -675,7 +675,7 @@ const minSt = (keys) => SN[Math.min(...keys.map((k) => S[stOf(k)]))] ?? '未写'
 const memberKeys = (a, m) => ['agg/' + a.id + '/' + m.id, ...(m.behaviors ?? []).map((b) => 'agg/' + a.id + '/' + m.id + '/' + b)]
 let view = 'tree'      // 'tree' | 'model/<模型路径>' | 'flow/<流程>'；地址前面带上下文名
 // 上下文：左边栏第一层，折叠展开；地址第一段是上下文名
-const CONTEXTS = DATA.CONTEXTS ?? ['养老系统', '聊天 app', '排版系统', '共享内核']
+const CONTEXTS = DATA.CONTEXTS ?? ['样例系统', '聊天 app', '排版系统', '共享内核']
 let context = CODE_CX
 const parseHash = (dflt) => { const h = decodeURIComponent(location.hash.slice(1)); const i = h.indexOf('/'); const cx = i > 0 ? h.slice(0, i) : ''; return CONTEXTS.includes(cx) ? { cx, v: h.slice(i + 1) || dflt } : { cx: context, v: h || dflt } }
 const go = (v) => { location.hash = context + '/' + v }
@@ -691,7 +691,7 @@ const SPECS = DATA.SPECS ?? {}
 const sideSpecs = (cx) => cx !== CODE_CX ? SPECS[cx] ?? null : null
 const navKey = (v) =>(v.startsWith('tree') ? 'tree' : v)   // 'tree/<文件>' 也算在文件结构那一条上
 
-// ---------- 左边栏：框架画上下文那一层；这页交养老系统展开后的两组：定规范、文件结构 ----------
+// ---------- 左边栏：框架画上下文那一层；这页交样例系统展开后的两组：定规范、文件结构 ----------
 Shell.init({ contexts: CONTEXTS, page: {
   top: () => [{ href: '#全局结构', text: '全局结构', on: view === '全局结构' }],
   badge: (cx) => cx === '共享内核' ? '共用的概念' : '',

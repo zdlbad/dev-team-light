@@ -34,7 +34,7 @@ const svgW = (s) => { const m = s.match(/<svg width="([\d.]+)"/); return m ? +m[
 const topics = (s) => [...s.matchAll(/<g class="tp" data-g="([^"]+)"><rect x="([-\d.]+)" y="([-\d.]+)"/g)].map((m) => ({ id: m[1], x: +m[2], y: +m[3] }))
 const stubs = (s) => Object.fromEntries([...s.matchAll(/<g class="stub"[^>]*data-n="([^"]+)"><rect x="([-\d.]+)" y="([-\d.]+)"/g)].map((m) => [m[1], { x: +m[2], y: +m[3] }]))
 const grp = (s) => { const m = s.match(/<g class="grp"><rect x="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"/); return { x: +m[1], y: +m[2], w: +m[3], h: +m[4] } }
-// 线不穿过两端以外的框：把每条线（M/L/C）取点，落进别的数据框、虚框（往里缩 3）就记一条；两端是起点、终点贴着的框（往外放 8）
+// 线不穿过两端以外的框：把每条线（M/L/C/Q）取点，落进别的数据框、虚框（往里缩 3）就记一条；两端是起点、终点贴着的框（往外放 8）
 const through = (s) => {
   const rects = [...s.matchAll(/<g class="(?:nd[^"]*|stub)"[^>]*data-n="([^"]+)"><rect x="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => ({ id: m[1], x: +m[2], y: +m[3], w: +m[4], h: +m[5] }))
   const bad = []
@@ -47,6 +47,9 @@ const through = (s) => {
       else if (c === 'C') { const [p1, p2, p3] = [0, 1, 2].map(() => ({ x: +tok[i++], y: +tok[i++] })), p0 = cur
         for (let t = 0; t <= 1; t += 0.02) { const u = 1 - t; pts.push({ x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x, y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y }) }
         cur = p3 }
+      else if (c === 'Q') { const [p1, p2] = [0, 1].map(() => ({ x: +tok[i++], y: +tok[i++] })), p0 = cur
+        for (let t = 0; t <= 1; t += 0.02) { const u = 1 - t; pts.push({ x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x, y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y }) }
+        cur = p2 }
     }
     if (!pts.length) continue
     const near = (r, p) => p.x >= r.x - 8 && p.x <= r.x + r.w + 8 && p.y >= r.y - 8 && p.y <= r.y + r.h + 8
@@ -74,12 +77,12 @@ const covers = (s) => {
   return bad.length === 0
 }
 // sample-care 现在的 g6（照原样：标题、角色、线上的字、tree；定义换成占位）：主区 1172 宽时「报销 → 服务记录」那张卡曾压在「报销」上
-const G6NOW = {"CONTEXTS":["养老系统"],"OPEN":{},"BIZ":{"养老系统":{"MAP":{"topics":[{"id":"g2","title":"建档与服务协议","c":2,"x":2,"y":0,"does":["d"],"concepts":["c"]},{"id":"g4","title":"老人名下的基金","c":4,"x":3,"y":0,"does":["d"],"concepts":["c"]},{"id":"g3","title":"服务清单与价目表","c":3,"x":1,"y":1,"does":["d"],"concepts":["c"]},{"id":"g6","title":"服务发生与扣费","c":2,"x":2,"y":1,"does":["d"],"concepts":["c"]},{"id":"g7","title":"月结单","c":3,"x":3,"y":1,"does":["d"],"concepts":["c"]},{"id":"g8","title":"申报与付款对账","c":4,"x":4,"y":1,"does":["d"],"concepts":["c"]}],"edges":[]},"CONCEPTS":{"g6":{"topic":"g6","title":"服务发生与扣费","summary":"s","concepts":[{"id":"rec","title":"服务记录","by":["照护伙伴"],"order":1,"definition":"d","source":"x"},{"id":"proof","title":"凭据","by":["支持工作者"],"order":2,"definition":"d","source":"x"},{"id":"gc","title":"政府补贴与共付","by":["照护伙伴"],"order":3,"definition":"d","source":"x"},{"id":"inv","title":"外部发票","by":["照护伙伴"],"order":4,"definition":"d","source":"x"},{"id":"reimb","title":"报销","by":["老人","照护伙伴"],"order":5,"definition":"d","source":"x"},{"id":"flow","title":"流转记录","by":["照护伙伴","财务"],"order":6,"definition":"d","source":"x"},{"id":"cm","title":"护理管理记录","by":["照护伙伴"],"order":7,"definition":"d","source":"x"}],"external":[{"id":"svc","title":"服务","topic":"g3"},{"id":"price","title":"协议价","topic":"g2"},{"id":"rate","title":"共付比例","topic":"g2"},{"id":"fund","title":"基金","topic":"g4"},{"id":"cma","title":"护理管理账户","topic":"g4"},{"id":"detail","title":"明细行","topic":"g7"},{"id":"claim","title":"申报行","topic":"g8"},{"id":"agree","title":"服务协议","topic":"g2"}],"edges":[{"id":"1","from":"svc","to":"rec","label":"选清单上她批了的一项","by":["照护伙伴"]},{"id":"2","from":"price","to":"rec","label":"单价照她的协议价取、不加附加费，附加费申报时定"},{"id":"3","from":"proof","to":"rec","label":"一条记录一份凭据","by":["支持工作者"]},{"id":"4","from":"rec","to":"gc","label":"按类别和她的比例拆成政府补的和她出的","by":["照护伙伴"]},{"id":"5","from":"rate","to":"gc","label":"她这类服务的比例"},{"id":"6","from":"rec","to":"fund","label":"写从哪笔扣，挂待申报","by":["照护伙伴"]},{"id":"7","from":"inv","to":"rec","label":"一行一项服务就是一条服务记录，标第三方做的","by":["照护伙伴"],"tree":true},{"id":"8","from":"inv","to":"flow","label":"收到、附件、改、批、付每一步留一条","by":["财务"],"tree":true},{"id":"15","from":"reimb","to":"flow","label":"收到、附件、改、批、付每一步留一条","by":["财务"],"tree":true},{"id":"9","from":"cm","to":"cma","label":"按小时从护理管理账户申报"},{"id":"10","from":"rec","to":"detail","label":"月结单一行一次"},{"id":"11","from":"rec","to":"claim","label":"没申报的一条写成一行","by":["财务"]},{"id":"12","from":"reimb","to":"rec","label":"一行一项服务就是一条服务记录，标第三方做的","by":["照护伙伴"],"tree":true},{"id":"14","from":"agree","to":"reimb","label":"哪些可以她先付再报、她的共付怎么付，照协议上写的"}]}},"FLOWS":[]}}}
+const G6NOW = {"CONTEXTS":["样例系统"],"OPEN":{},"BIZ":{"样例系统":{"MAP":{"topics":[{"id":"g2","title":"建档与服务协议","c":2,"x":2,"y":0,"does":["d"],"concepts":["c"]},{"id":"g4","title":"老人名下的基金","c":4,"x":3,"y":0,"does":["d"],"concepts":["c"]},{"id":"g3","title":"服务清单与价目表","c":3,"x":1,"y":1,"does":["d"],"concepts":["c"]},{"id":"g6","title":"服务发生与扣费","c":2,"x":2,"y":1,"does":["d"],"concepts":["c"]},{"id":"g7","title":"月结单","c":3,"x":3,"y":1,"does":["d"],"concepts":["c"]},{"id":"g8","title":"申报与付款对账","c":4,"x":4,"y":1,"does":["d"],"concepts":["c"]}],"edges":[]},"CONCEPTS":{"g6":{"topic":"g6","title":"服务发生与扣费","summary":"s","concepts":[{"id":"rec","title":"服务记录","by":["照护伙伴"],"order":1,"definition":"d","source":"x"},{"id":"proof","title":"凭据","by":["支持工作者"],"order":2,"definition":"d","source":"x"},{"id":"gc","title":"政府补贴与共付","by":["照护伙伴"],"order":3,"definition":"d","source":"x"},{"id":"inv","title":"外部发票","by":["照护伙伴"],"order":4,"definition":"d","source":"x"},{"id":"reimb","title":"报销","by":["老人","照护伙伴"],"order":5,"definition":"d","source":"x"},{"id":"flow","title":"流转记录","by":["照护伙伴","财务"],"order":6,"definition":"d","source":"x"},{"id":"cm","title":"护理管理记录","by":["照护伙伴"],"order":7,"definition":"d","source":"x"}],"external":[{"id":"svc","title":"服务","topic":"g3"},{"id":"price","title":"协议价","topic":"g2"},{"id":"rate","title":"共付比例","topic":"g2"},{"id":"fund","title":"基金","topic":"g4"},{"id":"cma","title":"护理管理账户","topic":"g4"},{"id":"detail","title":"明细行","topic":"g7"},{"id":"claim","title":"申报行","topic":"g8"},{"id":"agree","title":"服务协议","topic":"g2"}],"edges":[{"id":"1","from":"svc","to":"rec","label":"选清单上她批了的一项","by":["照护伙伴"]},{"id":"2","from":"price","to":"rec","label":"单价照她的协议价取、不加附加费，附加费申报时定"},{"id":"3","from":"proof","to":"rec","label":"一条记录一份凭据","by":["支持工作者"]},{"id":"4","from":"rec","to":"gc","label":"按类别和她的比例拆成政府补的和她出的","by":["照护伙伴"]},{"id":"5","from":"rate","to":"gc","label":"她这类服务的比例"},{"id":"6","from":"rec","to":"fund","label":"写从哪笔扣，挂待申报","by":["照护伙伴"]},{"id":"7","from":"inv","to":"rec","label":"一行一项服务就是一条服务记录，标第三方做的","by":["照护伙伴"],"tree":true},{"id":"8","from":"inv","to":"flow","label":"收到、附件、改、批、付每一步留一条","by":["财务"],"tree":true},{"id":"15","from":"reimb","to":"flow","label":"收到、附件、改、批、付每一步留一条","by":["财务"],"tree":true},{"id":"9","from":"cm","to":"cma","label":"按小时从护理管理账户申报"},{"id":"10","from":"rec","to":"detail","label":"月结单一行一次"},{"id":"11","from":"rec","to":"claim","label":"没申报的一条写成一行","by":["财务"]},{"id":"12","from":"reimb","to":"rec","label":"一行一项服务就是一条服务记录，标第三方做的","by":["照护伙伴"],"tree":true},{"id":"14","from":"agree","to":"reimb","label":"哪些可以她先付再报、她的共付怎么付，照协议上写的"}]}},"FLOWS":[]}}}
 // 两样并列的单据是上一层（tree），下一层两样；左边虚框只连第二样单据，主题框里第二样单据右边还连着自己的一样（照 sample-care 的 g6 搭的）；
 // 再加一条：左边虚框连同一层右边那个（照 a1 的「照护伙伴 → 群」），排序挪不开，得绕
 // 分了子主题：把 G6NOW 里的 g6 拆成两个子主题；g2 有一个虚框指进 g6、没写 sub
 const SPLIT = (() => {
-  const d = JSON.parse(JSON.stringify(G6NOW)), b = d.BIZ['养老系统'], g = b.CONCEPTS.g6
+  const d = JSON.parse(JSON.stringify(G6NOW)), b = d.BIZ['样例系统'], g = b.CONCEPTS.g6
   const parts = { 'g6-1': ['rec', 'proof', 'gc', 'inv'], 'g6-2': ['reimb', 'flow', 'cm'] }
   const subOfId = (id) => Object.keys(parts).find((k) => parts[k].includes(id))
   for (const [k, ids] of Object.entries(parts)) {
@@ -94,7 +97,33 @@ const SPLIT = (() => {
   b.CONCEPTS.g2 = { topic: 'g2', title: '建档与服务协议', summary: 's', concepts: [{ id: 'agree', title: '服务协议', by: [], order: 1, definition: 'd', source: 'x' }], external: [{ id: 'reimb', title: '报销', topic: 'g6' }], edges: [{ id: '1', from: 'agree', to: 'reimb', label: '照协议上写的' }] }
   return d
 })()
-const DOCS = { CONTEXTS: ['养老系统'], OPEN: {}, BIZ: { '养老系统': {
+// 流程按主题、按阶段切：g6-01 的出口接 g6-02 的入口；g6-02 里一段 opt、一段 alt（两支各一步，步号 2a、2b）；数据卡「报销」在 g6、「服务协议」在 g2
+const STAGES = (() => {
+  const d = JSON.parse(JSON.stringify(G6NOW)), b = d.BIZ['样例系统']
+  const parties = [{ id: 'cp', title: '照护伙伴' }, { id: 'old', title: '老人' }]
+  b.FLOWS = [
+    { file: 'g6-01-报销', title: '报销', topic: 'g6', summary: 's', parties, exits: [{ text: '交上去了等核', step: 2, flow: 'g6-02-核报销' }],
+      steps: [{ id: 1, from: 'old', to: 'cp', title: '她先付了钱', data: ['报销', '服务协议'] }, { id: 2, from: 'cp', to: 'cp', title: '照护伙伴交上去' }] },
+    { file: 'g6-02-核报销', title: '核报销', topic: 'g6', summary: 's', parties, entries: [{ text: '交上来了', step: 1, flow: 'g6-01-报销' }], exits: [{ text: '核完了', step: 3 }],
+      steps: [{ id: 1, from: 'cp', to: 'cp', title: '核一遍', opt: '票据看不清' }, { id: '1a', from: 'cp', to: 'old', title: '请她重拍', opt: '票据看不清' },
+        { id: '2a', from: 'cp', to: 'old', title: '告诉她批了', alt: '批不批', case: '批了' }, { id: '2b', from: 'cp', to: 'old', title: '告诉她不批、为什么', alt: '批不批', case: '不批' },
+        { id: 3, from: 'cp', to: 'cp', title: '记下核完' }] },
+    { file: '99-旧的', title: '旧的', summary: 's', parties, steps: [{ id: 1, from: 'cp', to: 'old', title: 'x' }] }]
+  b.MODULES = { g6: { topic: 'g6', title: '服务发生与扣费', summary: '模块',
+    groups: [{ title: '报销', functions: [
+      { id: 'f-1', title: '登记老人先付的报销', called: '报销', intent: '她先垫了钱，记下来等核', subject: { title: '报销', to: '待核' }, in: ['外部发票'], out: [], uses: [{ flow: 'g6-01-报销', step: 2 }] },
+      { id: 'f-2', title: '核准报销并记成服务记录', intent: '核过了，这一笔算一条服务', subject: { title: '报销', from: '待核', to: '已核' }, in: [], out: [{ kind: '新记录', title: '服务记录', when: '一行一条' }], rules: ['只核她签了协议的服务'] }] },
+      { title: '服务记录', functions: [{ id: 'f-3', title: '作废服务记录', intent: '记错了', subject: { title: '服务记录', from: '记下', to: '作废' }, in: [], out: [] }] }],
+    chains: [{ id: 'c-1', title: '报销核过以后', after: { title: '报销', from: '待核', to: '已核' }, then: [{ kind: '新记录', title: '服务记录', when: '一行一条' }, { kind: '状态改变', title: '基金', from: '余额', to: '扣过' }] }],
+    workflows: [{ id: 'w-1', title: '报销', states: [{ id: 'a', title: '待核' }, { id: 'b', title: '已核' }, { id: 'c', title: '已扣款', called: '完成' }], moves: [{ from: 'a', to: 'b', label: '核过' }, { from: 'b', to: 'c', label: '扣了款' }, { from: 'a', to: 'c', label: '小额直接扣' }, { from: 'b', to: 'a', label: '退回重核' }] }],
+    asks: [{ id: 'q-1', q: '报销要不要她签字？', lean: '要', options: ['要', '不要'], sig: 'abc' }, { id: 'q-2', q: '多久内交？', answer: '一个月', answeredAt: '2026-11-18' }] } }
+  // 同样两样数据之间两条线（一来一回）：画成一条，两句话接起来
+  b.CONCEPTS.g2 = { topic: 'g2', title: '建档与服务协议', summary: 's', concepts: [{ id: 'agree', title: '服务协议', by: [], order: 1, definition: 'd', source: 'x' }, { id: 'file', title: '档案', by: [], order: 2, definition: 'd', source: 'x' }],
+    external: [], edges: [{ id: '1', from: 'agree', to: 'file', label: '签了记进档案', by: ['照护伙伴'] }, { id: '2', from: 'file', to: 'agree', label: '档案上写着协议号', by: ['老人'] }] }
+  d.OPEN = { '样例系统/module/g6': 1 }
+  return d
+})()
+const DOCS = { CONTEXTS: ['样例系统'], OPEN: {}, BIZ: { '样例系统': {
   MAP: { topics: [{ id: 'g6', title: '服务发生与扣费', c: 2, x: 0, y: 0, does: ['录'], concepts: ['外部发票'] }, { id: 'g2', title: '建档与服务协议', c: 1, x: 1, y: 0, does: ['签'], concepts: ['服务协议'] }], edges: [] },
   CONCEPTS: { g6: { topic: 'g6', title: '服务发生与扣费', summary: 's',
     concepts: [['inv', '外部发票'], ['reimb', '报销'], ['exp', 'Expense'], ['flow', '流转记录'], ['rec', '服务记录'], ['one', '一对一'], ['grp', '群']].map(([id, title], i) => ({ id, title, by: ['照护伙伴'], order: i + 1, definition: 'd', source: 'x' })),
@@ -107,17 +136,17 @@ global.fetch = (u, o) => { global.__posted = JSON.parse(o.body); return new Prom
 // 一排三个主题（主区放不下）；一个主题只有一个自己的概念、虚框大多只连虚框（照沟通 app 的 a2 搭的）
 const ROW3 = { CONTEXTS: ['沟通 app', '共享内核'], OPEN: {}, BIZ: { '沟通 app': {
   MAP: { topics: ['聊天与群', '看她的档案、计划、钱和月结单', '传收据、审收据'].map((title, i) => ({ id: 'a' + (i + 1), title, c: 3 + i, x: i, y: 0, does: ['老人和家属在 app 里看她批了哪一级哪些服务，照护伙伴看到的是同一份', '月结单出了收到一条通知，点开看'], concepts: ['一', '二'] })),
-    edges: [{ from: 'a1', to: 'a2', label: '开进 app 的老人和她点头的家属才看得到' }, { from: 'a3', to: 'a2', label: '批了的收据进养老系统' }] },
+    edges: [{ from: 'a1', to: 'a2', label: '开进 app 的老人和她点头的家属才看得到' }, { from: 'a3', to: 'a2', label: '批了的收据进样例系统' }] },
   CONCEPTS: { a2: { topic: 'a2', title: '看她的档案', summary: 's', concepts: [{ id: 'notice', title: '月结单通知', by: ['老人'], order: 1, definition: 'd', source: 'x' }],
-    external: [['file', 'g2'], ['notice-doc', 'g1'], ['plan', 'g1'], ['careplan', 'g5'], ['fund', 'g4'], ['bal', 'g4'], ['stmt', 'g7'], ['detail', 'g7']].map(([id, topic]) => ({ id, title: id, topic, context: '养老系统' }))
+    external: [['file', 'g2'], ['notice-doc', 'g1'], ['plan', 'g1'], ['careplan', 'g5'], ['fund', 'g4'], ['bal', 'g4'], ['stmt', 'g7'], ['detail', 'g7']].map(([id, topic]) => ({ id, title: id, topic, context: '样例系统' }))
       .concat([{ id: 'old', title: '老人', topic: '共享内核' }, { id: 'fam', title: '家属', topic: '共享内核' }]),
     edges: [['old', 'file'], ['file', 'notice-doc'], ['file', 'plan'], ['old', 'careplan'], ['fund', 'bal', 1], ['old', 'bal'], ['stmt', 'notice'], ['notice', 'fam'], ['stmt', 'detail', 1], ['old', 'fam']]
       .map(([from, to, tree], i) => ({ id: String(i + 1), from, to, label: '线' + (i + 1) + '的说明', ...(tree ? { tree: true } : { by: ['老人'] }) })) } },
   FLOWS: [] } } }
-// 上下文地图：两个上下文之间 8 条来往（照 sample-care 搭的），养老系统「管什么」一长句
-const CX8 = { CONTEXTS: ['养老系统', '沟通 app', '共享内核'], OPEN: {}, BIZ: {}, USES: { c1: ['老人', '家属', '照护伙伴'], c2: ['老人', '家属', '照护伙伴'] }, PROGRESS: {},
+// 上下文地图：两个上下文之间 8 条来往（照 sample-care 搭的），样例系统「管什么」一长句
+const CX8 = { CONTEXTS: ['样例系统', '沟通 app', '共享内核'], OPEN: {}, BIZ: {}, USES: { c1: ['老人', '家属', '照护伙伴'], c2: ['老人', '家属', '照护伙伴'] }, PROGRESS: {},
   PROJECT: { name: 'AgedCareProvider', kernel: { concepts: ['老人', '家属', '照护伙伴'] }, contexts: [
-    { id: 'c1', name: '养老系统', c: 2, role: '管一位老人从评估批下来到月结与申报的全程：建档签协议、记名下的基金、排照护计划与预算、录每一笔服务并算政府补贴与共付、出月结单、向 Services Australia 申报并对付款单' },
+    { id: 'c1', name: '样例系统', c: 2, role: '管一位老人从评估批下来到月结与申报的全程：建档签协议、记名下的基金、排照护计划与预算、录每一笔服务并算政府补贴与共付、出月结单、向 Services Australia 申报并对付款单' },
     { id: 'c2', name: '沟通 app', c: 3, role: '老人/家属和照护伙伴在手机上聊天、看余额和计划、做简单操作' }] },
   EDGES: [['c1', 'c2', '事件', '服务协议签了'], ['c2', 'c1', '查询', '她的照护伙伴是谁、照护伙伴名下有哪几位老人'], ['c2', 'c1', '查询', '她的档案'], ['c2', 'c1', '查询', '她现在的照护计划'],
     ['c2', 'c1', '查询', '她名下每笔基金的余额'], ['c2', 'c1', '事件', '收据批了'], ['c1', 'c2', '事件', '月结单出了'], ['c2', 'c1', '查询', '她的一份月结单']].map(([from, to, kind, name]) => ({ from, to, kind, name })) }
@@ -136,7 +165,7 @@ const boxText = (s, id, role) => { const b = cxBox(s, id); if (!b) return false
   const bare = (t) => t.split(' ').join('')   // 折行处的空格会被去掉，比的时候都不算空格
   return bare(lines.map((m) => m[3]).join('')) === bare(role) &&lines.every((m) => +m[2] + 4 <= b.y + b.h) }
 // 流程：4 个参与方、问题卡带长选项（照 sample-care 的 00 搭的）
-const FLOW4 = { CONTEXTS: ['养老系统', '共享内核'], OPEN: {}, BIZ: { '养老系统': { MAP: { topics: [], edges: [] }, CONCEPTS: {}, FLOWS: [{ file: '00-x', title: '老人来到公司：填登记表', summary: 's',
+const FLOW4 = { CONTEXTS: ['样例系统', '共享内核'], OPEN: {}, BIZ: { '样例系统': { MAP: { topics: [], edges: [] }, CONCEPTS: {}, FLOWS: [{ file: '00-x', title: '老人来到公司：填登记表', summary: 's',
   parties: [{ id: 'old', title: '长者', sub: '或她的代理人' }, { id: 'cp', title: '照护伙伴', sub: '公司里接待她、帮她申请' }, { id: 'rn', title: '注册护士', sub: '护理人员' }, { id: 'gov', title: '政府', sub: 'My Aged Care、评估机构' }],
   steps: [{ id: '1', from: 'old', to: 'cp', title: '长者（或代理人陪着）第一次来到公司，想请这家帮她', date: '第 1 天', note: '两种情况：还没申请的往下走第 2～7 步；已经获批、拿着决定通知书和支持计划来的，填完表直接到流程 01 第 2 步。',
     rules: [{ id: 'r-1', text: '从没注册过的老人要填首次来访登记表。', status: '定了' }],
@@ -149,15 +178,15 @@ const sides = (s) => [...s.matchAll(/<g class="qa side [a-z]+ [a-z]+" data-step=
 const sidesClear = (s) => { const b = sides(s); return b.length > 0 && b.every((x) => x.h > 0) && b.every((x, i) => i === 0 || (b[i - 1].top + b[i - 1].h + 10 <= x.top && b[i - 1].y < x.y)) && new Set(b.map((x) => x.step)).size === b.length }
 const hdAligned = (s) => { const hd = [...s.matchAll(/class="hd[^"]*" style="left:([0-9.-]+)px;width:([0-9.]+)px"/g)].map((m) => +m[1] + +m[2] / 2), life = [...s.matchAll(/<line class="life" x1="([0-9.]+)"/g)].map((m) => +m[1])
   return hd.length === 4 && life.length === 4 && hd.every((x, i) => Math.abs(x - life[i]) < 0.5) }
-// 工作台注入的两个上下文：养老系统、沟通 app；沟通 app 的概念图连着养老系统的主题、共享内核，还有一个主题号跟本上下文撞上的；流程上有 UI 设计问的问题
-const TWO = { CONTEXTS: ['养老系统', '沟通 app', '共享内核'], OPEN: { '沟通 app/01-x': 2 },
-  SCREENS: { 'N-01/notice': { title: '照决定通知书填', context: '养老系统' } }, WB: { base: '/sample-care', project: '养老', pages: ['业务', '界面'] },
+// 工作台注入的两个上下文：样例系统、沟通 app；沟通 app 的概念图连着样例系统的主题、共享内核，还有一个主题号跟本上下文撞上的；流程上有 UI 设计问的问题
+const TWO = { CONTEXTS: ['样例系统', '沟通 app', '共享内核'], OPEN: { '沟通 app/01-x': 2 },
+  SCREENS: { 'N-01/notice': { title: '照决定通知书填', context: '样例系统' } }, WB: { base: '/sample-care', project: '养老', pages: ['业务', '界面'] },
   BIZ: {
-    '养老系统': { MAP: { topics: [{ id: 'g1', title: '评估与通知书', c: 2, x: 0, y: 0, does: ['评估批下来'], concepts: ['通知书'] }], edges: [] },
+    '样例系统': { MAP: { topics: [{ id: 'g1', title: '评估与通知书', c: 2, x: 0, y: 0, does: ['评估批下来'], concepts: ['通知书'] }], edges: [] },
       CONCEPTS: { g1: { topic: 'g1', title: '评估与通知书', summary: 's', concepts: [{ id: 'n', title: '通知书', order: 1, definition: 'd', source: 'x' }], external: [], edges: [] } }, FLOWS: [] },
     '沟通 app': { MAP: { topics: [{ id: 'a1', title: '聊天与群', c: 3, x: 0, y: 0, does: ['一对一聊'], concepts: ['消息'] }], edges: [] },
       CONCEPTS: { a1: { topic: 'a1', title: '聊天与群', summary: 's', concepts: [{ id: 'msg', title: '消息', order: 1, definition: 'd', source: 'x' }],
-        external: [{ id: 'notice', title: '通知书', topic: 'g1', context: '养老系统' }, { id: 'old', title: '老人', topic: '共享内核' }, { id: 'x', title: '撞号的', topic: 'a1', context: '养老系统' }],
+        external: [{ id: 'notice', title: '通知书', topic: 'g1', context: '样例系统' }, { id: 'old', title: '老人', topic: '共享内核' }, { id: 'x', title: '撞号的', topic: 'a1', context: '样例系统' }],
         edges: [{ id: '1', from: 'notice', to: 'msg', label: '通知书到了发一条' }, { id: '2', from: 'old', to: 'msg', label: '她发的' }, { id: '3', from: 'msg', to: 'x', label: '撞号' }] } },
       FLOWS: [{ file: '01-x', title: '聊一句：老人发一句', summary: 's', parties: [{ id: 'o', title: '老人' }, { id: 'c', title: '照护伙伴' }],
         steps: [{ id: '1', from: 'o', to: 'c', title: '发一句', asks: [
@@ -170,7 +199,7 @@ const cases = [
   ['#concepts/g1', (s) => s.includes('还没写')],
   ['#聊天 app/map', (s) => s.includes('还没整理') && nav(s).includes('class="cx on" data-cx="聊天 app"')],
   ['#共享内核/kernel', (s) => s.includes('只在这里写一遍') && nav(s).includes('照护伙伴')],
-  ['#map', (s) => nav(s).includes('▾</span>养老系统') && nav(s).includes('▸</span>共享内核')],
+  ['#map', (s) => nav(s).includes('▾</span>样例系统') && nav(s).includes('▸</span>共享内核')],
   ['#cxmap', (s) => s.includes('class="diagram cxmap"') && s.includes('class="kn"') && s.includes('协议已签') && s.includes('<td class="n">共享内核</td>') && nav(s).includes('class="cx proj on"')],
   ['#cxmap', (s) => s.includes('class="sp sel"') && s.includes('<tr class="sel" data-cx="care">'), "selected = 'care'; render()"],
   ['#flow/01-老人注册', (s) => s.includes('<svg') && s.includes('class="note"') && s.includes('class="data"')],
@@ -187,44 +216,44 @@ const cases = [
   // 点一个答法＝答了：规则 status 变定了、卡变灰、answer 记下；左边栏条数跟着减
   ['#flow/01-老人注册', (s) => !s.includes('class="it rule pending"') && (s.match(/class="it rule done"/g) ?? []).length === 2 && !s.includes('答：') && !s.includes('允许手改，记下为什么') && s.includes('<!--status:定了-->') && nav(s).includes('<i class="open">1</i>'),
     "answerQa({ flow: '01-老人注册', step: '5', kind: 'rule', id: 'r-1', opt: '允许手改，记下为什么' }); els.main.innerHTML += '<!--status:' + FLOWS[0].steps[4].rules[0].status + '-->'"],
-  // 左边栏：流程那一行红点带条数（1 条待定规则 + 1 个没答的问题 = 2），上下文那行汇总
-  ['#map', (s) => nav(s).includes('老人注册<i class="open">2</i>') && nav(s).includes('<small>2 条没答</small>')],
+  // 左边栏：流程那一行红点带条数（1 条待定规则 + 1 个没答的问题 = 2），上下文那行汇总（再加 g2 业务上 1 条待定 = 3）
+  ['#map', (s) => nav(s).includes('老人注册<i class="open">2</i>') && nav(s).includes('<small>3 条没答</small>')],
   // 工作台注入 DATA.OPEN 时按它算
-  ['#map', (s) => nav(s).includes('老人注册<i class="open">7</i>') && nav(s).includes('<small>9 条没答</small>'), '', { OPEN: { '养老系统/01-老人注册': 7, '养老系统/02-x': 2, '聊天 app/y': 5 } }],
+  ['#map', (s) => nav(s).includes('老人注册<i class="open">7</i>') && nav(s).includes('<small>9 条没答</small>'), '', { OPEN: { '样例系统/01-老人注册': 7, '样例系统/02-x': 2, '聊天 app/y': 5 } }],
   // 左边栏的组：默认折叠；当前这页所在的组展开；流程组折叠时组名右边是合计的红点
-  ['#map', (s) => nav(s).includes('data-g="养老系统/map"><span class="tri">▾</span>全局</div><div class="gb">') && nav(s).includes('data-g="养老系统/concepts"><span class="tri">▸</span>概念 · 按主题</div><div class="gb" hidden>') && nav(s).includes('data-g="养老系统/flows"><span class="tri">▸</span>流程<i class="open">7</i></div><div class="gb" hidden>'), '', { OPEN: { '养老系统/01-老人注册': 7, '养老系统/02-x': 2, '聊天 app/y': 5 } }],
-  ['#flow/01-老人注册', (s) => nav(s).includes('data-g="养老系统/flows"><span class="tri">▾</span>流程</div><div class="gb">') && nav(s).includes('data-g="养老系统/map"><span class="tri">▸</span>全局</div><div class="gb" hidden>')],
-  ['#concepts/g2', (s) => nav(s).includes('data-g="养老系统/concepts"><span class="tri">▾</span>概念 · 按主题</div><div class="gb">') && nav(s).includes('href="#养老系统/concepts/g2" class="sub on"')],
+  ['#map', (s) => nav(s).includes('data-g="样例系统/map"><span class="tri">▾</span>全局</div><div class="gb">') && nav(s).includes('data-g="样例系统/concepts"><span class="tri">▸</span>概念 · 按主题</div><div class="gb" hidden>') && nav(s).includes('data-g="样例系统/flows"><span class="tri">▸</span>流程<i class="open">7</i></div><div class="gb" hidden>'), '', { OPEN: { '样例系统/01-老人注册': 7, '样例系统/02-x': 2, '聊天 app/y': 5 } }],
+  ['#flow/01-老人注册', (s) => nav(s).includes('data-g="样例系统/flows"><span class="tri">▾</span>流程</div><div class="gb">') && nav(s).includes('data-g="样例系统/map"><span class="tri">▸</span>全局</div><div class="gb" hidden>')],
+  ['#concepts/g2', (s) => nav(s).includes('data-g="样例系统/concepts"><span class="tri">▾</span>概念 · 按主题</div><div class="gb">') && nav(s).includes('href="#样例系统/concepts/g2" class="sub on"')],
   ['#共享内核/kernel', (s) => nav(s).includes('data-g="共享内核/concepts"><span class="tri">▾</span>概念</div><div class="gb">')],
   // ---- 多个上下文 ----
   // 单开的样例有两个上下文画了业务：两段都展开时各列各的全局图、概念、流程；红点按各自的流程
-  ['#map', (s) => nav(s).includes('href="#养老系统/concepts/g2"') && nav(s).includes('href="#排版系统/map"') && nav(s).includes('href="#排版系统/concepts/p1"') && nav(s).includes('href="#排版系统/flow/01-排申报表" class="sub">排申报表<i class="open">1</i>') && nav(s).includes('排版系统<small>1 条没答</small>') && nav(s).includes('老人注册<i class="open">2</i>'), "Shell.show('排版系统'); render()"],
+  ['#map', (s) => nav(s).includes('href="#样例系统/concepts/g2"') && nav(s).includes('href="#排版系统/map"') && nav(s).includes('href="#排版系统/concepts/p1"') && nav(s).includes('href="#排版系统/flow/01-排申报表" class="sub">排申报表<i class="open">1</i>') && nav(s).includes('排版系统<small>1 条没答</small>') && nav(s).includes('老人注册<i class="open">2</i>'), "Shell.show('排版系统'); render()"],
   // hash 带上下文切过去：主区画排版系统的全局图，左边栏它那一行亮、展开
   ['#排版系统/map', (s) => s.includes('申报表排版') && !s.includes('参与者档案与她名下的钱') && nav(s).includes('class="cx on" data-cx="排版系统"') && nav(s).includes('▾</span>排版系统') && nav(s).includes('href="#排版系统/map" class="sub on"')],
   ['#排版系统/map', inBounds],
   // 跨上下文的虚框：标题照自己的，小字标出处；不抛错
-  ['#排版系统/concepts/p1', (s) => s.includes('>申报行</text>') && s.includes('养老系统 · g5 ›') && s.includes('共享内核 ›') && s.includes('data-cx="养老系统"') && s.includes('data-cx="共享内核"')],
+  ['#排版系统/concepts/p1', (s) => s.includes('>申报行</text>') && s.includes('样例系统 · g5 ›') && s.includes('共享内核 ›') && s.includes('data-cx="样例系统"') && s.includes('data-cx="共享内核"')],
   ['#排版系统/concepts/p1', inBounds],
   // 点虚框：别的上下文的跳到那边那张概念图，共享内核的跳共享内核那页，本上下文的照旧
-  ['#排版系统/concepts/p1', (s) => s.includes('<!--h1:养老系统/concepts/g5-->') && s.includes('<!--h2:共享内核/kernel-->') && s.includes('<!--h3:排版系统/concepts/p1-->'),
-    "openStub({ cx: '养老系统', g: 'g5' }); els.main.innerHTML += '<!--h1:' + location.hash + '-->'; openStub({ cx: '共享内核', g: '共享内核' }); els.main.innerHTML += '<!--h2:' + location.hash + '-->'; openStub({ g: 'p1' }); els.main.innerHTML += '<!--h3:' + location.hash + '-->'"],
+  ['#排版系统/concepts/p1', (s) => s.includes('<!--h1:样例系统/concepts/g5-->') && s.includes('<!--h2:共享内核/kernel-->') && s.includes('<!--h3:排版系统/concepts/p1-->'),
+    "openStub({ cx: '样例系统', g: 'g5' }); els.main.innerHTML += '<!--h1:' + location.hash + '-->'; openStub({ cx: '共享内核', g: '共享内核' }); els.main.innerHTML += '<!--h2:' + location.hash + '-->'; openStub({ g: 'p1' }); els.main.innerHTML += '<!--h3:' + location.hash + '-->'"],
   // 没画业务的上下文：还没画
   ['#聊天 app/map', (s) => s.includes('还没画') && nav(s).includes('业务还没画')],
   // 地址里的主题号、流程名这个上下文没有：说一句，不抛错
   ['#排版系统/concepts/g2', (s) => s.includes('排版系统 里没有主题 g2')],
   ['#排版系统/flow/01-老人注册', (s) => s.includes('排版系统 里没有流程 01-老人注册')],
   // 工作台注入 BIZ：旧 hash 落到第一个上下文
-  ['#map', (s) => s.includes('评估与通知书') && !s.includes('聊天与群') && nav(s).includes('class="cx on" data-cx="养老系统"'), '', TWO],
-  ['#concepts/g1', (s) => s.includes('评估与通知书') && s.includes('class="nd"') && nav(s).includes('class="cx on" data-cx="养老系统"'), '', TWO],
-  ['', (s) => s.includes('评估与通知书') && nav(s).includes('href="#养老系统/map" class="sub on"'), '', TWO],
+  ['#map', (s) => s.includes('评估与通知书') && !s.includes('聊天与群') && nav(s).includes('class="cx on" data-cx="样例系统"'), '', TWO],
+  ['#concepts/g1', (s) => s.includes('评估与通知书') && s.includes('class="nd"') && nav(s).includes('class="cx on" data-cx="样例系统"'), '', TWO],
+  ['', (s) => s.includes('评估与通知书') && nav(s).includes('href="#样例系统/map" class="sub on"'), '', TWO],
   // 注入的沟通 app：跨上下文虚框用那边主题的颜色、标出处；主题号撞上本上下文的不当成自己的、那边找不到主题就灰框；共享内核灰框
-  ['#沟通 app/concepts/a1', (s) => s.includes('养老系统 · g1 ›') && s.includes('共享内核 ›') && s.includes('养老系统 · a1 ›') && s.includes('fill:var(--c2)') && (s.match(/class="nd/g) ?? []).length === 1 && (s.match(/class="stub"/g) ?? []).length === 3 && nav(s).includes('class="cx on" data-cx="沟通 app"') && nav(s).includes('href="#沟通 app/flow/01-x" class="sub">聊一句<i class="open">2</i>'), '', TWO],
+  ['#沟通 app/concepts/a1', (s) => s.includes('样例系统 · g1 ›') && s.includes('共享内核 ›') && s.includes('样例系统 · a1 ›') && s.includes('fill:var(--c2)') && (s.match(/class="nd/g) ?? []).length === 1 && (s.match(/class="stub"/g) ?? []).length === 3 && nav(s).includes('class="cx on" data-cx="沟通 app"') && nav(s).includes('href="#沟通 app/flow/01-x" class="sub">聊一句<i class="open">2</i>'), '', TWO],
   ['#沟通 app/concepts/a1', inBounds, '', TWO],
   // 答的时候 context 是当前上下文
   ['#沟通 app/flow/01-x', (s) => s.includes('"context":"沟通 app"') && s.includes('"flow":"01-x"') && s.includes('"ask":"a-1"') && s.includes('"text":"能"'),
     "answerQa({ flow: '01-x', step: '1', kind: 'ask', id: 'a-1', opt: '能' }); els.main.innerHTML += '<!--posted:' + JSON.stringify(__posted) + '-->'", TWO],
   // UI 设计问的问题：小字「UI 设计问 · N-01 屏名」，链到界面页那一屏；屏名找不到照 screen 原文
-  ['#沟通 app/flow/01-x', (s) => s.includes('<a class="scr" href="/sample-care/%E7%95%8C%E9%9D%A2#养老系统/N-01/notice"><text class="s by"') && s.includes('UI 设计问 · N-01 照决定通知书填') && s.includes('UI 设计问 · N-02/zz') && s.includes('href="/sample-care/%E7%95%8C%E9%9D%A2#沟通 app/N-02/zz"'), '', TWO],
+  ['#沟通 app/flow/01-x', (s) => s.includes('<a class="scr" href="/sample-care/%E7%95%8C%E9%9D%A2#样例系统/N-01/notice"><text class="s by"') && s.includes('UI 设计问 · N-01 照决定通知书填') && s.includes('UI 设计问 · N-02/zz') && s.includes('href="/sample-care/%E7%95%8C%E9%9D%A2#沟通 app/N-02/zz"'), '', TWO],
   ['#沟通 app/flow/01-x', inBounds, '', TWO],
   // 单开：样例排版系统流程上的问题指旁边界面那份小样
   ['#排版系统/flow/01-排申报表', (s) => s.includes('UI 设计问 · N-09/form') && s.includes('href="../界面/小样.html#排版系统/N-09/form"') && s.includes('class="it ask pending"')],
@@ -304,18 +333,75 @@ const cases = [
     "document.getElementById('main').clientWidth = 980; render()", FLOW4],
   ['#flow/00-x', inBounds, "document.getElementById('main').clientWidth = 980; render()", FLOW4],
   // 子主题：分了子主题的主题先画子主题图（画法同全局图），两个子主题框、一条线，不出画布
-  ['#养老系统/concepts/g6', (s) => topics(s).map((t) => t.id).join() === 'g6-1,g6-2' && s.includes('2 个子主题') && s.includes('报销的一行') && inBounds(s), '', SPLIT],
+  ['#样例系统/concepts/g6', (s) => topics(s).map((t) => t.id).join() === 'g6-1,g6-2' && s.includes('2 个子主题') && s.includes('报销的一行') && inBounds(s), '', SPLIT],
   // 左边栏：子主题缩进列在主题下面
-  ['#养老系统/concepts/g6', (s) => /服务发生与扣费<\/a><a [^>]*class="sub2[^"]*"[^>]*>服务发生<\/a><a [^>]*class="sub2[^"]*"[^>]*>报销<\/a>/.test(nav(s)), '', SPLIT],
+  ['#样例系统/concepts/g6', (s) => /服务发生与扣费<\/a><a [^>]*class="sub2[^"]*"[^>]*>服务发生<\/a><a [^>]*class="sub2[^"]*"[^>]*>报销<\/a>/.test(nav(s)), '', SPLIT],
   // 子主题的概念图：路径写 全局图 › 主题 › 子主题；自己的数据是实框，另一个子主题的是虚框，小字写「主题 · 子主题」，点了进那个子主题
-  ['#养老系统/concepts/g6/g6-1', (s) => s.includes('<a href="#concepts/g6">服务发生与扣费</a><span class="sep">›</span>服务发生</h1>') && s.includes('data-n="rec"') && Object.keys(stubs(s)).includes('reimb') && s.includes('data-s="g6-2"') && s.includes('服务发生与扣费 · 报销 ›') && inBounds(s), '', SPLIT],
-  ['#养老系统/concepts/g6/g6-1', (s) => s.includes('concepts/g6/g6-2-->'), "openStub({ g: 'g6', s: 'g6-2' }); els.main.innerHTML += '<!--h:' + location.hash + '-->'", SPLIT],
+  ['#样例系统/concepts/g6/g6-1', (s) => s.includes('<a href="#concepts/g6">服务发生与扣费</a><span class="sep">›</span>服务发生</h1>') && s.includes('data-n="rec"') && Object.keys(stubs(s)).includes('reimb') && s.includes('data-s="g6-2"') && s.includes('服务发生与扣费 · 报销 ›') && inBounds(s), '', SPLIT],
+  ['#样例系统/concepts/g6/g6-1', (s) => s.includes('concepts/g6/g6-2-->'), "openStub({ g: 'g6', s: 'g6-2' }); els.main.innerHTML += '<!--h:' + location.hash + '-->'", SPLIT],
   // 别的主题指进来、没写 sub：照数据在哪一份找到子主题
-  ['#养老系统/concepts/g2', (s) => s.includes('data-s="g6-2"') && s.includes('服务发生与扣费 · 报销 ›'), '', SPLIT],
+  ['#样例系统/concepts/g2', (s) => s.includes('data-s="g6-2"') && s.includes('服务发生与扣费 · 报销 ›'), '', SPLIT],
   // 子主题图上指着线：底下那几条从两份子主题概念图里找
-  ['#养老系统/concepts/g6', (s) => s.includes('<!--fine:2-->'), "els.main.innerHTML += '<!--fine:' + fineSubEdges('g6', 'g6-1', 'g6-2').length + '-->'", SPLIT],
+  ['#样例系统/concepts/g6', (s) => s.includes('<!--fine:2-->'), "els.main.innerHTML += '<!--fine:' + fineSubEdges('g6', 'g6-1', 'g6-2').length + '-->'", SPLIT],
   // 地址里的子主题没有：说一句，不抛错
-  ['#养老系统/concepts/g6/g6-9', (s) => s.includes('里没有子主题 g6-9'), '', SPLIT],
+  ['#样例系统/concepts/g6/g6-9', (s) => s.includes('里没有子主题 g6-9'), '', SPLIT],
+  // ---- 业务（模块业务）：三层页签 ----
+  // 默认落在功能、第一组、第一项：页签三层，左边操作意图和要用到的数据，中间核心数据「新记下 → 待核」，动作是箭头上的灰字；用在流程哪一步链过去
+  ['#样例系统/module/g6', (s) => s.includes('class="mtabs l1"') && s.includes('class="mtabs l2"') && s.includes('class="mtabs l3"') && s.includes('<a href="#module/g6/功能" class="on">功能 <small>3</small>')
+    && s.includes('<a href="#module/g6/功能/1/f-1" class="on">登记老人先付的报销') && s.includes('页面上叫「报销」') && s.includes('操作意图') && s.includes('新记下 → 待核') && s.includes('<span class="marr"><i>登记老人先付的报销</i>')
+    && s.includes('href="#flow/g6-01-报销">报销</a> 第 2 步') && !s.includes('顺带留下的'), '', STAGES],
+  // 地址记着点到哪一项：第一组第二项，右边顺带留下的、规则
+  ['#样例系统/module/g6/功能/1/f-2', (s) => s.includes('<a href="#module/g6/功能/1/f-2" class="on">核准报销并记成服务记录') && s.includes('顺带留下的') && s.includes('一行一条') && s.includes('待核 → 已核') && s.includes('只核她签了协议的服务'), '', STAGES],
+  // 第二组：第二层页签换到它，第三层是它的功能
+  ['#样例系统/module/g6/功能/2', (s) => s.includes('<a href="#module/g6/功能/2" class="on">服务记录') && s.includes('<a href="#module/g6/功能/2/f-3" class="on">作废服务记录') && !s.includes('f-1"'), '', STAGES],
+  // 内部流程：起因一个框，后面几个数据变化框，箭头上是条件
+  ['#样例系统/module/g6/内部流程', (s) => s.includes('class="mchain"') && s.includes('起因') && s.includes('<i>一行一条</i>') && s.includes('余额 → 扣过') && (s.match(/class="mc /g) ?? []).length === 3, '', STAGES],
+  // 工作流程：状态图，三个状态、四条线（往后、隔一个、往回），不出画布
+  ['#样例系统/module/g6/工作流程/w-1', (s) => (s.match(/<g class="st">/g) ?? []).length === 3 && (s.match(/class="mv"/g) ?? []).length === 4 && s.includes('页面上叫完成') && s.includes('退回重核') && inBounds(s), '', STAGES],
+  // 待定：页签标红带条数；没答的红框带偏向和按钮，答了的灰框写答案
+  ['#样例系统/module/g6/待定', (s) => s.includes('<a href="#module/g6/待定" class="on red">待定 <small>1 条没答</small>') && s.includes('class="mask pending"') && s.includes('偏向：要') && s.includes('class="mask done"') && s.includes('答：一个月') && s.includes('data-module="g6" data-ask="q-1" data-opt="要"'), '', STAGES],
+  // 单开时点一个答法：只改内存里的那条、重画成答了
+  ['#样例系统/module/g2/待定', (s) => s.includes('class="mask pending"'), ''],
+  ['#样例系统/module/g2/待定', (s) => !s.includes('class="mask pending"') && s.includes('答：不让建'), "answerModule({ module: 'g2', ask: 'q-1', opt: '不让建' })"],
+  // 工作台上点：post 答，带主题、待定号、上下文、记号
+  ['#样例系统/module/g6/待定', (s) => s.includes('<!--posted:{"module":"g6","context":"样例系统","ask":"q-1","text":"要","sig":"abc"}-->'),
+    "answerModule({ module: 'g6', ask: 'q-1', opt: '要' }); els.main.innerHTML += '<!--posted:' + JSON.stringify(__posted) + '-->'", { ...STAGES, WB: { project: 'x' } }],
+  // 没写业务的主题、没有的主题：说一句
+  ['#样例系统/module/g2', (s) => s.includes('这个主题的业务还没写'), '', STAGES],
+  ['#样例系统/module/g9', (s) => s.includes('里没有主题 g9'), '', STAGES],
+  // 左边栏：「业务 · 按主题」一组，有业务的主题一行带红点；在它的页签上这一行亮、组展开
+  ['#样例系统/module/g6/工作流程', (s) => nav(s).includes('data-g="样例系统/module"><span class="tri">▾</span>业务 · 按主题</div><div class="gb"><a href="#样例系统/module/g6" class="sub on">服务发生与扣费<i class="open">1</i></a>'), '', STAGES],
+  // 流程按主题分组、默认折着；没写主题的放「流程 · 没写主题」
+  ['#样例系统/map', (s) => nav(s).includes('data-g="样例系统/flows/g6"><span class="tri">▸</span>流程 · 服务发生与扣费</div><div class="gb" hidden>') && nav(s).includes('data-g="样例系统/flows"><span class="tri">▸</span>流程 · 没写主题</div>') && nav(s).indexOf('核报销') < nav(s).indexOf('旧的'), '', STAGES],
+  ['#样例系统/flow/g6-02-核报销', (s) => nav(s).includes('data-g="样例系统/flows/g6"><span class="tri">▾</span>流程 · 服务发生与扣费</div><div class="gb">'), '', STAGES],
+  // ---- 流程：入口出口、opt/alt、主题 ----
+  // 标题下一排主题：这一份的主题在前加粗，数据卡用到的别的主题在后；数据卡前面写主题名、照主题上色
+  ['#样例系统/flow/g6-01-报销', (s) => s.includes('<div class="ftopics"><a href="#concepts/g6" class="own"') && s.indexOf('>服务发生与扣费</a>') < s.indexOf('>建档与服务协议</a>')
+    && s.includes('<g class="data tpc">') && /<text class="tn"[^>]*>建档与服务协议<\/text><text[^>]*>服务协议<\/text>/.test(s) && inBounds(s), '', STAGES],
+  // 出口：最左边一列，跟它接着的那一步一样高，链到接着的那一份
+  ['#样例系统/flow/g6-01-报销', (s) => { const m = s.match(/<a href="#flow\/g6-02-核报销"><g class="end out"><rect x="10" y="([-\d.]+)"/), st = s.match(/<g class="self" data-id="2"><rect x="([-\d.]+)" y="([-\d.]+)"/)
+    return !!m && !!st && Math.abs(+m[1] - (+st[2] + 10 - 16)) < 1 && s.includes('接着去「核报销」') && +st[1] > 10 + 160 }, '', STAGES],
+  // opt 框包住挨着的两步（1、1a），alt 框里横虚线隔成两格、每格写情况；入口卡在第 1 步旁边；没写 flow 的出口写「出口」
+  ['#样例系统/flow/g6-02-核报销', (s) => { const f = [...s.matchAll(/<g class="frame (opt|alt)"><rect class="f" x="[-\d.]+" y="([-\d.]+)" width="[-\d.]+" height="([-\d.]+)"/g)].map((m) => ({ k: m[1], y: +m[2], h: +m[3] }))
+    const y = (id) => +s.match(new RegExp('<g class="(?:msg|self)" data-id="' + id + '">(?:<rect x="[-\\d.]+" y="|<path d="M [-\\d.]+ )([-\\d.]+)'))[1]
+    return f.length === 2 && f[0].k === 'opt' && f[1].k === 'alt' && f[0].y < y(1) && f[0].y + f[0].h > y('1a') && f[0].y + f[0].h < y('2a') && f[1].y < y('2a') && f[1].y + f[1].h > y('2b') && f[1].y + f[1].h < y(3)
+      && s.includes('票据看不清') && s.includes('［批了］') && s.includes('［不批］') && (s.split('<g class="frame alt">')[1].split('</g>')[0].match(/<line /g) ?? []).length === 1
+      && s.includes('从「报销」来') && s.includes('class="end out"') && s.includes('>出口<') && inBounds(s) }, '', STAGES],
+  // 指着 1a 这一步：认得字的步号
+  ['#样例系统/flow/g6-02-核报销', (s) => s.includes('<!--hover-->'), "els.main.innerHTML += '<!--hover-->'", STAGES],
+  // ---- 概念图 ----
+  // 同样两样数据之间一来一回两条线：只画一条，两句话接起来，做事的角色并在一起
+  ['#样例系统/concepts/g2', (s) => (s.match(/<g class="ed/g) ?? []).length === 1 && s.includes('签了记进档案；') && s.includes('协议号') && s.includes('data-r="照护伙伴"') && s.includes('data-r="老人"'), '', STAGES],
+  // 两侧虚框：每一列上下居中，对着主题框的正中
+  ['#concepts/g6', (s) => { const f = grp(s), mid = f.y + f.h / 2, cols = {}
+    for (const m of s.matchAll(/<g class="stub"[^>]*><rect x="([-\d.]+)" y="([-\d.]+)" width="[\d.]+" height="([\d.]+)"/g)) (cols[m[1]] ??= []).push({ y: +m[2], h: +m[3] })
+    const off = Object.values(cols).map((c) => Math.abs((Math.min(...c.map((b) => b.y)) + Math.max(...c.map((b) => b.y + b.h))) / 2 - mid))
+    return off.length >= 2 && off.every((d) => d < 1) }, '', G6NOW],
+  // 线全是曲线：画出来的线里没有折线（L 后面接 L）
+  ['#concepts/g6', (s) => { const ds = [...s.matchAll(/<g class="ed[^"]*" data-e="\d+"><path class="vis" d="([^"]+)"/g)].map((m) => m[1]); return ds.length > 0 && ds.every((d) => !/L [-\d.]+ [-\d.]+ L /.test(d)) && ds.some((d) => d.includes('Q')) }, '', G6NOW],
+  // 小卡的虚线：从文字框的边上出发（不在角上），微微弯
+  ['#concepts/g6', (s) => { const ls = [...s.matchAll(/<g class="lb"><path d="M ([-\d.]+) ([-\d.]+) Q [^"]+"[^>]*\/><rect x="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"/g)]
+    return ls.length > 0 && ls.every((m) => { const [x, y, rx, ry, w, h] = m.slice(1).map(Number), onV = (Math.abs(x - rx) < 0.5 || Math.abs(x - rx - w) < 0.5) && y > ry + 1 && y < ry + h - 1, onH = (Math.abs(y - ry) < 0.5 || Math.abs(y - ry - h) < 0.5) && x > rx + 1 && x < rx + w - 1; return onV || onH }) }, '', G6NOW],
 ];
 let bad = 0;
 for (const [h, ok, tail, data] of cases) {
