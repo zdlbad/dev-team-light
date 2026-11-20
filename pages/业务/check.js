@@ -371,9 +371,22 @@ const cases = [
   ['#样例系统/module/g9', (s) => s.includes('里没有主题 g9'), '', STAGES],
   // 左边栏：「业务 · 按主题」一组，有业务的主题一行带红点；在它的页签上这一行亮、组展开
   ['#样例系统/module/g6/工作流程', (s) => nav(s).includes('data-g="样例系统/module"><span class="tri">▾</span>业务 · 按主题</div><div class="gb"><a href="#样例系统/module/g6" class="sub on">服务发生与扣费<i class="open">1</i></a>'), '', STAGES],
-  // 流程按主题分组、默认折着；没写主题的放「流程 · 没写主题」
-  ['#样例系统/map', (s) => nav(s).includes('data-g="样例系统/flows/g6"><span class="tri">▸</span>流程 · 服务发生与扣费</div><div class="gb" hidden>') && nav(s).includes('data-g="样例系统/flows"><span class="tri">▸</span>流程 · 没写主题</div>') && nav(s).indexOf('核报销') < nav(s).indexOf('旧的'), '', STAGES],
-  ['#样例系统/flow/g6-02-核报销', (s) => nav(s).includes('data-g="样例系统/flows/g6"><span class="tri">▾</span>流程 · 服务发生与扣费</div><div class="gb">'), '', STAGES],
+  // 流程收进大组「流程 · 按主题」，里面一个主题一个小组，没写主题的放「没写主题」，都默认折着
+  ['#样例系统/map', (s) => nav(s).includes('data-g="样例系统/flows"><span class="tri">▸</span>流程 · 按主题</div><div class="gb" hidden>') && nav(s).includes('data-g="样例系统/flows/g6"><span class="tri">▸</span>服务发生与扣费</div><div class="gb" hidden>') && nav(s).includes('data-g="样例系统/flows/-"><span class="tri">▸</span>没写主题</div>') && nav(s).indexOf('核报销') < nav(s).indexOf('旧的'), '', STAGES],
+  // 打开某份流程：它所在的大组、小组都自己展开，别的小组照旧折着
+  ['#样例系统/flow/g6-02-核报销', (s) => nav(s).includes('data-g="样例系统/flows"><span class="tri">▾</span>流程 · 按主题</div><div class="gb">') && nav(s).includes('data-g="样例系统/flows/g6"><span class="tri">▾</span>服务发生与扣费</div><div class="gb">') && nav(s).includes('data-g="样例系统/flows/-"><span class="tri">▸</span>没写主题</div><div class="gb" hidden>'), '', STAGES],
+  // 折着时大组、小组右边都是几条没答
+  ['#样例系统/map', (s) => nav(s).includes('流程 · 按主题<i class="open">5</i>') && nav(s).includes('服务发生与扣费<i class="open">3</i>') && nav(s).includes('没写主题<i class="open">2</i>'), '', { ...STAGES, OPEN: { '样例系统/g6-01-报销': 1, '样例系统/g6-02-核报销': 2, '样例系统/99-旧的': 2 } }],
+  // 功能图：要用到的数据，名字下面一行灰字是解释；只写名字的旧写法照认
+  ['#样例系统/module/g2/功能/1/f-1', (s) => s.includes('<b>决定通知书</b><div class="note">政府评估后发给她的那一份'), ''],
+  ['#样例系统/module/g6', (s) => s.includes('<div class="mc data"><b>外部发票</b></div>'), '', STAGES],
+  // 业务概述：页签上面，默认看业务背景；换一栏、收起，换了主题照旧记着
+  ['#样例系统/module/g2', (s) => s.includes('<div class="intro"><div class="ih" data-intro-shut="1"><span class="tri">▾</span>业务概述</div>') && s.includes('<button data-intro-tab="context" class="on">业务背景</button>') && s.includes('政府按评估结果') && s.indexOf('class="intro"') < s.indexOf('class="mtabs l1"'), ''],
+  ['#样例系统/module/g2', (s) => s.includes('<button data-intro-tab="users" class="on">使用角色</button>') && s.includes('<b>照护伙伴</b>') && s.includes('<li>照决定通知书给她建档</li>'), "introSet({ tab: 'users' })"],
+  ['#样例系统/module/g2', (s) => s.includes('<span class="tri">▸</span>业务概述</div></div>') && !s.includes('class="itabs"'), "introSet({ shut: true })"],
+  ['#样例系统/module/g6', (s) => s.includes('<!--记着:usual,true-->'), "introSet({ tab: 'usual', shut: true }); useCx(context); els.main.innerHTML += '<!--记着:' + introState.tab + ',' + introState.shut + '-->'", STAGES],
+  // 没写业务概述的：不画这一块
+  ['#样例系统/module/g6', (s) => !s.includes('class="intro"'), "introSet({ shut: false })", STAGES],
   // ---- 流程：入口出口、opt/alt、主题 ----
   // 标题下一排主题：这一份的主题在前加粗，数据卡用到的别的主题在后；数据卡前面写主题名、照主题上色
   ['#样例系统/flow/g6-01-报销', (s) => s.includes('<div class="ftopics"><a href="#concepts/g6" class="own"') && s.indexOf('>服务发生与扣费</a>') < s.indexOf('>建档与服务协议</a>')

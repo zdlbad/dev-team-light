@@ -45,8 +45,10 @@ function clean() {
   write(A + '业务/概念/g2/g2-1.json', { topic: 'g2', sub: 'g2-1', title: '入账', concepts: [], external: [], edges: [] })
   write(A + '业务/概念/g2/g2-2.json', { topic: 'g2', sub: 'g2-2', title: '对账', concepts: [], external: [], edges: [] })
   // 模块业务：g1 一份；两份流程接上：开户的出口接存钱的入口
-  write(A + '业务/模块业务/g1.json', { topic: 'g1', title: '开户', groups: [{ title: '账户', functions: [
-    { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '账户', to: '开着' }, in: ['开户表'], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
+  write(A + '业务/模块业务/g1.json', { topic: 'g1', title: '开户',
+    intro: { context: '银行替人存钱', duty: '管开户，不管存取', concepts: [{ title: '账户', note: '一人存钱的那一份' }], users: [{ who: '柜员', aim: '开户', steps: ['照开户表开立账户'] }], usual: ['柜员照开户表开立账户'] },
+    groups: [{ title: '账户', functions: [
+    { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '这位客户的账户', to: '账户开着，可以存钱' }, in: [{ title: '开户表', note: '客户填好交来的那一张' }], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
     chains: [{ id: 'c-1', title: '开了以后', after: { title: '账户', to: '开着' }, then: [{ kind: '新记录', title: '卡' }] }],
     workflows: [{ id: 'w-1', title: '账户', states: [{ id: 's-1', title: '开着' }, { id: 's-2', title: '销了' }], moves: [{ from: 's-1', to: 's-2', label: '销户' }] }],
     asks: [{ id: 'q-1', q: '一人能开几个？', lean: '一个', options: ['一个', '不限'] }] })
@@ -117,6 +119,16 @@ broken('功能没写核心数据', () => edit(M1, (d) => { delete fn1(d).subject
 broken('功能没写操作意图', () => edit(M1, (d) => { fn1(d).intent = '' }), '没写操作意图')
 broken('功能指着的流程步没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '01-开户', step: 9 }] }), '「01-开户」第 9 步没有')
 broken('功能指着的流程没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '99-没有', step: 1 }] }), '「99-没有」在 业务/流程/ 下没有')
+broken('要用到的数据没写名字', () => edit(M1, (d) => { fn1(d).in.push({ note: '没名字' }) }), '功能 f-1（开立账户）要用到的数据有一样没写名字')
+clean(); edit(M1, (d) => { fn1(d).in = ['开户表', { title: '身份证' }] })
+r = run()
+check('要用到的数据没写解释或例子：只提醒，只写名字的旧写法也认', r.code === 0 && r.out.includes('要用到的「开户表」没写解释或例子') && r.out.includes('要用到的「身份证」没写解释或例子'), r.out)
+clean(); edit(M1, (d) => { delete d.intro })
+r = run()
+check('没写介绍：只提醒', r.code === 0 && r.out.includes('没写介绍（intro）'), r.out)
+clean(); edit(M1, (d) => { delete d.intro.usual; d.intro.concepts = []; d.intro.users.push({ who: '主管', aim: '批' }) })
+r = run()
+check('介绍缺了哪几样、使用角色没写步骤：只提醒', r.code === 0 && r.out.includes('介绍缺了：核心概念（concepts）、一般怎么用（usual）') && r.out.includes('介绍里的「主管」没写按先后做哪几件事'), r.out)
 broken('内部流程号重复', () => edit(M1, (d) => d.chains.push({ ...d.chains[0] })), '内部流程号重复：c-1')
 broken('工作流程的线一头不是状态', () => edit(M1, (d) => d.workflows[0].moves.push({ from: 's-2', to: 's-9', label: 'x' })), 's-9 不是它的状态')
 broken('模块业务的待定号重复', () => edit(M1, (d) => d.asks.push({ id: 'q-1', q: '又一个？' })), '问题号重复：q-1', 'g1.json')

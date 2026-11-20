@@ -646,37 +646,68 @@ const overlaps = (a, b) => !(a.x + a.w < b.x - 8 || b.x + b.w < a.x - 8 || a.y +
 const TRIES_ON = [[0.5, 0, -44], [0.5, 0, 44], [0.35, 0, -44], [0.65, 0, -44], [0.35, 0, 44], [0.65, 0, 44], [0.5, 0, -80], [0.5, 0, 80]]
 // 字不压在线上，有虚线指着，上下左右哪儿空放哪儿
 const TRIES_AROUND = [[0.5, -90, -44], [0.5, 90, -44], [0.5, -90, 44], [0.5, 90, 44], [0.35, -90, -44], [0.65, 90, -44], [0.35, -90, 44], [0.65, 90, 44], [0.5, -140, -60], [0.5, 140, -60], [0.5, -140, 60], [0.5, 140, 60], [0.2, -90, -44], [0.8, 90, -44], [0.2, -90, 44], [0.8, 90, 44], [0.5, 0, -80], [0.5, 0, 80]]
-/** 这一点是不是贴着别的线（交叉处附近） */
+/** 一条线在一串 t 上取的点，连同这些点占的范围（x1、y1、x2、y2）。一条线、一种取法只算一次，记在线上。
+ *  near 是查「贴着别的线」用的（每 0.05 取一点），hit 是查「穿过框」「虚线穿线」用的（从 0.02 起每 0.03 取一点） */
+const SAMPLED = new WeakMap()
+function sampled(c, kind) {
+  let m = SAMPLED.get(c)
+  if (!m) SAMPLED.set(c, (m = {}))
+  if (m[kind]) return m[kind]
+  const pts = []
+  if (kind === 'near') for (let t = 0.05; t < 1; t += 0.05) pts.push(c.at(t))
+  else for (let t = 0.02; t < 1; t += 0.03) pts.push(c.at(t))
+  let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity
+  for (const q of pts) { if (q.x < x1) x1 = q.x; if (q.x > x2) x2 = q.x; if (q.y < y1) y1 = q.y; if (q.y > y2) y2 = q.y }
+  return (m[kind] = { pts, x1, y1, x2, y2 })
+}
+/** 这一点是不是贴着别的线（交叉处附近）。离一条线的范围都超过 dist 的，那条线不用逐点比 */
 function nearOther(p, others, dist = 26) {
-  for (const o of others ?? []) for (let t = 0.05; t < 1; t += 0.05) { const q = o.at(t); if (Math.hypot(q.x - p.x, q.y - p.y) < dist) return true }
+  for (const o of others ?? []) {
+    const s = sampled(o, 'near')
+    if (p.x < s.x1 - dist || p.x > s.x2 + dist || p.y < s.y1 - dist || p.y > s.y2 + dist) continue
+    for (const q of s.pts) if (Math.hypot(q.x - p.x, q.y - p.y) < dist) return true
+  }
   return false
 }
-/** 框有没有被哪条线穿过 */
+/** 框有没有被哪条线穿过。线的范围碰不到框的，不用逐点比 */
 function lineHits(box, curves) {
   const b = { x: box.x - 6, y: box.y - 6, w: box.w + 12, h: box.h + 12 }
-  for (const c of curves ?? []) for (let t = 0.02; t < 1; t += 0.03) { const q = c.at(t); if (q.x >= b.x && q.x <= b.x + b.w && q.y >= b.y && q.y <= b.y + b.h) return true }
+  for (const c of curves ?? []) {
+    const s = sampled(c, 'hit')
+    if (s.x2 < b.x || s.x1 > b.x + b.w || s.y2 < b.y || s.y1 > b.y + b.h) continue
+    for (const q of s.pts) if (q.x >= b.x && q.x <= b.x + b.w && q.y >= b.y && q.y <= b.y + b.h) return true
+  }
   return false
 }
 const RINGS = [[-90, -50], [90, -50], [-90, 50], [90, 50], [0, -60], [0, 60], [-140, 0], [140, 0], [-150, -80], [150, -80], [-150, 80], [150, 80], [0, -110], [0, 110], [-220, 0], [220, 0], [-220, -100], [220, -100], [-220, 100], [220, 100], [0, -170], [0, 170], [-300, 0], [300, 0], [-300, -140], [300, -140], [-300, 140], [300, 140], [0, -230], [0, 230], [-150, -200], [150, -200], [-150, 200], [150, 200]]
 const TS = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]
-/** 线上离这个框最近、又不挨着别的线的那一点：虚线就连到这儿 */
-function nearestAnchor(cv, box, others) {
+/** 线上不挨着别的线的那几点（从 0.12 到 0.88 每 0.04 取一点）：只看线，跟卡放在哪无关 */
+function freeAnchors(cv, others) {
+  const free = []
+  for (let t = 0.12; t <= 0.88; t += 0.04) { const p = cv.at(t); if (!nearOther(p, others)) free.push(p) }
+  return free
+}
+/** 线上离这个框最近、又不挨着别的线的那一点：虚线就连到这儿。free 是 freeAnchors 算好的，同一张卡试好几处时传进来，不重算 */
+function nearestAnchor(cv, box, others, free = freeAnchors(cv, others)) {
   const cx = box.x + box.w / 2, cy = box.y + box.h / 2
   let best = null
-  for (let t = 0.12; t <= 0.88; t += 0.04) {
-    const p = cv.at(t)
-    if (nearOther(p, others)) continue
+  for (const p of free) {
     const d = Math.hypot(p.x - cx, p.y - cy)
     if (!best || d < best.d) best = { p, d }
   }
   return best?.p ?? cv.at(0.5)
 }
-/** 虚线这一段有没有穿过别的线 */
+/** 虚线这一段有没有穿过别的线。线的范围离这一段都超过 9 的，不用逐点比 */
 function leaderCrosses(a, b, others) {
   const dx = b.x - a.x, dy = b.y - a.y, len2 = dx * dx + dy * dy || 1
-  for (const c of others ?? []) for (let t = 0.02; t < 1; t += 0.03) {
-    const q = c.at(t), u = Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.y - a.y) * dy) / len2))
-    if (Math.hypot(q.x - (a.x + u * dx), q.y - (a.y + u * dy)) < 9) return true
+  const x1 = Math.min(a.x, b.x) - 9, x2 = Math.max(a.x, b.x) + 9, y1 = Math.min(a.y, b.y) - 9, y2 = Math.max(a.y, b.y) + 9
+  for (const c of others ?? []) {
+    const s = sampled(c, 'hit')
+    if (s.x2 < x1 || s.x1 > x2 || s.y2 < y1 || s.y1 > y2) continue
+    for (const q of s.pts) {
+      const u = Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.y - a.y) * dy) / len2))
+      if (Math.hypot(q.x - (a.x + u * dx), q.y - (a.y + u * dy)) < 9) return true
+    }
   }
   return false
 }
@@ -686,10 +717,15 @@ function placeLabel(cv, lines, taken, tries = TRIES_ON, reserveAbove = 0, others
   const all = [cv, ...others]
   const cands = [...tries]
   for (const [dx, dy] of RINGS) for (const t of TS) cands.push([t, dx, dy])
+  let free = null   // 线上不挨着别的线的点，头一次要用时才算，这张卡只算一次
   for (const [t, dx, dy] of cands) {
     const p = cv.at(t)
     const probe = labelBox(p.x + dx, p.y + dy, lines, null)
-    const lb = labelBox(p.x + dx, p.y + dy, lines, nearestAnchor(cv, probe.box, others))
+    // 框的大小和位置跟虚线连哪无关，压框先拿它算；压了框的，分数里穿线、虚线穿线只会往上加，已经不小于最好的那处就不必细算
+    const need0 = reserveAbove ? { x: probe.box.x, y: probe.box.y - reserveAbove, w: probe.box.w, h: probe.box.h + reserveAbove } : probe.box
+    const boxes0 = taken.filter((b) => overlaps(b, need0)).length
+    if (boxes0 && best && boxes0 * 10 + Math.hypot(dx, dy) / 100 >= best.score) continue
+    const lb = labelBox(p.x + dx, p.y + dy, lines, nearestAnchor(cv, probe.box, others, (free ??= freeAnchors(cv, others))))
     const need = reserveAbove ? { x: lb.box.x, y: lb.box.y - reserveAbove, w: lb.box.w, h: lb.box.h + reserveAbove } : lb.box
     const boxes = taken.filter((b) => overlaps(b, need)).length
     const hits = lineHits(need, all) ? 1 : 0
@@ -991,9 +1027,11 @@ function memberView(a, m) {
       <div class="flow" id="flow">${flow}</div>
       <div class="agg"><div class="cap">${esc(a.title)} 里的${esc(m.kind)}</div><div class="body">${bhs}<div class="cls" id="cls">${cls}</div></div></div>
     </div></div>`
-  if (m.kind === '值对象') return `<p class="sub">${esc(a.title)} 里的值对象：整个换，不改里面；没有状态和行为。</p><div class="card">${m.sources ? attrPane : `<div class="attr"><div class="agg"><div class="cap">${esc(a.title)} 里的值对象</div><div class="cls">${cls}</div></div></div>`}</div>`
+  // 标题下面写这个成员自己的说明（desc）；没写的才用一句通用的
+  const own = m.desc ? esc(m.desc) : null
+  if (m.kind === '值对象') return `<p class="sub">${own ?? esc(a.title) + ' 里的值对象：整个换，不改里面；没有状态和行为。'}</p><div class="card">${m.sources ? attrPane : `<div class="attr"><div class="agg"><div class="cap">${esc(a.title)} 里的值对象</div><div class="cls">${cls}</div></div></div>`}</div>`
   const lifePane = m.states?.length ? `<div class="who">只看它自己怎么变：箭头旁是让它变的行为</div><div class="diagram">${drawStates({ ...m, transitions: m.transitions ?? [] })}</div><div class="legend">${LEG.final}</div>` : '<p class="none">它还没有状态。</p>'
-  return `<p class="sub">${esc(a.title)} 里的${esc(m.kind)}。</p>
+  return `<p class="sub">${own ?? esc(a.title) + ' 里的' + esc(m.kind) + '。'}</p>
     <div class="tabs"><button data-t="attr"${tab === 'attr' ? ' class="on"' : ''}>属性 · 行为</button><button data-t="life"${tab === 'life' ? ' class="on"' : ''}>状态</button></div>
     <div class="card">${tab === 'life' ? lifePane : attrPane}</div>`
 }

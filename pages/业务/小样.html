@@ -26,6 +26,23 @@ nav .gn.fold{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:
 nav .gn.fold:hover{color:var(--ink-2)}
 nav .gn .tri{display:inline-block;width:12px;font-size:10px}
 nav .gn .open{margin-left:auto}
+/* 大组里套的小组（流程 · 按主题 → 一个主题一组）：组名和组里的流程各缩进一层 */
+nav .gb .gn.fold{padding-left:30px}
+nav .gb .gb a.sub{padding-left:46px}
+/* 业务概述：放在页签上面，点标题整块收起；一排五个页签，一次看一栏 */
+.intro{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:0 0 12px;max-width:1100px}
+.intro .ih{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;user-select:none;font-weight:600;font-size:14px}
+.intro .ih .tri{font-size:10px;color:var(--ink-3);width:12px}
+.intro .itabs{display:flex;flex-wrap:wrap;gap:2px;padding:0 10px;border-bottom:1px solid var(--line)}
+.intro .itabs button{font:inherit;font-size:13px;padding:5px 12px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:none;color:var(--ink-2);cursor:pointer;margin-bottom:-1px}
+.intro .itabs button.on{background:var(--panel);border-color:var(--line);color:var(--ink);font-weight:600}
+.intro .ib{padding:10px 16px 12px;font-size:13.5px;color:var(--ink-2);line-height:1.6}
+.intro .ib ul,.intro .ib ol{margin:0;padding-left:20px}.intro .ib li{margin:2px 0}
+.intro .ib b{color:var(--ink)}
+.intro .who{display:flex;flex-wrap:wrap;gap:10px}.intro .who>div{border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:220px;max-width:340px}
+.intro .who .aim{color:var(--ink-3);font-size:12.5px;margin:2px 0 4px}
+.intro .none{color:var(--ink-3)}
+.mc.data .note{font-size:12px;color:var(--ink-3);margin-top:2px}
 h1{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
 h1 a{color:var(--accent);text-decoration:none;font-size:14px;font-weight:400}
 h1 .sep{color:var(--ink-3);font-weight:400;font-size:16px}
@@ -231,7 +248,8 @@ const post = (action, body) => fetch('api/' + action, { method: 'POST', headers:
 
 // 4. 模块业务/<主题>.json（一个主题一份，页面上叫「业务」）：这个主题自己的业务逻辑，换一家公司来用也不变
 //    { topic, title, summary,
-//      groups: [{ title, functions: [{ id, title, called?, does, intent, subject: { title, from?, to }, in: [数据名], out: [{ kind, title, when? }], rules?, uses?: [{ flow, step }], source? }] }],
+//      intro?: { context, duty, concepts: [{ title, note }], users: [{ who, aim, steps: [一件一句] }], usual: [一步一句] },   业务概述，放在页签上面
+//      groups: [{ title, functions: [{ id, title, called?, does, intent, subject: { title, from?, to }, in: [{ title, note }]（只写名字的旧写法也认）, out: [{ kind, title, when? }], rules?, uses?: [{ flow, step }], source? }] }],
 //      chains: [{ id, title, after: { title, from?, to, when? }, then: [{ kind, title, from?, to?, when?, note? }] }],     内部流程：一样数据变了，接着哪几样怎么变
 //      workflows: [{ id, title, states: [{ id, title, called? }], moves: [{ from, to, label }], note? }],                 工作流程：一种单据一份状态图
 //      asks?: [{ id, q, lean?, options?, answer?, answeredAt? }] }                                                      待定：标红，点一个答法就是答了
@@ -343,7 +361,7 @@ const SAMPLE_LAYOUT = {
           asks: [{ id: 'a-1', q: '一季的行太多时分几页还是一张长表？', lean: '分页，每页表头重复', options: ['分页', '一张长表'], by: 'UI 设计', screen: 'N-09/form' }] },
         { id: '2', from: 'rp', to: 'sa', title: '上传申报表', date: '02/10/2026', data: ['申报表'] } ] } ] }
 
-const SAMPLE_MODULES = { g2: {"topic":"g2","title":"参与者档案与她名下的钱","summary":"注册服务方替老人留一份档案，政府开在她名下的钱也记在这里。哪家公司来用都一样：档案按 My Aged Care 编号认，钱按批了的服务类型分账户。","groups":[{"title":"参与者档案","functions":[{"id":"f-1","title":"照决定通知书建立参与者档案","called":"建档","does":"照决定通知书记下她批了哪一级、哪条路径","intent":"老人交来决定通知书，给她留一份档案，以后签协议、分资金、记服务都记在这一份上。","subject":{"title":"参与者档案","to":"已建档"},"in":["决定通知书","支持计划"],"out":[],"rules":["一位老人只有一份档案，按 My Aged Care 编号认"],"uses":[{"flow":"01-老人注册","step":5}],"source":"手册 v4.4 §3 Participant"},{"id":"f-2","title":"在参与者档案上记下签了的服务协议","does":"记下她跟哪家签了协议、哪天签的","intent":"她跟注册服务方签了服务协议，档案上要看得出她已经签了、签的是哪一份。","subject":{"title":"参与者档案","from":"已建档","to":"已签协议"},"in":["服务协议"],"out":[],"uses":[{"flow":"01-老人注册","step":6}]},{"id":"f-3","title":"记下分到资金并开出她名下的基金","does":"记下分到资金那天和分到的是全额还是一部分，开出她名下的基金","intent":"卫生部来信说她分到了资金，从这一天起钱开在她名下，后面的服务才能从这笔钱里扣。","subject":{"title":"参与者档案","from":"已签协议","to":"分到资金"},"in":["分资金的信"],"out":[{"kind":"新记录","title":"她名下的基金"},{"kind":"新记录","title":"基金账户","when":"批了几类服务就开几个"}],"uses":[{"flow":"01-老人注册","step":8}]}]},{"title":"基金账户","functions":[{"id":"f-4","title":"照申报行从基金账户扣款","does":"按申报行上她的编号和服务类型，从对应的账户扣","intent":"服务做了、申报了，这一行的钱要从她名下对应的那个账户里扣掉。","subject":{"title":"基金账户","from":"扣款前的余额","to":"扣款后的余额"},"in":["申报行"],"out":[{"kind":"状态改变","title":"申报行","when":"扣成了就记成已扣"}],"rules":["只能扣她批了的那一类服务的账户"]}]}],"chains":[{"id":"c-1","title":"分到资金以后","after":{"title":"参与者档案","from":"已签协议","to":"分到资金"},"then":[{"kind":"新记录","title":"她名下的基金","to":"开着"},{"kind":"新记录","title":"基金账户","to":"可以扣款","when":"批了几类服务就开几个","note":"一笔基金一个账户"}]}],"workflows":[{"id":"w-1","title":"参与者档案","states":[{"id":"s-1","title":"已建档"},{"id":"s-2","title":"已签协议"},{"id":"s-3","title":"分到资金"},{"id":"s-4","title":"已停用","called":"离开"}],"moves":[{"from":"s-1","to":"s-2","label":"签了服务协议"},{"from":"s-2","to":"s-3","label":"卫生部来信分到资金"},{"from":"s-1","to":"s-3","label":"还没签协议就分到资金"},{"from":"s-3","to":"s-4","label":"她走了或者换了注册服务方"}],"note":"档案停用以后不删，留着查"}],"asks":[{"id":"q-1","q":"档案上的分级、路径跟决定通知书不一样时，是不让建，还是先建了再标出来？","lean":"不让建，等通知书改了再建","options":["不让建","先建了再标出来"]}]} }
+const SAMPLE_MODULES = { g2: {"topic":"g2","title":"参与者档案与她名下的钱","summary":"注册服务方替每位老人留一份档案，并管着政府开在她名下的钱。","intro":{"context":"居家养老里，政府按评估结果给老人分资金，钱开在她名下，由她选的注册服务方替她管、替她用。这块业务是居家养老里建档和管钱的那一部分。","duty":"管每位老人的档案和她名下的基金、账户：建档，记下她签了协议、分到了资金，按申报从账户扣款。不管评估怎么做、服务怎么排、发票怎么开。","concepts":[{"title":"参与者档案","note":"注册服务方替一位老人留的记录，写着她批了什么、走到了哪一步。"},{"title":"她名下的基金","note":"政府开在老人名下、替她保管的一笔钱。"},{"title":"基金账户","note":"一笔基金按批了的服务类型分开的账户，扣款只从对应的那一个扣。"}],"users":[{"who":"照护伙伴","aim":"替老人把档案建好、记准，钱到了就能开始用","steps":["照决定通知书给她建档","她签了服务协议，在档案上记下来","分到资金那天记下来，开出她名下的基金"]},{"who":"财务","aim":"服务做完、申报以后，把钱从对的账户里扣掉","steps":["照申报行从基金账户扣款"]}],"usual":["照护伙伴照决定通知书给老人建档","她签了服务协议，档案上记下","卫生部来信说分到了资金，开出她名下的基金和账户","做了服务、申报以后，从对应的账户扣款"]},"groups":[{"title":"参与者档案","functions":[{"id":"f-1","title":"照决定通知书建立参与者档案","called":"建档","does":"照决定通知书记下她批了哪一级、哪条路径","intent":"老人交来决定通知书，给她留一份档案，以后签协议、分资金、记服务都记在这一份上。","subject":{"title":"这位老人的参与者档案","to":"档案建好了，记着她批到的分级和路径"},"in":[{"title":"决定通知书","note":"政府评估后发给她的那一份，上面写着分级和路径"},{"title":"支持计划","note":"同一次评估一起发的，写着批了她哪些服务类型"}],"out":[],"rules":["一位老人只有一份档案，按 My Aged Care 编号认"],"uses":[{"flow":"01-老人注册","step":5}],"source":"手册 v4.4 §3 Participant"},{"id":"f-2","title":"在参与者档案上记下签了的服务协议","does":"记下她跟哪家签了协议、哪天签的","intent":"她跟注册服务方签了服务协议，档案上要看得出她已经签了、签的是哪一份。","subject":{"title":"这位老人的参与者档案","from":"档案建好了，还没记她签协议","to":"档案上记着她签了哪一份服务协议、哪天签的"},"in":[{"title":"服务协议","note":"她跟注册服务方签的那一份，带签约的日期"}],"out":[],"uses":[{"flow":"01-老人注册","step":6}]},{"id":"f-3","title":"记下分到资金并开出她名下的基金","does":"记下分到资金那天和分到的是全额还是一部分，开出她名下的基金","intent":"卫生部来信说她分到了资金，从这一天起钱开在她名下，后面的服务才能从这笔钱里扣。","subject":{"title":"这位老人的参与者档案","from":"档案上记着她签了协议，还没分到资金","to":"档案上记着她哪天分到资金、分到的是全额还是一部分"},"in":[{"title":"分资金的信","note":"卫生部发的那封信，写着分到资金的日期，分到的是全额还是一部分"}],"out":[{"kind":"新记录","title":"她名下的基金"},{"kind":"新记录","title":"基金账户","when":"批了几类服务就开几个"}],"uses":[{"flow":"01-老人注册","step":8}]}]},{"title":"基金账户","functions":[{"id":"f-4","title":"照申报行从基金账户扣款","does":"按申报行上她的编号和服务类型，从对应的账户扣","intent":"服务做了、申报了，这一行的钱要从她名下对应的那个账户里扣掉。","subject":{"title":"她名下这一类服务的基金账户","from":"账户里是扣款之前的余额","to":"账户里扣掉了这一行申报的金额"},"in":[{"title":"申报行","note":"要扣的是哪一行：带着她的编号、服务类型和金额（澳元）"}],"out":[{"kind":"状态改变","title":"申报行","when":"扣成了就记成已扣"}],"rules":["只能扣她批了的那一类服务的账户"]}]}],"chains":[{"id":"c-1","title":"分到资金以后","after":{"title":"参与者档案","from":"已签协议","to":"分到资金"},"then":[{"kind":"新记录","title":"她名下的基金","to":"开着"},{"kind":"新记录","title":"基金账户","to":"可以扣款","when":"批了几类服务就开几个","note":"一笔基金一个账户"}]}],"workflows":[{"id":"w-1","title":"参与者档案","states":[{"id":"s-1","title":"已建档"},{"id":"s-2","title":"已签协议"},{"id":"s-3","title":"分到资金"},{"id":"s-4","title":"已停用","called":"离开"}],"moves":[{"from":"s-1","to":"s-2","label":"签了服务协议"},{"from":"s-2","to":"s-3","label":"卫生部来信分到资金"},{"from":"s-1","to":"s-3","label":"还没签协议就分到资金"},{"from":"s-3","to":"s-4","label":"她走了或者换了注册服务方"}],"note":"档案停用以后不删，留着查"}],"asks":[{"id":"q-1","q":"档案上的分级、路径跟决定通知书不一样时，是不让建，还是先建了再标出来？","lean":"不让建，等通知书改了再建","options":["不让建","先建了再标出来"]}]} }
 // 工作台给 BIZ；只给了 MAP/CONCEPTS/FLOWS 的旧数据当第一个上下文的；单开时用写死的两个上下文
 const BIZ = DATA.BIZ ?? (DATA.MAP ? { [(DATA.CONTEXTS ?? ['样例系统'])[0]]: { MAP: DATA.MAP, CONCEPTS: DATA.CONCEPTS ?? {}, FLOWS: DATA.FLOWS ?? [] } }
   : { '样例系统': { MAP: SAMPLE_MAP, CONCEPTS: SAMPLE_CONCEPTS, FLOWS: SAMPLE_FLOWS, MODULES: SAMPLE_MODULES }, '排版系统': SAMPLE_LAYOUT })
@@ -418,12 +436,12 @@ const go = (v) => { location.hash = context + '/' + v }
 // 左边栏的组（全局、概念、流程）：默认折叠，当前这页所在的组切过来时自动展开；点组名折叠展开，记在本机
 const NAV_KEY = 'dev-team-lite/业务/左边栏开着的组'
 const navFold = (() => { try { return JSON.parse(localStorage.getItem(NAV_KEY)) ?? {} } catch { return {} } })()
-let navAutoAt = null    // 上一次替哪一页自动展开过它的组
+const navAutoAt = {}   // 每个组上一次替哪一页自动展开过：按组分别记，套着的大组、小组各记各的
 const navSave = () => { try { localStorage.setItem(NAV_KEY, JSON.stringify(navFold)) } catch {} }
-// links: [{ v, html }]；badge 是折叠时组名右边的红点数
+// links: [{ v, html }]，套小组的一项写 vs（小组里所有链接的视图）；badge 是折叠时组名右边的红点数
 function navGroup(cx, key, title, links, badge = 0) {
-  const k = cx + '/' + key, here = cx === context && links.some((l) => l.v === view || view.startsWith(l.v + '/'))
-  if (here && navAutoAt !== context + '/' + view) { navFold[k] = true; navAutoAt = context + '/' + view }
+  const k = cx + '/' + key, here = cx === context && links.some((l) => (l.vs ?? [l.v]).some((v) => v === view || view.startsWith(v + '/')))
+  if (here && navAutoAt[k] !== context + '/' + view) { navFold[k] = true; navAutoAt[k] = context + '/' + view }
   const open = !!navFold[k]
   return `<div class="gn fold" data-g="${esc(k)}"><span class="tri">${open ? '▾' : '▸'}</span>${esc(title)}${!open && badge ? `<i class="open">${badge}</i>` : ''}</div><div class="gb"${open ? '' : ' hidden'}>${links.map((l) => l.html).join('')}</div>`
 }
@@ -446,19 +464,28 @@ Shell.init({ contexts: CONTEXTS, page: {
     const flowLink = (f) => { const n = openOf(cx, f.file), v = 'flow/' + f.file; return { v, html: `<a href="${esc(href(v))}" class="sub${on(v) ? ' on' : ''}">${esc(String(f.title ?? f.file).split('：')[0])}${red(n)}</a>` } }
     // 业务：有模块业务的主题一个一行，进去是页签；当前在它的哪个页签上都算这一行
     const modLinks = topics.filter((t) => mods[t.id]).map((t) => { const v = 'module/' + t.id, here = cx === context && (view === v || view.startsWith(v + '/')); return { v, html: `<a href="${esc(href(v))}" class="sub${here ? ' on' : ''}">${esc(t.title)}${red(openOf(cx, v))}</a>` } })
-    // 流程按主题分组，一个主题一组，默认折着；没写主题的放最后一组
-    const flowGroups = [...topics.map((t) => ['flows/' + t.id, '流程 · ' + t.title, flows.filter((f) => f.topic === t.id)]),
-      ['flows', topics.some((t) => flows.some((f) => f.topic === t.id)) ? '流程 · 没写主题' : '流程', flows.filter((f) => !known.has(f.topic))]].filter((g) => g[2].length)
+    // 流程按主题分组，一个主题一组；没写主题的放最后一组
+    const flowGroups = [...topics.map((t) => ['flows/' + t.id, t.title, flows.filter((f) => f.topic === t.id)]),
+      ['flows/-', '没写主题', flows.filter((f) => !known.has(f.topic))]].filter((g) => g[2].length)
     return navGroup(cx, 'map', '全局', [L('map', '全局图')])
       + (modLinks.length ? navGroup(cx, 'module', '业务 · 按主题', modLinks, topics.reduce((a, t) => a + (mods[t.id] ? openOf(cx, 'module/' + t.id) : 0), 0)) : '')
       + navGroup(cx, 'concepts', '概念 · 按主题', topics.flatMap((t) => [L('concepts/' + t.id, t.title),
         ...(b.CONCEPTS?.[t.id]?.subs ?? []).map((x) => { const v = 'concepts/' + t.id + '/' + x.id; return { v, html: Shell.link(href(v), x.title, on(v), 'sub2') } })]))
       // 流程那一行右边：还没答的条数，红点；组折叠时组名右边是合计
-      + flowGroups.map(([k, title, fs]) => navGroup(cx, k, title, fs.map(flowLink), fs.reduce((a, f) => a + openOf(cx, f.file), 0))).join('')
+      + flowNav(cx, flowGroups, flowLink)
   },
   // 换到别的上下文：主题号、流程名各上下文不通用，回到它的全局图（上下文地图那页不动）
   pick: (cx) => { if (cx !== context) { context = cx; if (typeof selected !== 'undefined') selected = null; if (view !== 'cxmap') view = cx === '共享内核' ? 'kernel' : 'map' } go(view); render() } },
   topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '建模', '编码'], current: '业务', live: !!DATA.WB } })
+/** 左边栏的流程：一份都没写主题的上下文是一个平的「流程」组；写了主题的，收进大组「流程 · 按主题」，里面一个主题一个小组，都默认折着，
+ *  折着时右边是几条没答；打开某份流程时，它所在的大组和小组都自动展开 */
+function flowNav(cx, groups, flowLink) {
+  const n = (fs) => fs.reduce((a, f) => a + openOf(cx, f.file), 0)
+  if (!groups.length) return ''
+  if (groups.length === 1 && groups[0][0] === 'flows/-') return navGroup(cx, 'flows', '流程', groups[0][2].map(flowLink), n(groups[0][2]))
+  const subs = groups.map(([k, title, fs]) => { const links = fs.map(flowLink); return { vs: links.map((l) => l.v), html: navGroup(cx, k, title, links, n(fs)) } })
+  return navGroup(cx, 'flows', '流程 · 按主题', subs, n(groups.flatMap((g) => g[2])))
+}
 function bindContexts(dflt) {
   // 页里的链接都写成 #<视图>，点的时候补上上下文
   document.addEventListener('click', (ev) => { const a = ev.target.closest && ev.target.closest('a[href^="#"]'); if (!a) return; const v = decodeURIComponent(a.getAttribute('href').slice(1)); if (v.indexOf('/') > 0 && CONTEXTS.includes(v.slice(0, v.indexOf('/')))) return; ev.preventDefault(); go(v) })
@@ -1437,7 +1464,7 @@ function renderModule(main, id, tab0, a0, b0) {
   const tab = MTABS.includes(tab0) ? tab0 : '功能', base = 'module/' + id + '/'
   const tabs = (items, cls) => items.length ? `<div class="mtabs ${cls}">${items.map((x) => `<a href="#${esc(x.v)}" class="${x.on ? 'on' : ''}${x.red ? ' red' : ''}">${esc(x.text)}${x.n != null ? ` <small>${esc(x.n)}</small>` : ''}</a>`).join('')}</div>` : ''
   const count = { 功能: groups.reduce((n, g) => n + (g.functions ?? []).length, 0), 内部流程: chains.length, 工作流程: wfs.length, 待定: nOpen ? nOpen + ' 条没答' : asks.length }
-  let html = h1 + (m.summary ? `<p class="sub">${esc(m.summary)}</p>` : '')
+  let html = h1 + (m.summary ? `<p class="sub">${esc(m.summary)}</p>` : '') + introView(m.intro)
     + (m.locked ? `<p class="lock">${esc(m.locked.role)}正在改这一份（${esc(m.locked.step)}）。等它交回再答待定：现在答的会被它写回去时盖掉。</p>` : '')
     + tabs(MTABS.map((k) => ({ v: base + k, text: k, n: count[k], on: k === tab, red: k === '待定' && nOpen })), 'l1')
   if (tab === '功能') {
@@ -1460,10 +1487,25 @@ function renderModule(main, id, tab0, a0, b0) {
   }
   main.innerHTML = html
 }
+// 业务概述：五个页签一次看一栏；收起没收起、看的是哪一栏，记在内存和本机，换主题以后照旧
+const INTRO_TABS = [['context', '业务背景'], ['duty', '模块职责'], ['concepts', '核心概念'], ['users', '使用角色'], ['usual', '典型流程']]
+const INTRO_KEY = 'dev-team-lite/业务/业务概述'
+const introState = (() => { try { return JSON.parse(localStorage.getItem(INTRO_KEY)) ?? {} } catch { return {} } })()
+function introSet(patch) { Object.assign(introState, patch); try { localStorage.setItem(INTRO_KEY, JSON.stringify(introState)) } catch {} render() }
+function introView(it) {
+  if (!it) return ''
+  const shut = !!introState.shut, tab = INTRO_TABS.some(([k]) => k === introState.tab) ? introState.tab : 'context'
+  const v = it[tab], none = '<span class="none">还没写。</span>'
+  const body = tab === 'concepts' ? (v?.length ? `<ul>${v.map((c) => `<li><b>${esc(c.title)}</b>：${esc(c.note ?? '')}</li>`).join('')}</ul>` : none)
+    : tab === 'users' ? (v?.length ? `<div class="who">${v.map((u) => `<div><b>${esc(u.who)}</b>${u.aim ? `<div class="aim">${esc(u.aim)}</div>` : ''}${u.steps?.length ? `<ol>${u.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}</div>`).join('')}</div>` : none)
+    : tab === 'usual' ? (v?.length ? `<ol>${v.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>` : none)
+    : (v ? esc(v) : none)
+  return `<div class="intro"><div class="ih" data-intro-shut="${shut ? 0 : 1}"><span class="tri">${shut ? '▸' : '▾'}</span>业务概述</div>${shut ? '' : `<div class="itabs">${INTRO_TABS.map(([k, t]) => `<button data-intro-tab="${k}"${k === tab ? ' class="on"' : ''}>${t}</button>`).join('')}</div><div class="ib">${body}</div>`}</div>`
+}
 /** 一项功能：左边操作意图和要用到的数据，中间核心数据从什么变成什么，右边顺带留下的；动作只是箭头上一行灰字 */
 function fnView(f) {
   const sj = f.subject ?? {}
-  const ins = (f.in ?? []).map((d) => `<div class="mc data"><b>${esc(d)}</b></div>`).join('')
+  const ins = (f.in ?? []).map((d) => { const x = typeof d === 'string' ? { title: d } : d; return `<div class="mc data"><b>${esc(x.title)}</b>${x.note ? `<div class="note">${esc(x.note)}</div>` : ''}</div>` }).join('')
   const outs = (f.out ?? []).map((o) => `<div class="mc out"><div class="mk">${esc(o.kind ?? '')}</div><b>${esc(o.title)}</b>${o.when ? `<div class="when">${esc(o.when)}</div>` : ''}</div>`).join('')
   const rules = (f.rules ?? []).map((r) => `<li>${esc(typeof r === 'string' ? r : r.text)}</li>`).join('')
   const uses = (f.uses ?? []).map((u) => { const fl = FLOWS.find((x) => x.file === u.flow); return `<li><a href="#flow/${esc(u.flow)}">${esc(String(fl?.title ?? u.flow).split('：')[0])}</a> 第 ${esc(u.step)} 步</li>` }).join('')
@@ -1716,6 +1758,9 @@ function bind() {
     if (btn) { answerQa(btn.dataset); return }
     const mb = ev.target.closest('.mbtn')
     if (mb) { answerModule(mb.dataset); return }
+    const ih = ev.target.closest('[data-intro-shut]'), itab = ev.target.closest('[data-intro-tab]')
+    if (ih) { introSet({ shut: ih.dataset.introShut === '1' }); return }
+    if (itab) { introSet({ tab: itab.dataset.introTab }); return }
     const tog = ev.target.closest('.qa .tog')
     if (tog) { toggleSide(tog.dataset); return }
     if (ev.target.closest('a[href]')) return

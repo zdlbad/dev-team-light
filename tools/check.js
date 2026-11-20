@@ -8,7 +8,8 @@
 //           流程：topic 是不是全局图上的主题（没写是提醒）；入口、出口接的步在不在，写了 flow 的那一份在不在、那一份有没有写回来对上；alt 的步写没写 case
 //           概念图：同样两样数据之间有几条线（提醒，并成一条）
 //           模块业务：主题号对不对；功能号、内部流程号、工作流程号、待定号有没有重复；每项功能写没写核心数据（subject 带 to）和操作意图（intent）；
-//           功能指着的流程步在不在；工作流程的线两头是不是它的状态
+//           功能指着的流程步在不在；工作流程的线两头是不是它的状态；要用到的数据写没写名字（没写是错）、写没写解释或例子（提醒）；
+//           业务概述（intro）写没写、缺哪几样、使用角色写没写按先后做的事（都是提醒）
 //   界面    屏号、问题号有没有重复；每一屏的小样文件在不在；does 的 to 指不指得到屏；flow 那份流程在不在、step 那一步在不在；
 //           小样里 data-ask 标的问题在不在这一屏的 asks 里；文件夹里有没有哪一屏都不用的小样文件（提醒）
 //   模型    清单项的号有没有重复；清单项调的聚合、行为在不在；流程索引引的清单项在不在本主题清单里、对着的流程和步在不在；
@@ -151,6 +152,15 @@ for (const cx of names) {
     const d = load(file, cx, '业务'); if (!d) continue
     if (d.topic !== name) say('错', cx, '业务', file, `topic 要写主题号 ${name}，写的是 ${d.topic}`)
     if (topicIds.length && !topicIds.includes(name)) say('错', cx, '业务', file, `${name} 不是全局图上的主题`)
+    // 业务概述：五样，使用角色带按先后做的几件事
+    const INTRO = [['context', '业务背景'], ['duty', '模块职责'], ['concepts', '核心概念'], ['users', '使用角色'], ['usual', '一般怎么用']]
+    const filled = (v) => (Array.isArray(v) ? v.length > 0 : !!String(v ?? '').trim())
+    if (!d.intro) say('提醒', cx, '业务', file, '没写介绍（intro）')
+    else {
+      const miss = INTRO.filter(([k]) => !filled(d.intro[k]))
+      if (miss.length) say('提醒', cx, '业务', file, '介绍缺了：' + miss.map(([k, t]) => `${t}（${k}）`).join('、'))
+      for (const u of d.intro.users ?? []) if (!filled(u.steps)) say('提醒', cx, '业务', file, `介绍里的「${u.who ?? '?'}」没写按先后做哪几件事`)
+    }
     const fns = (d.groups ?? []).flatMap((g) => g.functions ?? [])
     for (const x of dups(fns.map((f) => f.id))) say('错', cx, '业务', file, `功能号重复：${x}`)
     for (const f of fns) {
@@ -158,6 +168,12 @@ for (const cx of names) {
       if (!f.id) say('错', cx, '业务', file, `有一项功能没写号（id）：${f.title ?? ''}`)
       if (!f.subject?.title || !f.subject?.to) say('错', cx, '业务', file, `${who}没写核心数据：subject 写它主要动的那样数据（title）和变成什么（to）`)
       if (!String(f.intent ?? '').trim()) say('错', cx, '业务', file, `${who}没写操作意图（intent）`)
+      // 要用到的数据：一样一条 { title, note }；只写名字的旧写法照认，提醒补解释
+      for (const x of f.in ?? []) {
+        const name = typeof x === 'string' ? x : x?.title
+        if (!String(name ?? '').trim()) { say('错', cx, '业务', file, `${who}要用到的数据有一样没写名字（title）`); continue }
+        if (typeof x === 'string' || !String(x.note ?? '').trim()) say('提醒', cx, '业务', file, `${who}要用到的「${name}」没写解释或例子`)
+      }
       for (const u of f.uses ?? []) {
         if (!IDX[cx].flows[u.flow]) say('错', cx, '业务', file, `${who}指着的流程「${u.flow}」在 业务/流程/ 下没有`)
         else if (!stepIn(cx, u.flow, u.step)) say('错', cx, '业务', file, `${who}指着的「${u.flow}」第 ${u.step} 步没有`)
