@@ -13,7 +13,7 @@ const count = (re) => (main().match(re) || []).length;
 const click = (target) => els.main.handlers.click({ target });
 const before = (a, b) => main().indexOf(a) >= 0 && main().indexOf(a) < main().indexOf(b);
 const cases = [
-  ['「等你答」里问题留在各页的：业务、界面各一行（单开链接是占位）', () => main().includes('<a class="onpage" href="#">「业务」页还有 <b>3</b> 条待答 ›</a><a class="onpage" href="#">「界面」页还有 <b>2</b> 条待答 ›</a>')],
+  ['「等你答」里问题留在各页的：业务、界面各一行（单开链接是占位）', () => main().includes('<a class="onpage" href="#"><span class="pg">业务</span><span class="n">3</span><span class="t">条待答</span><span class="go">去答 ›</span></a><a class="onpage" href="#"><span class="pg">界面</span><span class="n">2</span><span class="t">条待答</span><span class="go">去答 ›</span></a>')],
   ['首页两张「现在」卡', () => count(/class="now"/g) === 2 && main().includes('照流程「服务发生与申报」拆解调动') && main().includes('40 分钟') && main().includes('<b>N-02.2</b> 看她名下各笔基金还剩多少') && main().includes('第一期 11/24 还差 15 天')
     && main().includes('写聊天 app 的概念「聊天」') && main().includes('25 分钟') && main().includes('<b>N-07.2</b> 听到协议已签，开聊天') && main().includes('第二期 12/5 还差 26 天') && main().includes('class="stg doing">业务 ● 在做</span>') && main().includes('class="stg">建模 ○</span>') && main().includes('业务/概念/聊天.json')
     && count(/class="ask" /g) === 3 && main().includes('class="act lean-on"') && main().includes('← 交回')],
@@ -37,20 +37,20 @@ const cases = [
     return count(/class="now"/g) === 2 && before('还在拆调动', '写基金额度的代码') && !main().includes('按定下</div>') && main().includes('20 分钟') && !main().includes('没人在干。') }],
   // 放最后：换成工作台注入的数据重跑一遍页面
   ['工作台：PAGE_ASKS 里界面有数就一行，链到 <base>/界面；0 条的页不出', () => {
-    global.window.DATA = { WB: { base: '/sample-care', project: '养老', pages: ['谁在干什么', '业务', '界面'] }, PAGE_ASKS: { '业务': 0, '界面': 5 } }
+    global.window.DATA = { WB: { base: '/sample-care', project: '养老', pages: ['总览', '业务', '界面'] }, PAGE_ASKS: { '业务': 0, '界面': 5 } }
     eval(script)
-    return main().includes('<a class="onpage" href="/sample-care/%E7%95%8C%E9%9D%A2">「界面」页还有 <b>5</b> 条待答 ›</a>') && !main().includes('「业务」页还有') && (main().match(/class="onpage"/g) || []).length === 1
+    return main().includes('<a class="onpage" href="/sample-care/%E7%95%8C%E9%9D%A2"><span class="pg">界面</span><span class="n">5</span><span class="t">条待答</span><span class="go">去答 ›</span></a>') && !main().includes('<span class="pg">业务</span>') && (main().match(/class="onpage"/g) || []).length === 1
   }],
   ['工作台：DECIDES 空着不出「等你定」；链接是 <base>/<页>#<一段段编码的 hash>', () => {
-    global.window.DATA = { WB: { base: '/sample-care', project: '养老', pages: ['谁在干什么', '界面', '编码'] }, DECIDES: [] }
+    global.window.DATA = { WB: { base: '/sample-care', project: '养老', pages: ['总览', '界面', '编码'] }, DECIDES: [] }
     eval(script)
     const none = !main().includes('<h2>等你定')
-    global.window.DATA = { WB: { base: '/sample-care', project: '养老', pages: ['谁在干什么', '界面', '编码'] }, DECIDES: [{ page: '编码', title: '沟通 app · 技术选型', hash: '沟通 app/spec/技术选型' }] }
+    global.window.DATA = { WB: { base: '/sample-care', project: '养老', pages: ['总览', '界面', '编码'] }, DECIDES: [{ page: '编码', title: '沟通 app · 技术选型', hash: '沟通 app/spec/技术选型' }] }
     eval(script)
     return none && main().includes('<a class="dc" href="/sample-care/%E7%BC%96%E7%A0%81#%E6%B2%9F%E9%80%9A%20app/spec/%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B"><span>沟通 app · 技术选型</span>')
   }],
   ['工作台：CURRENT 是 M2 时进度只画第二期，左边栏数第二期的任务', () => {
-    global.window.DATA = { WB: { base: '/x', project: '养老', pages: ['谁在干什么'] }, CURRENT: 'M2' }
+    global.window.DATA = { WB: { base: '/x', project: '养老', pages: ['总览'] }, CURRENT: 'M2' }
     eval(script); Shell.show('聊天 app'); render()
     return main().includes('id="progress">进度 · 第二期') && main().includes('class="lab mile">第二期：季度预算') && !main().includes('class="lab mile">第一期') && navHtml().includes('当期任务 <b>0</b> / 1')
   }],

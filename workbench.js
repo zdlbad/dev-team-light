@@ -2,7 +2,7 @@
 // 指挥的工作台：一个地址，可以开好几个项目；每个项目六页。项目管理页里的「总览」把开着的项目一页列全。
 // 页面代码在 pages/<页名>/小样.html，数据从项目目录读出来注进去。
 // 用法：node workbench.js <项目目录> [<项目目录>…] [--port 4870] [--now "2026-11-09 16:20"]
-// 地址：/<项目目录名>/<页>；/ 跳到第一个项目的「谁在干什么」。小样里 const X = DATA.X ?? …：单开时 DATA 是空的、用写死的；工作台里 DATA 由 data/<页>.js 先定义。
+// 地址：/<项目目录名>/<页>；/ 跳到第一个项目的「总览」。小样里 const X = DATA.X ?? …：单开时 DATA 是空的、用写死的；工作台里 DATA 由 data/<页>.js 先定义。
 // 按「定下」「答」是 POST <项目目录名>/api/…（小样里写的是相对地址 api/…），写回那个项目的文件。
 const http = require('node:http')
 const fs = require('node:fs')
@@ -22,7 +22,7 @@ const PORT = flagAt('--port') >= 0 ? Number(args[flagAt('--port') + 1]) : 4870
 const OPTS = { ...(flagAt('--now') >= 0 ? { now: args[flagAt('--now') + 1] } : {}), dirs: Object.values(PROJECTS) }
 
 // 六页；地址栏用页名，页面代码在 pages/<页名>/小样.html
-const PAGES = Object.fromEntries(['谁在干什么', '项目管理', '业务', '界面', '建模', '编码'].map((p) => [p, p]))
+const PAGES = Object.fromEntries(['总览', '项目管理', '业务', '界面', '建模', '编码'].map((p) => [p, p]))
 const samplePath = (page) => path.join(__dirname, 'pages', PAGES[page], '小样.html')
 
 // 小样 → 工作台页面：小样引的 ../../lib/ 改成 /lib/，<script> 前插一个 data/<页>.js（相对地址，跟着项目前缀走）；顶栏、左边栏由 lib/shell.js 画
@@ -69,13 +69,15 @@ http.createServer(async (req, res) => {
       if (!fs.existsSync(p)) return send(res, 404, 'not found', text)
       return send(res, 200, fs.readFileSync(p, 'utf8'), (segs[1].endsWith('.css') ? 'text/css' : 'text/javascript') + '; charset=utf-8')
     }
-    // 首页：第一个项目的「谁在干什么」
-    if (req.method === 'GET' && segs[0] === '') return redirect(res, `/${encodeURIComponent(FIRST)}/${encodeURIComponent("谁在干什么")}`)
+    // 首页：第一个项目的「总览」
+    if (req.method === 'GET' && segs[0] === '') return redirect(res, `/${encodeURIComponent(FIRST)}/${encodeURIComponent("总览")}`)
     // 一个项目：/<目录名>/<页>、/<目录名>/data/<页>.js、POST /<目录名>/api/<动作>
     const proj = segs[0]
     if (!PROJECTS[proj]) return send(res, 404, '没有这个项目：' + proj, text)
-    if (req.method === 'GET' && segs.length === 1) return redirect(res, `/${encodeURIComponent(proj)}/${encodeURIComponent("谁在干什么")}`)
-    if (req.method === 'GET' && segs.length === 2 && (segs[1] === '' || PAGES[segs[1]])) return send(res, 200, renderPage(segs[1] || '谁在干什么', url.searchParams.get('view')))
+    if (req.method === 'GET' && segs.length === 1) return redirect(res, `/${encodeURIComponent(proj)}/${encodeURIComponent("总览")}`)
+    // 总览原来叫「谁在干什么」：旧地址、旧书签跳过去，后面的 # 由浏览器带着
+    if (req.method === 'GET' && segs.length === 2 && segs[1] === '谁在干什么') return redirect(res, `/${encodeURIComponent(proj)}/${encodeURIComponent('总览')}${url.search}`)
+    if (req.method === 'GET' && segs.length === 2 && (segs[1] === '' || PAGES[segs[1]])) return send(res, 200, renderPage(segs[1] || '总览', url.searchParams.get('view')))
     if (req.method === 'GET' && segs[1] === 'data' && segs.length === 3 && segs[2].endsWith('.js')) {
       const page = segs[2].slice(0, -3)
       if (!PAGES[page]) return send(res, 404, 'no such page', text)

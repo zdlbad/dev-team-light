@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>项目管理 小样</title>
+<title>工作台 · 项目管理</title>
 <style>
   :root {
     --bg: #fafaf8; --ink: #1f1f1f; --ink-2: #6b6b6b; --line: #e3e1dc; --panel: #ffffff;
@@ -381,7 +381,7 @@ const ovLate = (m, items) => { const pr = progressOf(items); return m.due < TODA
 const ratio = (a, b) => b ? Math.round(a / b * 100) : 0;
 const ovSegBar = (pr) => `<span class="ov-seg" title="${STAGES.map((k) => `${k} ${pr.per[k]}/${pr.n}`).join('　')}">${STAGES.map((k) => `<i><b style="width:${ratio(pr.per[k], pr.n)}%"></b></i>`).join('')}</span><small>${pr.got}/${pr.slots}</small>`;
 const squares = (it) => `<span class="sq">${STAGES.map((k) => `<i class="${it.stages?.[k] ? 'done' : ''}" title="${k}${it.stages?.[k] ? ' ' + it.stages[k] : ' 没做完'}"></i>`).join('')}</span>`;
-// 项目名底下那行小字：几个上下文（名字列在括号里）、现在谁在干什么、等你答几条、需求做几条/共几条、任务完成几条
+// 项目名底下那行小字：几个上下文（名字列在括号里）、现在总览、等你答几条、需求做几条/共几条、任务完成几条
 const summary = (p) => {
   const s = p.scene ?? {}, items = itemsOf(p);
   // now 是数组：几个角色在干就几句，用「；」连；空数组没人在干
@@ -413,7 +413,7 @@ Shell.init({ contexts: CONTEXTS, page: {
   badge: (c) => `${reqsOf(c).length} 条`,
   items: (c) => reqsOf(c).map((r) => Shell.line(`<span class="id">${r.id}</span> ${r.title}`)).join(''),
   pick: (c) => { view = 'pm'; filter = c; setHash(''); build() } },
-  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '建模', '编码'], current: '项目管理', live: !!DATA.WB } });
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['总览', '项目管理', '业务', '建模', '编码'], current: '项目管理', live: !!DATA.WB } });
 
 function build() {
 const ov = view === 'overview';

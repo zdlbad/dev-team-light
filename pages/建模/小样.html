@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>建模 · 小样</title>
+<title>工作台 · 建模</title>
 <style>
 :root{
   --bg:#f7f6f3; --panel:#ffffff; --ink:#1d1d1b; --ink-2:#55534e; --ink-3:#8a877f; --line:#dedbd3; --accent:#2563eb; --accent-bg:#e8efff;
@@ -470,7 +470,7 @@ const stepTitle = (t) => t ? FLOW_STEPS[t.flow]?.steps?.[t.step] ?? '' : ''
 let view = 'agg/file'   // 'all' 聚合全图 | 'agg/<聚合>' | 'member/<聚合>/<成员>' | 'list/<主题>' | 'move/<流程>'
 // 上下文：左边栏第一层，折叠展开；地址第一段是上下文名
 const CONTEXTS = DATA.CONTEXTS ?? ['样例系统', '聊天 app', '排版系统', '共享内核']
-let context = '样例系统'
+let context = MODEL_CX   // 地址里没写上下文：第一个有模型的上下文
 const parseHash = (dflt) => { const h = decodeURIComponent(location.hash.slice(1)); const i = h.indexOf('/'); const cx = i > 0 ? h.slice(0, i) : ''; if (CONTEXTS.includes(cx)) { useCx(cx); return { cx, v: canon(h.slice(i + 1) || dflt) } } return { cx: context, v: canon(h || dflt) } }
 const go = (v) => { location.hash = context + '/' + v }
 // 主题下面列不列聚合、聚合下面列不列成员：点主题行或聚合的 ▸/▾ 只折叠展开、不跳页；点聚合名字跳过去并展开；当前页所在的主题和聚合换页时各自动展开一次，之后合上就合上；记在本机
@@ -515,7 +515,7 @@ Shell.init({ contexts: CONTEXTS, page: {
     return cx === context ? html : html.replace(/href="#/g, 'href="#' + esc(cx) + '/')
   },
   pick: (cx) => { if (cx !== context) { context = cx; if (typeof selected !== 'undefined') selected = null } go(view); render() } },
-  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '建模', '编码'], current: '建模', live: !!DATA.WB } })
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['总览', '项目管理', '业务', '建模', '编码'], current: '建模', live: !!DATA.WB } })
 function bindContexts(dflt) {
   // 页里的链接都写成 #<视图>，点的时候补上上下文
   document.addEventListener('click', (ev) => { const a = ev.target.closest && ev.target.closest('a[href^="#"]'); if (!a) return; const v = decodeURIComponent(a.getAttribute('href').slice(1)); if (v.indexOf('/') > 0 && CONTEXTS.includes(v.slice(0, v.indexOf('/')))) return; ev.preventDefault(); go(v) })

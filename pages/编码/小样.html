@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>编码 · 小样</title>
+<title>工作台 · 编码</title>
 <style>
 :root{
   --bg:#f7f6f3; --panel:#ffffff; --ink:#1d1d1b; --ink-2:#55534e; --ink-3:#8a877f; --line:#dedbd3; --accent:#2563eb; --accent-bg:#e8efff;
@@ -703,7 +703,7 @@ Shell.init({ contexts: CONTEXTS, page: {
       + Shell.group('文件结构 · 伪代码') + link('tree', `${STRUCT.root}/`)
   },
   pick: (cx) => { if (cx !== context) { context = cx; if (typeof selected !== 'undefined') selected = null } go(view); render() } },
-  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '建模', '编码'], current: '编码', live: !!DATA.WB } })
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['总览', '项目管理', '业务', '建模', '编码'], current: '编码', live: !!DATA.WB } })
 
 // ---------- 代码结构：目录树 ----------
 // 文件夹的开合记在本机；当前文件那一串只在进页、换文件时自动展开一次，收起了同一个文件重画不再撑开
@@ -1024,8 +1024,10 @@ function structSvg(W, st = STRUCTURE) {
   oBox.forEach((r, i) => {
     if (http < 0) return
     const h = { x: gx[http], y: iy, w: gw[http], h: childH }
-    if (wide) { const yy = Math.min(h.y + 24 + i * 10, h.y + h.h - 6), lx = x0 + srcW + 20 + (oBox.length - 1 - i) * 8; line([[r.x, mid(r)], [lx, mid(r)], [lx, yy], [h.x + h.w, yy]], 'out/' + outs[i].name, 'infras/' + groups[http].dir, 'e x') }
-    else { const tx = h.x + h.w - 16 - i * 12, jy = srcY + srcH + 20 + i * 8; line([[r.x + r.w / 2, r.y], [r.x + r.w / 2, jy], [tx, jy], [tx, h.y + h.h]], 'out/' + outs[i].name, 'infras/' + groups[http].dir, 'e x') }
+    // 落点在 http 框右边上一条一条往下错开：框够高每条隔 10；框矮了就按框高均分，不让几条挤到框底叠成一条
+    if (wide) { const step = Math.min(10, (h.h - 30) / Math.max(1, oBox.length - 1)), yy = h.y + 24 + i * Math.max(3, step), lx = x0 + srcW + 20 + (oBox.length - 1 - i) * 8; line([[r.x, mid(r)], [lx, mid(r)], [lx, yy], [h.x + h.w, yy]], 'out/' + outs[i].name, 'infras/' + groups[http].dir, 'e x') }
+    // 窄的时候外面的框排在下面一排，线从框顶中间竖着上来：进 http 的那一竖要是正好落在哪个框的中线上，两条竖线会叠成一条，往左让开
+    else { let tx = h.x + h.w - 16 - i * 12; while (oBox.some((o) => Math.abs(o.x + o.w / 2 - tx) < 3)) tx -= 4; const jy = srcY + srcH + 20 + i * 8; line([[r.x + r.w / 2, r.y], [r.x + r.w / 2, jy], [tx, jy], [tx, h.y + h.h]], 'out/' + outs[i].name, 'infras/' + groups[http].dir, 'e x') }
   })
   const Wt = Math.ceil(wide ? x0 + srcW + oGap + outW + pad : Math.max(x0 + srcW + pad, ...oBox.map((r) => r.x + r.w + pad)))
   const H = Math.ceil(Math.max(srcY + srcH, ...oBox.map((r) => r.y + r.h)) + pad)

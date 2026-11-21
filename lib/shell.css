@@ -1,4 +1,10 @@
-/* 工作台的框架样式：顶栏固定、左边栏固定、只有右边主区滚；左边栏的行一个样。五页共用，小样单开也引它。 */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+/* 工作台的外观，六页共用，小样单开也引它。分几层，后面的盖前面的：
+   1. 框架：顶栏固定、左边栏固定、只有右边主区滚；
+   2. 外观：卡片浮层、主区整块浮起；颜色按 60/30/10 分（蓝灰 + 天蓝），颜色全走变量，深色一套、浅色一套；
+   3. 字体：Mac 用 SF 和苹方；Windows 英文数字用 Inter、中文用微软雅黑（小字清楚）；没联网退回 Segoe UI；
+   4. 组件：页签、按钮、侧栏的样子。各页自己的样式在页面里，用的颜色变量从这里来。 */
+/* —— 1. 框架 —— */
 :root {
   --bg: #f7f6f3; --panel: #ffffff; --ink: #1d1d1b; --ink-2: #55534e; --ink-3: #8a877f; --line: #dedbd3; --accent: #2563eb; --accent-bg: #e8efff;
   --area: #f4f4f1; --area-line: #b8b5ad; --data: #e7f5ec; --data-line: #2f855a;
@@ -54,3 +60,198 @@ nav .tn.none { color: var(--ink-3); }
 nav .tn b { font-weight: 600; color: var(--ink); }
 nav .tn .bar { flex: 1; height: 5px; border-radius: 3px; background: var(--area); overflow: hidden; max-width: 80px; }
 nav .tn .bar i { display: block; height: 100%; background: var(--data-line); }
+
+/* 顶栏最右边：深浅切换（跟系统、浅色、深色三档轮着换） */
+.topbar .theme { margin-left: auto; font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid #57606a; background: transparent; color: #d0d7de; cursor: pointer; }
+.topbar .theme:hover { color: #fff; border-color: #8b949e; }
+
+/* 红点、条数这些小标记用 <i> 写的：不要斜体 */
+nav i, .topbar i, i.open { font-style: normal; }
+
+/* —— 2. 外观：卡片浮层 + 60/30/10 配色；颜色全走变量，配色那一段在后面 —— */
+body { font: 13.5px/1.6 "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+h1 { font-size: 21px; font-weight: 650; letter-spacing: -.2px; }
+h1 a { color: var(--accent-ink) !important; font-weight: 500; }
+a { color: var(--accent-ink); }
+.sub { color: var(--ink-2); }
+* { scrollbar-width: thin; scrollbar-color: var(--ink-3) transparent; }
+
+/* 顶栏 */
+.topbar { height: 50px; padding: 0 18px; gap: 4px; background: var(--top-bg); color: var(--top-ink); border-bottom: 1px solid var(--top-line); }
+.topbar b { font-size: 14.5px; font-weight: 700; margin-right: 18px; color: var(--top-ink); display: inline-flex; align-items: center; gap: 8px; }
+.topbar b::before { content: ""; width: 20px; height: 20px; border-radius: 6px; background: var(--accent); box-shadow: 0 2px 6px var(--accent-glow); }
+.topbar a, .topbar span { padding: 5px 13px; color: var(--top-ink-2); border: 0; border-radius: 8px; font-weight: 500; transition: background .15s, color .15s; }
+.topbar a:hover { background: var(--top-hover); color: var(--top-ink); }
+.topbar a.on, .topbar span.on { background: var(--top-on-bg); color: var(--top-on-ink); border: 0; font-weight: 600; }
+.topbar .proto { border-left-color: var(--top-line); }
+.topbar details.proto, .topbar details.proto summary { color: var(--top-ink-2); }
+.topbar details.proto > div { background: var(--panel); border-color: var(--line); box-shadow: var(--shadow-lg); border-radius: 10px; top: 38px; }
+.topbar details.proto > div a { color: var(--ink-2); }
+
+/* 左边栏：30% 那一层 */
+nav { width: 280px; background: var(--side); color: var(--side-ink); border-right: 1px solid var(--side-line); padding: 8px 0 24px; }
+nav .cx { margin: 2px 8px; padding: 7px 10px; border-top: 0 !important; border-radius: 8px; font-weight: 650; color: var(--side-ink); transition: background .15s; }
+nav .cx:hover { background: var(--side-hover); }
+nav .cx.on { background: var(--side-on-bg); color: var(--side-on-ink); }
+nav .cx .tri, nav .gn .tri, nav a.sub .tri { color: var(--side-ink-3); }
+nav .cx small { color: var(--side-ink-3); }
+nav .cx.proj { margin: 0 8px 6px; border-bottom: 1px solid var(--side-line); border-radius: 0; }
+nav .gn { padding: 10px 18px 4px; font-size: 11.5px; letter-spacing: .3px; color: var(--side-ink-3); font-weight: 600; }
+nav .gn.fold { margin: 0 8px; padding: 6px 10px; border-radius: 6px; }
+nav .gn.fold:hover { background: var(--side-hover); color: var(--side-ink-2); }
+nav .gb .gn.fold { padding-left: 24px; }
+nav a.sub, nav a.sub2 { margin: 1px 8px; border-radius: 7px; padding-top: 5px; padding-bottom: 5px; position: relative; color: var(--side-ink-2); transition: background .15s, color .15s; }
+nav a.sub { padding-left: 22px; } nav a.sub2 { padding-left: 38px; } nav .gb .gb a.sub { padding-left: 38px; }
+nav a.sub:hover, nav a.sub2:hover { background: var(--side-hover); color: var(--side-ink); }
+nav a.sub.on, nav a.sub2.on { background: var(--side-on-bg); color: var(--side-on-ink); font-weight: 600; }
+nav a.sub.on::before, nav a.sub2.on::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--accent); }
+nav .tn { color: var(--side-ink-2); } nav .tn b { color: var(--side-ink); } nav .tn .id, nav .tn.none { color: var(--side-ink-3); }
+nav .open, nav a.sub .open, nav .gn .open { background: var(--bad) !important; color: #fff !important; }
+
+main { padding: 24px 34px; background: var(--bg); }
+
+/* 卡片浮层：不靠边线，靠两层很淡的阴影；圆角 14；指上去再抬高一点 */
+.diagram, .side, .mfn, .mchain, .intro, .mask, .card, .lock, .ctbl .wrap {
+  border-radius: 14px !important; border-color: var(--float-line) !important; background-color: var(--panel); box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s; }
+.side { box-shadow: var(--shadow-lg); }
+.mask.pending { border-color: var(--float-line) !important; border-left: 3px solid var(--bad) !important; }
+.mask.done { background: var(--panel) !important; opacity: .75; }
+
+/* 页签：第一层下划线，第二、三层药丸 */
+.mtabs { border-bottom-color: var(--line); gap: 4px; }
+.mtabs a { border: 0 !important; border-radius: 7px 7px 0 0; padding: 8px 14px; position: relative; color: var(--ink-2); }
+.mtabs a:hover { color: var(--ink); }
+.mtabs a.on { background: transparent !important; color: var(--accent-ink) !important; }
+.mtabs a.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--accent); }
+.mtabs.l2, .mtabs.l3 { border-bottom: 0; margin-bottom: 8px; }
+.mtabs.l2 a, .mtabs.l3 a { border-radius: 999px; padding: 5px 14px; }
+.mtabs.l2 a:hover, .mtabs.l3 a:hover { background: var(--hover); }
+.mtabs.l2 a.on, .mtabs.l3 a.on { background: var(--accent-bg) !important; }
+.mtabs.l2 a.on::after, .mtabs.l3 a.on::after { display: none; }
+.intro .itabs { border-bottom: 1px solid var(--line); padding: 4px 10px; }
+.intro .itabs button { border: 0 !important; border-radius: 999px; padding: 4px 14px; margin: 2px; color: var(--ink-2); }
+.intro .itabs button.on { background: var(--accent-bg); color: var(--accent-ink); }
+.tabs button { border-radius: 999px !important; }
+
+/* 按钮：主按钮是 10% 的强调色，带一点立体 */
+.act, .mbtn { border-radius: 9px !important; padding: 4px 13px !important; font-weight: 500; border-color: var(--line) !important; background: var(--panel) !important; color: var(--ink) !important; box-shadow: 0 1px 2px rgba(0,0,0,.05); transition: transform .1s; }
+.mbtn:active, .act:active { transform: translateY(1px); }
+.mbtn.b, .act { background: var(--accent) !important; color: var(--on-accent) !important; border-color: var(--accent) !important; box-shadow: 0 2px 6px var(--accent-glow); }
+
+/* 功能图里的小卡 */
+.mc { border-radius: 10px; }
+.mc.core { border-color: var(--accent) !important; box-shadow: 0 0 0 4px var(--accent-bg); }
+.badge { border-radius: 999px; }
+.legend { color: var(--ink-3); }
+
+/* 带意思的颜色：压成浅色块 */
+:root { --data:#edf6f0; --data-line:#7fb99a; --note:#fbf7ec; --note-line:#e6d6ae; --role:#eef1f8; --role-line:#7086bf; --badge:#fff6e0; --badge-ink:#8a5a00; --badge-line:#f0d9a0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --data:#14231b; --data-line:#356e50; --note:#1d1b16; --note-line:#3f3824; --role:#1a2036; --role-line:#5f76bd; --badge:#2a2313; --badge-ink:#e7c66b; --badge-line:#4a3f22; } }
+.lock { background: var(--badge) !important; color: var(--badge-ink) !important; }
+.mc.intent { background: var(--note); border-color: var(--note-line); }
+.mc.data { background: var(--data); border-color: var(--data-line); }
+
+/* ===== 主区整块浮起：顶栏和侧栏铺同一个底色连成一圈，主区是一张大圆角的纸浮在上面 ===== */
+body, .wrap { background: var(--side); }
+.topbar { background: var(--side); border-bottom-color: transparent; }
+nav { border-right-color: transparent; background: var(--side); }
+.wrap { padding: 0 10px 10px 0; }
+main { background: var(--bg); border-radius: 16px; box-shadow: var(--sheet-shadow); }
+.topbar .theme { border-color: var(--top-line); color: var(--top-ink-2); border-radius: 8px; background: transparent; }
+.topbar .theme:hover { background: var(--top-hover); color: var(--top-ink); border-color: var(--top-line); }
+/* 配色：蓝灰 + 天蓝。60% 主区底色 --bg，30% 侧栏、顶栏 --side 和卡片 --panel，10% 强调色 --accent */
+:root { --bg:#f6f9fb; --panel:#ffffff; --ink:#0f1b2a; --ink-2:#51606f; --ink-3:#93a1ae; --line:#dbe3ea; --area:#eef3f7; --area-line:#c6d2dc; --hover:#eef3f7;
+  --accent:#0284c7; --accent-bg:#e0f0fa; --accent-ink:#0369a1; --on-accent:#fff; --accent-glow:rgba(2,132,199,.3); --bad:#e5484d;
+  --side:#e4ebf1; --side-line:#d3dce5; --side-ink:#1b2a3a; --side-ink-2:#4a5a6a; --side-ink-3:#8494a3; --side-hover:#d8e1e9; --side-on-bg:#ffffff; --side-on-ink:#075985;
+  --top-bg:#e4ebf1; --top-line:#d6dfe7; --top-ink:#0f1b2a; --top-ink-2:#4a5a6a; --top-hover:#d8e1e9; --top-on-bg:#0284c7; --top-on-ink:#fff;
+  --float-line:transparent; --shadow:0 1px 2px rgba(15,35,55,.05),0 4px 14px rgba(15,35,55,.06); --shadow-hover:0 2px 4px rgba(15,35,55,.06),0 12px 28px rgba(15,35,55,.11); --shadow-lg:0 12px 32px rgba(15,35,55,.12);
+  --sheet-shadow:0 0 0 1px rgba(15,35,55,.05),0 6px 24px rgba(15,35,55,.08); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#121b24; --panel:#18232e; --ink:#e5edf4; --ink-2:#9fb0bf; --ink-3:#586878; --line:#22303c; --area:#111a22; --area-line:#2e3f4f; --hover:#1a2530;
+  --accent:#38bdf8; --accent-bg:#0f2c3d; --accent-ink:#9ddcfb; --on-accent:#062030; --accent-glow:rgba(56,189,248,.25); --bad:#f2555a;
+  --side:#0d141b; --side-line:#16202a; --side-ink:#e5edf4; --side-ink-2:#9fb0bf; --side-ink-3:#586878; --side-hover:#152029; --side-on-bg:#0f2c3d; --side-on-ink:#9ddcfb;
+  --top-bg:#0d141b; --top-line:#16202a; --top-ink:#e5edf4; --top-ink-2:#9fb0bf; --top-hover:#152029; --top-on-bg:#38bdf8; --top-on-ink:#062030;
+  --float-line:#22303c; --shadow:0 6px 18px rgba(0,0,0,.35); --shadow-hover:0 12px 30px rgba(0,0,0,.5); --shadow-lg:0 14px 36px rgba(0,0,0,.55);
+  --sheet-shadow:0 0 0 1px rgba(255,255,255,.05),0 10px 30px rgba(0,0,0,.5); } }
+
+/* ===== 字体：Mac 上用苹果自带的 SF 和苹方；Windows 上英文、数字用 Inter，中文用系统自带的微软雅黑（为屏幕微调过，小字清楚）；
+   没联网时英文退回 Segoe UI。编号、代码：Mac 用 SF Mono，别处 JetBrains Mono，再退回 Consolas ===== */
+:root { --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", Inter, "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; --font-mono: "SF Mono", Menlo, "JetBrains Mono", Consolas, monospace; }
+body, button, input, select, textarea, svg text { font-family: var(--font-ui) !important; }
+code, pre, kbd, .mono { font-family: var(--font-mono) !important; }
+/* 小字别太灰：对比度低了，看着更虚 */
+:root { --ink-3: color-mix(in srgb, var(--ink-2) 70%, var(--bg)); }
+
+/* ===== 组件的质感 ===== */
+:root { --seg-track: rgba(15,30,50,.06); --raise: 0 1px 2px rgba(15,30,50,.10), 0 0 0 1px rgba(15,30,50,.04); --press: inset 0 1px 2px rgba(15,30,50,.12); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --seg-track: rgba(255,255,255,.06); --raise: 0 1px 2px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06); --press: inset 0 1px 2px rgba(0,0,0,.4); } }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* 第一层页签：下划线粗一点、两头圆，指上去字变深 */
+.mtabs.l1 a { font-weight: 500; }
+.mtabs.l1 a.on::after { height: 3px; border-radius: 3px 3px 0 0; left: 12px; right: 12px; }
+.mtabs.l1 a:hover:not(.on) { background: transparent; color: var(--ink); }
+
+/* 第二、三层页签和业务概述的页签：分段控件，一条浅灰的槽，选中的是一块浮起来的白片 */
+.mtabs.l2, .mtabs.l3, .intro .itabs { display: inline-flex !important; flex-wrap: wrap; gap: 2px !important; padding: 3px !important; background: var(--seg-track); border-radius: 10px; border: 0 !important; margin: 0 0 10px; }
+.intro .itabs { margin: 8px 14px 4px; }
+.mtabs.l2 a, .mtabs.l3 a, .intro .itabs button { border-radius: 7px !important; padding: 4px 12px !important; margin: 0 !important; color: var(--ink-2); font-weight: 500; transition: background .15s, color .15s, box-shadow .15s; }
+.mtabs.l2 a:hover:not(.on), .mtabs.l3 a:hover:not(.on), .intro .itabs button:hover:not(.on) { background: transparent !important; color: var(--ink); }
+.mtabs.l2 a.on, .mtabs.l3 a.on, .intro .itabs button.on { background: var(--panel) !important; color: var(--ink) !important; box-shadow: var(--raise); font-weight: 600; }
+.mtabs.l2 a.on small, .mtabs.l3 a.on small { color: var(--accent-ink); }
+.mtabs + .mtabs { margin-left: 0; }
+.mtabs.l2 { display: flex !important; width: max-content; max-width: 100%; }
+.mtabs.l3 { display: flex !important; width: max-content; max-width: 100%; }
+
+/* 按钮：同一个高度；次要按钮白底细边、带一点立体；主按钮强调色、顶上一线高光；按下去往下沉 */
+.mbtn, .act { height: 30px; line-height: 20px; padding: 4px 14px !important; border-radius: 8px !important; font-weight: 500 !important; background: var(--panel) !important; color: var(--ink) !important; border: 1px solid var(--line) !important; box-shadow: 0 1px 2px rgba(15,30,50,.06), inset 0 1px 0 rgba(255,255,255,.6); transition: background .15s, box-shadow .15s, transform .08s; }
+.mbtn:hover, .act:hover { background: var(--hover) !important; }
+.mbtn:active, .act:active { transform: translateY(1px); box-shadow: var(--press) !important; }
+.mbtn.b, .act { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff), var(--accent)) !important; color: var(--on-accent) !important; border-color: color-mix(in srgb, var(--accent) 80%, #000) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 1px 2px rgba(0,0,0,.12), 0 2px 8px var(--accent-glow) !important; }
+.mbtn.b:hover, .act:hover { filter: brightness(1.05); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mbtn, :root:not([data-theme="light"]) .act { box-shadow: 0 1px 2px rgba(0,0,0,.4); } }
+
+/* 侧栏当前那一行：一块浮起来的白片，强调色字，不要竖线 */
+nav a.sub.on, nav a.sub2.on, nav .cx.on { background: var(--side-on-bg); box-shadow: var(--raise); }
+nav a.sub.on::before, nav a.sub2.on::before { display: none; }
+/* 红点：白边一圈，像从底上浮出来 */
+nav .open { box-shadow: 0 0 0 2px var(--side) !important; font-variant-numeric: tabular-nums; }
+/* 顶栏当前页：强调色药丸，顶上一线高光、底下一点影 */
+.topbar a.on, .topbar span.on { box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 1px 3px rgba(0,0,0,.15); }
+/* 主题、上下文这类小标签 */
+.ftopics a, .badge { box-shadow: 0 1px 1px rgba(0,0,0,.04); }
+
+/* ===== 按钮再突出一点 ===== */
+/* 次要按钮：浅天蓝底、天蓝字、天蓝细边，看得出能点 */
+.mbtn, .act { height: 32px; padding: 5px 16px !important; font-size: 13px; font-weight: 600 !important; background: var(--accent-bg) !important; color: var(--accent-ink) !important; border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent) !important; box-shadow: 0 1px 2px rgba(15,30,50,.08) !important; }
+.mbtn:hover { background: color-mix(in srgb, var(--accent) 18%, var(--panel)) !important; border-color: var(--accent) !important; }
+/* 主按钮：更饱和、阴影更明显，指上去再亮一点、抬一点 */
+.mbtn.b, .act { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent) 55%, color-mix(in srgb, var(--accent) 88%, #000)) !important; color: #fff !important; border: 1px solid color-mix(in srgb, var(--accent) 70%, #000) !important; text-shadow: 0 1px 0 rgba(0,0,0,.15);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 1px 2px rgba(0,0,0,.18), 0 4px 12px var(--accent-glow) !important; }
+.mbtn.b:hover, .act:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 4px rgba(0,0,0,.18), 0 8px 20px var(--accent-glow) !important; }
+.mbtn:active, .mbtn.b:active, .act:active { transform: translateY(1px) !important; filter: none; box-shadow: var(--press) !important; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mbtn.b, :root:not([data-theme="light"]) .act { color: #04263a !important; text-shadow: none; } }
+/* 流程图里答法的按钮（画在图里的）：次要的浅天蓝底，偏向的那个实心强调色 */
+.qa .btn rect { fill: var(--accent-bg) !important; stroke: color-mix(in srgb, var(--accent) 40%, transparent) !important; rx: 7; }
+.qa .btn text { fill: var(--accent-ink) !important; font-weight: 600; }
+.qa .btn:hover rect { stroke: var(--accent) !important; }
+.qa .btn.b rect { fill: var(--accent) !important; stroke: color-mix(in srgb, var(--accent) 70%, #000) !important; }
+.qa .btn.b text { fill: #fff !important; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .qa .btn.b text { fill: #04263a !important; } }
+
+/* ===== 左边栏统一：三种行同一套尺寸；只有当前所在的那一页是浮起来的白片 ===== */
+nav { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--side-ink-3) 45%, transparent) transparent; }
+nav .cx, nav .cx.proj { margin: 1px 8px !important; padding: 7px 10px !important; border: 0 !important; border-radius: 8px !important; font-size: 13px; font-weight: 600; color: var(--side-ink); box-shadow: none; background: transparent; }
+nav .cx:hover { background: var(--side-hover); }
+/* 上下文那一行：展开了、是当前的，也只加粗，不做白片 */
+nav div.cx.on { background: transparent !important; box-shadow: none !important; color: var(--side-ink) !important; }
+/* 项目级的链接（上下文地图、全局结构、总览、全项目）：是当前页就是白片 */
+nav a.cx.proj.on { background: var(--side-on-bg) !important; color: var(--side-on-ink) !important; box-shadow: var(--raise) !important; }
+/* 项目级链接和上下文之间一条细线 */
+nav .cx.proj + div.cx { position: relative; margin-top: 11px !important; }
+nav .cx.proj + div.cx::before { content: ""; position: absolute; left: 2px; right: 2px; top: -6px; height: 1px; background: var(--side-line); pointer-events: none; }
+nav > .cx:first-child { margin-top: 4px !important; }
+/* 组名、条目：各页同一个缩进和字号 */
+nav .gn { font-size: 11.5px !important; }
+nav a.sub, nav a.sub2, nav .tn { font-size: 12.5px; }

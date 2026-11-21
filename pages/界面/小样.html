@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>界面 · 小样</title>
+<title>工作台 · 界面</title>
 <style>
 :root{
   --bg:#f7f6f3; --panel:#ffffff; --ink:#1d1d1b; --ink-2:#55534e; --ink-3:#8a877f; --line:#dedbd3; --accent:#2563eb; --accent-bg:#e8efff;
@@ -295,7 +295,7 @@ const num = (i) => NUM[i] ?? `${i + 1}.`
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
 
 // 上下文：左边栏第一层；地址 #<上下文>/<需求编号>/<屏 id>，视角不进地址，从屏 id 推出来（屏 id 在一条需求里不重复）
-let context = '样例系统'
+let context = CONTEXTS.find((c) => (REQS[c] ?? []).length) ?? CONTEXTS[0]   // 地址里没写上下文：第一个有需求的上下文
 let view = ''          // '<需求编号>/<屏 id>'
 let finished = false   // 小样里按到了「完」
 let pendingFlash = null   // 右边一栏点了一条：{ screen, ask }，下一次画到那一屏时在小样上闪那个圆点、弹出气泡
@@ -365,7 +365,7 @@ Shell.init({ contexts: CONTEXTS, page: {
     }).join('')
   },
   pick: (cx) => { if (cx !== context) { context = cx; view = dfltOf(cx); finished = false } go(view); render() } },
-  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '界面', '建模', '编码'], current: '界面', live: !!DATA.WB } })
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['总览', '项目管理', '业务', '界面', '建模', '编码'], current: '界面', live: !!DATA.WB } })
 
 // 「定下」按屏来：这一屏定过就显示那天，没定就一个按钮
 function gateView(sc, locked) {

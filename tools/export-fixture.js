@@ -55,7 +55,7 @@ for (const [file, ps] of Object.entries(e.PSEUDO)) write(CX + `代码/伪代码/
 for (const [file, code] of Object.entries(e.CODE)) write(CX + `代码/${file}`, code.endsWith('\n') ? code : code + '\n')
 
 // 指挥
-const z = sampleData(W('谁在干什么'), ['SCENE', 'NOW_TS'])
+const z = sampleData(W('总览'), ['SCENE', 'NOW_TS'])
 const { today, ...scene } = z.SCENE
 write('现场.json', scene)
 write(`日志/${z.NOW_TS.slice(0, 10)}.jsonl`, today.map((r) => JSON.stringify(r)).join('\n') + '\n')

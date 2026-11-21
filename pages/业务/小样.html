@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>业务 · 小样</title>
+<title>工作台 · 业务</title>
 <style>
 :root{
   --bg:#f7f6f3; --panel:#ffffff; --ink:#1d1d1b; --ink-2:#55534e; --ink-3:#8a877f; --line:#dedbd3; --accent:#2563eb; --accent-bg:#e8efff;
@@ -39,7 +39,8 @@ nav .gb .gb a.sub{padding-left:46px}
 .intro .ib{padding:10px 16px 12px;font-size:13.5px;color:var(--ink-2);line-height:1.6}
 .intro .ib ul,.intro .ib ol{margin:0;padding-left:20px}.intro .ib li{margin:2px 0}
 .intro .ib b{color:var(--ink)}
-.intro .who{display:flex;flex-wrap:wrap;gap:10px}.intro .who>div{border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:220px;max-width:340px}
+/* 使用角色：等宽的网格，一行几张卡一样宽、一样高，放不下换行 */
+.intro .who{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;align-items:stretch}.intro .who>div{border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:0}
 .intro .who .aim{color:var(--ink-3);font-size:12.5px;margin:2px 0 4px}
 .intro .none{color:var(--ink-3)}
 .mc.data .note{font-size:12px;color:var(--ink-3);margin-top:2px}
@@ -476,7 +477,7 @@ Shell.init({ contexts: CONTEXTS, page: {
   },
   // 换到别的上下文：主题号、流程名各上下文不通用，回到它的全局图（上下文地图那页不动）
   pick: (cx) => { if (cx !== context) { context = cx; if (typeof selected !== 'undefined') selected = null; if (view !== 'cxmap') view = cx === '共享内核' ? 'kernel' : 'map' } go(view); render() } },
-  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['谁在干什么', '项目管理', '业务', '建模', '编码'], current: '业务', live: !!DATA.WB } })
+  topbar: { project: DATA.WB?.project ?? 'AgedCareProvider', pages: DATA.WB?.pages ?? ['总览', '项目管理', '业务', '建模', '编码'], current: '业务', live: !!DATA.WB } })
 /** 左边栏的流程：一份都没写主题的上下文是一个平的「流程」组；写了主题的，收进大组「流程 · 按主题」，里面一个主题一个小组，都默认折着，
  *  折着时右边是几条没答；打开某份流程时，它所在的大组和小组都自动展开 */
 function flowNav(cx, groups, flowLink) {

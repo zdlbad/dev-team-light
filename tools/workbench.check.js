@@ -136,11 +136,11 @@ const aggWorking = (...writes) => write('现场.json', { now: [{ role: '建模',
 withAsks()
 { const m = aggPage().members[0]
   check('聚合上没答的问题带着记号：成员上的、行为上的各一个', m.asks[0].sig?.length === 12 && m.behaviors[0].asks[0].sig?.length === 12 && m.asks[0].sig !== m.behaviors[0].asks[0].sig, m)
-  check('「等你答」数进聚合和伪代码上的问题', pageData(P, '谁在干什么').PAGE_ASKS['建模'] === 2 && pageData(P, '谁在干什么').PAGE_ASKS['编码'] === 1, pageData(P, '谁在干什么').PAGE_ASKS)
+  check('「等你答」数进聚合和伪代码上的问题', pageData(P, '总览').PAGE_ASKS['建模'] === 2 && pageData(P, '总览').PAGE_ASKS['编码'] === 1, pageData(P, '总览').PAGE_ASKS)
   r = act('答', { agg: 'account', ask: 'a-2', text: '不留', sig: m.behaviors[0].asks[0].sig })
   const now = read(AGG).members[0]
   check('答行为上的问题：写回那一条，别的问题不动', r.ok && now.behaviors[0].asks[0].answer === '不留' && now.behaviors[0].asks[0].answeredAt && !now.asks[0].answer, r)
-  check('答了的不再数', pageData(P, '谁在干什么').PAGE_ASKS['建模'] === 1)
+  check('答了的不再数', pageData(P, '总览').PAGE_ASKS['建模'] === 1)
   check('答过的不能再答', !act('答', { agg: 'account', ask: 'a-2', text: '留' }).ok)
   check('没有的问题号：说没有', !act('答', { agg: 'account', ask: 'a-9', text: '要' }).ok && !act('答', { agg: '没有的聚合', ask: 'a-1', text: '要' }).ok) }
 withAsks(); sig = aggPage().members[0].asks[0].sig
@@ -161,7 +161,7 @@ withAsks()
   check('伪代码上没答的问题带着记号', q.sig?.length === 12 && pageData(P, '编码').CODE_CX === '后台', q)
   r = act('答', { pseudo: 'src/account.ts', ask: 'a-1', text: '不抛', sig: q.sig })
   check('答伪代码上的问题：写回那一块的那一条', r.ok && read(PS).blocks[0].asks[0].answer === '不抛', r)
-  check('伪代码答了的不再数', pageData(P, '谁在干什么').PAGE_ASKS['编码'] === 0)
+  check('伪代码答了的不再数', pageData(P, '总览').PAGE_ASKS['编码'] === 0)
   check('没有伪代码的文件、往外指的路径：说没有', !act('答', { pseudo: 'src/none.ts', ask: 'a-1', text: 'x' }).ok && !act('答', { pseudo: '../../../项目', ask: 'a-1', text: 'x' }).ok) }
 withAsks(); sig = psPage().blocks[0].asks[0].sig
 { const d = read(PS); d.blocks[0].name = '换手机号'; write(PS, d) }
@@ -227,7 +227,7 @@ check('定下以后有一屏改了、掉回没定：界面回到黄', show(prog(
 fresh(); out('业务', '2026-11-02'); out('软件工程师', '2026-11-05')
 logRow('2026-11-08', { kind: '做完', role: '指挥', task: 'N-1', text: '测试过了' })
 check('记了做完：四段全绿，没有在做的', show(prog()) === '绿绿绿绿' && prog()._doing.length === 0 && prog().编码 === '2026-11-08', prog())
-check('日程里的任务带着同一份四段，页面照它画', show(pageData(P, '项目管理').日程.milestones[0].items[0].stages) === '绿绿绿绿' && show(pageData(P, '谁在干什么').PLAN.milestones[0].items[0].stages) === '绿绿绿绿')
+check('日程里的任务带着同一份四段，页面照它画', show(pageData(P, '项目管理').日程.milestones[0].items[0].stages) === '绿绿绿绿' && show(pageData(P, '总览').PLAN.milestones[0].items[0].stages) === '绿绿绿绿')
 check('没排进日程的需求也算得出', (out('业务', '2026-11-09', 'N-2'), show(prog('N-2')) === '黄灰黄灰'))
 
 fresh(); noScreens()
