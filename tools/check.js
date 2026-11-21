@@ -7,7 +7,7 @@
 //   业务    一份流程里步号、规则号、问题号有没有重复；分了子主题的主题：子主题号重不重复、撞不撞主题号，每个子主题有没有概念文件，子主题之间的线两头在不在，子文件夹里有没有图上没有的文件
 //           流程：topic 是不是全局图上的主题（没写是提醒）；入口、出口接的步在不在，写了 flow 的那一份在不在、那一份有没有写回来对上；alt 的步写没写 case
 //           概念图：同样两样数据之间有几条线（提醒，并成一条）
-//           模块业务：主题号对不对；功能号、内部流程号、工作流程号、待定号有没有重复；每项功能写没写核心数据（subject 带 to）和操作意图（intent）；
+//           模块业务：主题号对不对；功能号、内部流程号、工作流程号、待定号有没有重复；每项功能写没写业务数据（subject 带 to）和操作意图（intent）；
 //           功能指着的流程步在不在；工作流程的线两头是不是它的状态；要用到的数据写没写名字（没写是错）、写没写解释或例子（提醒）；
 //           业务概述（intro）写没写、缺哪几样、使用角色写没写按先后做的事（都是提醒）
 //   界面    屏号、问题号有没有重复；每一屏的小样文件在不在；does 的 to 指不指得到屏；flow 那份流程在不在、step 那一步在不在；
@@ -100,7 +100,8 @@ for (const cx of names) {
 
   // 子主题：主题那份概念文件里有 subs 的，每个子主题一份 概念/<主题>/<子主题>.json
   const cdir = path.join(c, '业务', '概念'), gp = path.join(c, '业务', '全局图.json')
-  const topicIds = (exists(gp) ? load(gp, cx, '业务')?.topics ?? [] : []).map((t) => t.id)
+  const topicList = exists(gp) ? load(gp, cx, '业务')?.topics ?? [] : []
+  const topicIds = topicList.map((t) => t.id), topicTitles = topicList.map((t) => t.title)
   const allSubs = []
   for (const { name, file } of jsonIn(cdir)) {
     const d = load(file, cx, '业务'); if (!d) continue
@@ -163,10 +164,24 @@ for (const cx of names) {
     }
     const fns = (d.groups ?? []).flatMap((g) => g.functions ?? [])
     for (const x of dups(fns.map((f) => f.id))) say('错', cx, '业务', file, `功能号重复：${x}`)
+    // 核心数据：每个主题都要认出来；写了的要写全，指着的功能要有，去到别的主题的要写对主题名
+    if (!(d.core ?? []).length) say('提醒', cx, '业务', file, '没写核心数据（core）：这块业务最后要留下的是哪样数据、它从哪来、去到哪')
+    for (const c of d.core ?? []) {
+      const who = `核心数据「${c.title ?? '?'}」`
+      if (!String(c.title ?? '').trim()) say('错', cx, '业务', file, '有一样核心数据没写名字（title）')
+      if (!String(c.why ?? '').trim()) say('提醒', cx, '业务', file, `${who}没写为什么是它（why）`)
+      const segs = [...(c.sources ?? []).flatMap((s) => s.steps ?? []), ...(c.targets ?? [])]
+      for (const x of segs) {
+        if (!String(x.data ?? '').trim() || !String(x.by ?? '').trim()) say('错', cx, '业务', file, `${who}的来路、去处里有一段没写全：每一段要有数据（data）和那件业务（by）`)
+        // 别的上下文的主题写成「主题名（上下文名）」，这里不查；本上下文的主题名要对得上全局图
+        if (x.topic && !/（.+）$/.test(x.topic) && topicTitles.length && !topicTitles.includes(x.topic)) say('错', cx, '业务', file, `${who}的去处写的主题「${x.topic}」不是全局图上的主题名（别的上下文的主题写成「主题名（上下文名）」）`)
+        if (x.fn && !fns.some((f) => f.id === x.fn)) say('错', cx, '业务', file, `${who}指着的功能 ${x.fn} 在这个主题里没有`)
+      }
+    }
     for (const f of fns) {
       const who = `功能 ${f.id ?? '?'}（${f.title ?? ''}）`
       if (!f.id) say('错', cx, '业务', file, `有一项功能没写号（id）：${f.title ?? ''}`)
-      if (!f.subject?.title || !f.subject?.to) say('错', cx, '业务', file, `${who}没写核心数据：subject 写它主要动的那样数据（title）和变成什么（to）`)
+      if (!f.subject?.title || !f.subject?.to) say('错', cx, '业务', file, `${who}没写业务数据：subject 写它主要动的那样数据（title）和变成什么（to）`)
       if (!String(f.intent ?? '').trim()) say('错', cx, '业务', file, `${who}没写操作意图（intent）`)
       // 要用到的数据：一样一条 { title, note }；只写名字的旧写法照认，提醒补解释
       for (const x of f.in ?? []) {

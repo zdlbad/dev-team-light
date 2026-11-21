@@ -763,9 +763,27 @@ function treeView(openPath) {
 }
 
 // ---------- 模型一条 → 代码 ----------
+// 工作台送来的 CODE 里只记 true＝写了（全文好几 MB，不跟着数据一起来）：点开哪个文件再去取，取回来记在 CODE 里、重画一遍
+const codeWait = new Set(), codeErr = {}
+function codeBox(file) {
+  if (typeof CODE[file] === 'string') return `<pre class="code">${highlight(CODE[file])}</pre>`
+  if (!CODE[file]) return `<p class="none">${esc(file)} 还没写。</p>`
+  const key = context + '\n' + file
+  if (codeErr[key]) return `<p class="none">读不到 ${esc(file)}：${esc(codeErr[key])}</p>`
+  if (!codeWait.has(key)) {
+    codeWait.add(key)
+    const store = CODE
+    fetch('code?cx=' + encodeURIComponent(context) + '&path=' + encodeURIComponent(file))
+      .then((r) => r.ok ? r.text() : Promise.reject(new Error(r.status === 404 ? '工作台上没有这个文件' : '出错 ' + r.status)))
+      .then((t) => { store[file] = t }, (e) => { codeErr[key] = e.message })
+      .finally(() => { codeWait.delete(key); render() })
+  }
+  return `<p class="none">正在读 ${esc(file)}…</p>`
+}
 function highlight(src) {
-  return esc(src).replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g, '<span class="cm">$1</span>').replace(/('[^']*')/g, '<span class="str">$1</span>')
-    .replace(/\b(export|class|static|readonly|return|throw|new|if|const|async|await|function|type|describe|it|expect)\b/g, '<span class="kw">$1</span>')
+  // 注释、字符串、关键字一遍扫完：分几遍替换的话，后一遍会把前一遍插进去的 <span class="…"> 里的 class 也当关键字包起来
+  return esc(src).replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('[^'\n]*')|\b(export|class|static|readonly|return|throw|new|if|const|async|await|function|type|describe|it|expect)\b/g,
+    (m, cm, str, kw) => cm ? `<span class="cm">${cm}</span>` : str ? `<span class="str">${str}</span>` : `<span class="kw">${kw}</span>`)
 }
 function modelView(key) {
   const p = key.split('/')
@@ -774,7 +792,7 @@ function modelView(key) {
   const st = p[0] === 'agg' && p.length === 3 ? minSt(memberKeys(aggOf[p[1]], aggOf[p[1]].members.find((m) => m.id === p[2]))) : p[0] === 'agg' && p.length === 2 ? minSt(aggOf[p[1]].members.flatMap((m) => memberKeys(aggOf[p[1]], m))) : stOf(key)
   const fileRow = (f) => `<div class="file${openFile === f.path ? ' on' : ''}" data-path="${esc(f.path)}"><code>${esc(f.path)}</code><span class="k">${esc(f.kind)}</span>${PSEUDO[f.path] ? `<a href="#tree/${esc(f.path)}" style="font-size:12px;color:var(--accent);text-decoration:none">伪代码 ›</a>` : ''}${stTag(f.tests ? minSt(f.tests) : st)}</div>`
   const shown = openFile && files.find((f) => f.path === openFile) ? openFile : (own[0] ?? tests[0])?.path
-  const code = shown ? (CODE[shown] ? `<pre class="code">${highlight(CODE[shown])}</pre>` : `<p class="none">${esc(shown)} 还没写。</p>`) : '<p class="none">还没有对应的文件。</p>'
+  const code = shown ? codeBox(shown) : '<p class="none">还没有对应的文件。</p>'
   // 一个成员：下面列它的行为各到哪一步
   let bh = ''
   if (p[0] === 'agg' && p.length === 3) {

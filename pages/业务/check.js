@@ -346,7 +346,7 @@ const cases = [
   // 地址里的子主题没有：说一句，不抛错
   ['#样例系统/concepts/g6/g6-9', (s) => s.includes('里没有子主题 g6-9'), '', SPLIT],
   // ---- 业务（模块业务）：三层页签 ----
-  // 默认落在功能、第一组、第一项：页签三层，左边操作意图和要用到的数据，中间核心数据「新记下 → 待核」，动作是箭头上的灰字；用在流程哪一步链过去
+  // 默认落在功能、第一组、第一项：页签三层，左边操作意图和要用到的数据，中间业务数据「新记下 → 待核」，动作是箭头上的灰字；用在流程哪一步链过去
   ['#样例系统/module/g6', (s) => s.includes('class="mtabs l1"') && s.includes('class="mtabs l2"') && s.includes('class="mtabs l3"') && s.includes('<a href="#module/g6/功能" class="on">功能 <small>3</small>')
     && s.includes('<a href="#module/g6/功能/1/f-1" class="on">登记老人先付的报销') && s.includes('页面上叫「报销」') && s.includes('操作意图') && s.includes('新记下 → 待核') && s.includes('<span class="marr"><i>登记老人先付的报销</i>')
     && s.includes('href="#flow/g6-01-报销">报销</a> 第 2 步') && !s.includes('顺带留下的'), '', STAGES],
@@ -387,6 +387,18 @@ const cases = [
   ['#样例系统/module/g6', (s) => s.includes('<!--记着:usual,true-->'), "introSet({ tab: 'usual', shut: true }); useCx(context); els.main.innerHTML += '<!--记着:' + introState.tab + ',' + introState.shut + '-->'", STAGES],
   // 没写业务概述的：不画这一块
   ['#样例系统/module/g6', (s) => !s.includes('class="intro"'), "introSet({ shut: false })", STAGES],
+  // ---- 核心数据：画在业务概述上面；每一站是一样数据，线上是业务 ----
+  // 只有一样核心数据：不出页签；线上的功能能点到功能图
+  ['#样例系统/module/g2', (s) => s.includes('class="cf"') && !s.includes('class="ctabs"') && s.includes('<div class="d core"><i>核心数据</i><b>参与者档案</b>') && s.indexOf('class="cf"') < s.indexOf('class="intro"') && s.includes('<a href="#module/g2/功能/1/f-1">f-1 照决定通知书建立参与者档案</a>'), ''],
+  // 两样核心数据：排成页签，一次看一样；三条来路、三个去处，别的主题的数据画成虚框；没有直接关联就没有能点的站
+  ['#样例系统/module/g5', (s) => s.includes('<button data-core-tab="0" data-core-key="样例系统/g5" class="on">服务记录</button>') && s.includes('<button data-core-tab="1" data-core-key="样例系统/g5">照护管理记录</button>')
+    && (s.match(/<div class="row">/g) ?? []).length === 6 && s.includes('<div class="d ev">外部服务方开来一张发票</div>') && s.includes('class="d ext"') && s.includes('别的主题：参与者档案与她名下的钱') && !s.includes(' go"'), "coreTab['样例系统/g5'] = 0; render()"],
+  // 换到另一样：只画它的图
+  ['#样例系统/module/g5', (s) => s.includes('class="on">照护管理记录</button>') && s.includes('<div class="d core"><i>核心数据</i><b>照护管理记录</b>') && (s.match(/<div class="row">/g) ?? []).length === 2 && !s.includes('发票行'.concat('</b>')), "coreTab['样例系统/g5'] = 1; render()"],
+  // 图上的一站本身是另一样核心数据（直接关联）：那个框能点，点了切过去
+  ['#样例系统/module/g5', (s) => s.includes('<div class="d  go" data-core-tab="0" data-core-key="样例系统/g5"><i>也是核心数据 ›</i><b>服务记录</b>'), "MODULES.g5.core[1].targets.unshift({ by: '记成一条', data: '服务记录' }); coreTab['样例系统/g5'] = 1; render(); MODULES.g5.core[1].targets.shift(); coreTab['样例系统/g5'] = 0"],
+  // 没写核心数据的主题：不画这一块
+  ['#样例系统/module/g6', (s) => !s.includes('class="cf"'), '', STAGES],
   // ---- 流程：入口出口、opt/alt、主题 ----
   // 标题下一排主题：这一份的主题在前加粗，数据卡用到的别的主题在后；数据卡前面写主题名、照主题上色
   ['#样例系统/flow/g6-01-报销', (s) => s.includes('<div class="ftopics"><a href="#concepts/g6" class="own"') && s.indexOf('>服务发生与扣费</a>') < s.indexOf('>建档与服务协议</a>')

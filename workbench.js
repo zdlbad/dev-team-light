@@ -7,7 +7,7 @@
 const http = require('node:http')
 const fs = require('node:fs')
 const path = require('node:path')
-const { pageData, applyAction, prototypes } = require('./lib/project.js')
+const { pageData, codeText, applyAction, prototypes } = require('./lib/project.js')
 
 const args = process.argv.slice(2)
 const flagAt = (f) => args.indexOf(f)
@@ -82,6 +82,11 @@ http.createServer(async (req, res) => {
       const page = segs[2].slice(0, -3)
       if (!PAGES[page]) return send(res, 404, 'no such page', text)
       return send(res, 200, `window.DATA = ${JSON.stringify(await dataFor(proj, page))}`, 'text/javascript; charset=utf-8')
+    }
+    // 编码页点开一个文件：/<目录名>/code?cx=<上下文>&path=<文件>，只给结构.json 里列着的
+    if (req.method === 'GET' && segs.length === 2 && segs[1] === 'code') {
+      const t = codeText(PROJECTS[proj], url.searchParams.get('cx') ?? '', url.searchParams.get('path') ?? '')
+      return t === null ? send(res, 404, 'no such file', text) : send(res, 200, t, text)
     }
     if (req.method === 'POST' && segs[1] === 'api' && segs.length === 3) {
       const out = applyAction(PROJECTS[proj], segs[2], JSON.parse((await readBody(req)) || '{}'), OPTS)

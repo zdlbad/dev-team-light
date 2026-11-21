@@ -46,6 +46,7 @@ function clean() {
   write(A + '业务/概念/g2/g2-2.json', { topic: 'g2', sub: 'g2-2', title: '对账', concepts: [], external: [], edges: [] })
   // 模块业务：g1 一份；两份流程接上：开户的出口接存钱的入口
   write(A + '业务/模块业务/g1.json', { topic: 'g1', title: '开户',
+    core: [{ title: '账户', why: '开户最后留下的是账户', sources: [{ steps: [{ data: '客户交来开户表', event: true, by: '柜员照开户表开立账户', fn: 'f-1' }] }], targets: [] }],
     intro: { context: '银行替人存钱', duty: '管开户，不管存取', concepts: [{ title: '账户', note: '一人存钱的那一份' }], users: [{ who: '柜员', aim: '开户', steps: ['照开户表开立账户'] }], usual: ['柜员照开户表开立账户'] },
     groups: [{ title: '账户', functions: [
     { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '这位客户的账户', to: '账户开着，可以存钱' }, in: [{ title: '开户表', note: '客户填好交来的那一张' }], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
@@ -115,7 +116,9 @@ broken('主题没分子主题却有子文件夹', () => write(A + '业务/概念
 
 const M1 = A + '业务/模块业务/g1.json', fn1 = (d) => d.groups[0].functions[0]
 broken('功能号重复', () => edit(M1, (d) => d.groups.push({ title: '卡', functions: [{ ...fn1(d), title: '又一项' }] })), '功能号重复：f-1', 'g1.json')
-broken('功能没写核心数据', () => edit(M1, (d) => { delete fn1(d).subject }), '功能 f-1（开立账户）没写核心数据')
+broken('核心数据指着没有的功能', () => edit(M1, (d) => { d.core = [{ title: '账户', why: '为什么', sources: [{ steps: [{ data: '申请', by: '照申请开立', fn: 'f-99' }] }], targets: [] }] }), '指着的功能 f-99 在这个主题里没有')
+broken('核心数据的去处写的主题对不上全局图', () => edit(M1, (d) => { d.core[0].targets.push({ by: '柜员记进总账', data: '总账', topic: '没有的主题' }) }), '去处写的主题「没有的主题」不是全局图上的主题名')
+broken('功能没写业务数据', () => edit(M1, (d) => { delete fn1(d).subject }), '功能 f-1（开立账户）没写业务数据')
 broken('功能没写操作意图', () => edit(M1, (d) => { fn1(d).intent = '' }), '没写操作意图')
 broken('功能指着的流程步没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '01-开户', step: 9 }] }), '「01-开户」第 9 步没有')
 broken('功能指着的流程没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '99-没有', step: 1 }] }), '「99-没有」在 业务/流程/ 下没有')
