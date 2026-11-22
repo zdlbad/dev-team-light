@@ -164,17 +164,23 @@ for (const cx of names) {
     }
     const fns = (d.groups ?? []).flatMap((g) => g.functions ?? [])
     for (const x of dups(fns.map((f) => f.id))) say('错', cx, '业务', file, `功能号重复：${x}`)
-    // 核心数据：每个主题都要认出来；写了的要写全，指着的功能要有，去到别的主题的要写对主题名
+    // 核心数据：每个主题都要认出来；写了的要写全，指着的功能要有，去到别的主题的要写对主题名；来路碰到另一样核心数据要停
     if (!(d.core ?? []).length) say('提醒', cx, '业务', file, '没写核心数据（core）：这块业务最后要留下的是哪样数据、它从哪来、去到哪')
     for (const c of d.core ?? []) {
       const who = `核心数据「${c.title ?? '?'}」`
       if (!String(c.title ?? '').trim()) say('错', cx, '业务', file, '有一样核心数据没写名字（title）')
       if (!String(c.why ?? '').trim()) say('提醒', cx, '业务', file, `${who}没写为什么是它（why）`)
-      const segs = [...(c.sources ?? []).flatMap((s) => s.steps ?? []), ...(c.targets ?? [])]
+      const segs = [...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]), ...(c.targets ?? [])]
+      // 一条来路只有头一站可以是另一样核心数据（从它起）；写了 heads 的，头一站在每个起点里
+      const others = new Set((d.core ?? []).filter((x) => x !== c).map((x) => x.title))
+      for (const s of c.sources ?? []) {
+        const runs = (s.heads ?? []).length ? [...s.heads.map((h) => h.steps ?? []), (s.steps ?? []).map((x) => ({ ...x, mid: true }))] : [s.steps ?? []]
+        for (const r of runs) r.forEach((x, i) => { if ((i > 0 || x.mid) && others.has(x.data)) say('提醒', cx, '业务', file, `${who}的来路中途经过了另一样核心数据「${x.data}」：从它起就好，它前面的事在它自己的图上看`) })
+      }
       for (const x of segs) {
         if (!String(x.data ?? '').trim() || !String(x.by ?? '').trim()) say('错', cx, '业务', file, `${who}的来路、去处里有一段没写全：每一段要有数据（data）和那件业务（by）`)
         // 别的上下文的主题写成「主题名（上下文名）」，这里不查；本上下文的主题名要对得上全局图
-        if (x.topic && !/（.+）$/.test(x.topic) && topicTitles.length && !topicTitles.includes(x.topic)) say('错', cx, '业务', file, `${who}的去处写的主题「${x.topic}」不是全局图上的主题名（别的上下文的主题写成「主题名（上下文名）」）`)
+        if (x.topic && !/（.+）$/.test(x.topic) && topicTitles.length && !topicTitles.includes(x.topic)) say('错', cx, '业务', file, `${who}的来路或去处写的主题「${x.topic}」不是全局图上的主题名（别的上下文的主题写成「主题名（上下文名）」）`)
         if (x.fn && !fns.some((f) => f.id === x.fn)) say('错', cx, '业务', file, `${who}指着的功能 ${x.fn} 在这个主题里没有`)
       }
     }

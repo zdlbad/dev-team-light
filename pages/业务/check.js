@@ -397,6 +397,10 @@ const cases = [
   ['#样例系统/module/g5', (s) => s.includes('class="on">照护管理记录</button>') && s.includes('<div class="d core"><i>核心数据</i><b>照护管理记录</b>') && (s.match(/<div class="row">/g) ?? []).length === 2 && !s.includes('发票行'.concat('</b>')), "coreTab['样例系统/g5'] = 1; render()"],
   // 图上的一站本身是另一样核心数据（直接关联）：那个框能点，点了切过去
   ['#样例系统/module/g5', (s) => s.includes('<div class="d  go" data-core-tab="0" data-core-key="样例系统/g5"><i>也是核心数据 ›</i><b>服务记录</b>'), "MODULES.g5.core[1].targets.unshift({ by: '记成一条', data: '服务记录' }); coreTab['样例系统/g5'] = 1; render(); MODULES.g5.core[1].targets.shift(); coreTab['样例系统/g5'] = 0"],
+  // 来路写了 heads：两个起点先各画一行、并到一起，再画后面只写一遍的站
+  ['#样例系统/module/g5', (s) => s.includes('<div class="d ev">起点甲</div>') && s.includes('<div class="d ev">起点乙</div>') && (s.match(/<b>汇合的那一站<\/b>/g) ?? []).length === 1 && s.includes('<div class="row"><div class="col in fork">'), "MODULES.g5.core[0].sources.unshift({ heads: [{ steps: [{ data: '起点甲', event: true, by: '甲交来' }] }, { steps: [{ data: '起点乙', event: true, by: '乙交来' }] }], steps: [{ data: '汇合的那一站', by: '照它记下' }] }); coreTab['样例系统/g5'] = 0; render(); MODULES.g5.core[0].sources.shift()"],
+  // 来路的起点是别的主题里发生的一件事：画成别的主题的虚框
+  ['#样例系统/module/g5', (s) => s.includes('<div class="d ext"><i>别的主题：上游的主题</i>上游那边一件事成了</div>'), "MODULES.g5.core[0].sources.unshift({ steps: [{ data: '上游那边一件事成了', event: true, topic: '上游的主题', by: '照它记下' }] }); coreTab['样例系统/g5'] = 0; render(); MODULES.g5.core[0].sources.shift()"],
   // 没写核心数据的主题：不画这一块
   ['#样例系统/module/g6', (s) => !s.includes('class="cf"'), '', STAGES],
   // ---- 流程：入口出口、opt/alt、主题 ----

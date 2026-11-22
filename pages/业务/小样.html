@@ -1558,7 +1558,10 @@ function coreFlow(m, id) {
   const e = (x) => { const at = x.fn ? fnAt(x.fn) : null; return `<div class="e"><span>${esc(x.by ?? '')}${at ? `<a href="${esc(at.href)}">${esc(x.fn)} ${esc(at.f.title)}</a>` : x.topic ? `<em>${esc(x.topic)}</em>` : ''}</span></div>` }
   const tip = '<div class="tip"></div>'
   const src = c.sources ?? [], tgt = c.targets ?? []
-  const rowIn = (s) => `<div class="row">${(s.steps ?? []).map((st, i) => (i ? tip : '') + (st.event ? `<div class="d ev">${esc(st.data ?? '')}</div>` : d(st.data, '', '')) + e(st)).join('')}</div>`
+  // 起点是别的主题里发生的一件事的，画成别的主题的虚框
+  const run = (steps) => (steps ?? []).map((st, i) => (i ? tip : '') + (st.event ? (st.topic ? `<div class="d ext"><i>别的主题：${esc(st.topic)}</i>${esc(st.data ?? '')}</div>` : `<div class="d ev">${esc(st.data ?? '')}</div>`) : d(st.data, '', '')) + e(st)).join('')
+  // 来路写了 heads 的：几个起点先各画一行，并到一起，再接着画后面只写一遍的那几站
+  const rowIn = (s) => (s.heads ?? []).length ? `<div class="row"><div class="col in${s.heads.length > 1 ? ' fork' : ''}">${s.heads.map((h) => `<div class="row">${run(h.steps)}</div>`).join('')}</div><div class="stub"></div>${tip}${run(s.steps)}</div>` : `<div class="row">${run(s.steps)}</div>`
   const rowOut = (t) => `<div class="row">${e(t)}${tip}${d(t.data, t.topic ? '别的主题：' + t.topic : '', t.topic ? 'ext' : '')}</div>`
   const tabs = cores.length > 1 ? `<div class="ctabs">${cores.map((x, i) => `<button ${sw(i)}${i === ci ? ' class="on"' : ''}>${esc(x.title)}</button>`).join('')}</div>` : ''
   return `<div class="cf"><div class="ch">核心数据${cores.length > 1 ? ` <span>${cores.length} 样，一次看一样</span>` : ''}</div>${tabs}<div class="cw">${esc(c.why ?? '')}</div><div class="flow">
