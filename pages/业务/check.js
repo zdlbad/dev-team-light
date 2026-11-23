@@ -389,7 +389,7 @@ const cases = [
   ['#样例系统/module/g6', (s) => !s.includes('class="intro"'), "introSet({ shut: false })", STAGES],
   // ---- 核心数据：画在业务概述上面；每一站是一样数据，线上是业务 ----
   // 只有一样核心数据：不出页签；线上的功能能点到功能图
-  ['#样例系统/module/g2', (s) => s.includes('class="cf"') && !s.includes('class="ctabs"') && s.includes('<div class="d core"><i>核心数据</i><b>参与者档案</b>') && s.indexOf('class="cf"') < s.indexOf('class="intro"') && s.includes('<a href="#module/g2/功能/1/f-1">f-1 照决定通知书建立参与者档案</a>'), ''],
+  ['#样例系统/module/g2', (s) => s.includes('class="cf"') && !s.includes('class="ctabs"') && s.includes('<div class="d core"><i>核心数据</i><b>参与者档案</b>') && s.indexOf('class="intro"') < s.indexOf('class="cf"') && s.includes('<a href="#module/g2/功能/1/f-1">f-1 照决定通知书建立参与者档案</a>'), ''],
   // 两样核心数据：排成页签，一次看一样；三条来路、三个去处，别的主题的数据画成虚框；没有直接关联就没有能点的站
   ['#样例系统/module/g5', (s) => s.includes('<button data-core-tab="0" data-core-key="样例系统/g5" class="on">服务记录</button>') && s.includes('<button data-core-tab="1" data-core-key="样例系统/g5">照护管理记录</button>')
     && (s.match(/<div class="row">/g) ?? []).length === 6 && s.includes('<div class="d ev">外部服务方开来一张发票</div>') && s.includes('class="d ext"') && s.includes('别的主题：参与者档案与她名下的钱') && !s.includes(' go"'), "coreTab['样例系统/g5'] = 0; render()"],
@@ -401,6 +401,17 @@ const cases = [
   ['#样例系统/module/g5', (s) => s.includes('<div class="d ev">起点甲</div>') && s.includes('<div class="d ev">起点乙</div>') && (s.match(/<b>汇合的那一站<\/b>/g) ?? []).length === 1 && s.includes('<div class="row"><div class="col in fork">'), "MODULES.g5.core[0].sources.unshift({ heads: [{ steps: [{ data: '起点甲', event: true, by: '甲交来' }] }, { steps: [{ data: '起点乙', event: true, by: '乙交来' }] }], steps: [{ data: '汇合的那一站', by: '照它记下' }] }); coreTab['样例系统/g5'] = 0; render(); MODULES.g5.core[0].sources.shift()"],
   // 来路的起点是别的主题里发生的一件事：画成别的主题的虚框
   ['#样例系统/module/g5', (s) => s.includes('<div class="d ext"><i>别的主题：上游的主题</i>上游那边一件事成了</div>'), "MODULES.g5.core[0].sources.unshift({ steps: [{ data: '上游那边一件事成了', event: true, topic: '上游的主题', by: '照它记下' }] }); coreTab['样例系统/g5'] = 0; render(); MODULES.g5.core[0].sources.shift()"],
+  // 看板只讲核心数据：框里是装着的概念、不带状态；线上标创建；底下一行用到的资料
+  ['#样例系统/module/g2', (s) => s.includes('<small>装着：批到的分级和路径、签了的服务协议、分到的资金</small>') && !s.includes('已建档 / 已签协议') && s.includes('<span><u class="op new">创建</u>照通知书上批下来的内容建立档案') && !s.includes('class="cu"'), ''],
+  ['#样例系统/module/g5', (s) => s.includes('<div class="cu"><span>用到的资料</span><b title="做的是清单上的哪一项，照它查">服务清单</b>') && s.includes('<u class="op upd">更新</u>申报通过以后扣款'), "coreTab['样例系统/g5'] = 0; render()"],
+  // 线上的删除；旧数据里标着 change 的来路不画
+  ['#样例系统/module/g5', (s) => s.includes('<u class="op del">删除</u>整份撤掉') && !s.includes('改了已有的那一条'), "MODULES.g5.core[0].targets.unshift({ op: '删除', by: '整份撤掉', data: '草稿' }); MODULES.g5.core[0].sources.push({ change: true, steps: [{ data: '改了已有的那一条', event: true, by: '改' }] }); coreTab['样例系统/g5'] = 0; render(); MODULES.g5.core[0].targets.shift(); MODULES.g5.core[0].sources.pop()"],
+  // 功能图的业务数据：标做了什么，列出记下、会改的项，冒号前面加粗
+  ['#样例系统/module/g2/功能/1/f-1', (s) => s.includes('<div class="mk">业务数据</div><u class="op new">创建</u><b>这位老人的参与者档案</b>') && s.includes('<div class="ed"><div class="mk">记下</div><div><b>批到的分级和路径</b>：照决定通知书记下</div></div>'), ''],
+  ['#样例系统/module/g2/功能/1/f-2', (s) => s.includes('<u class="op upd">更新</u>') && s.includes('<div class="mk">会改</div><div><b>签了的服务协议</b>：'), ''],
+  // 模块职责：写成列表的一条一行；还是一段话的按句号、分号拆开
+  ['#样例系统/module/g2', (s) => s.includes('<ul class="duty"><li>管每位老人的档案和她名下的基金、账户：建档，记下她签了协议、分到了资金，按申报从账户扣款。</li><li>不管评估怎么做、服务怎么排、发票怎么开。</li></ul>'), "introSet({ tab: 'duty', shut: false })"],
+  ['#样例系统/module/g2', (s) => s.includes('<ul class="duty"><li>甲；</li><li>乙。</li></ul>'), "const was = MODULES.g2.intro.duty; MODULES.g2.intro.duty = '甲；乙。'; introState.tab = 'duty'; introState.shut = false; render(); MODULES.g2.intro.duty = was; introState.tab = 'context'"],
   // 没写核心数据的主题：不画这一块
   ['#样例系统/module/g6', (s) => !s.includes('class="cf"'), '', STAGES],
   // ---- 流程：入口出口、opt/alt、主题 ----

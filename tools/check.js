@@ -166,11 +166,22 @@ for (const cx of names) {
     for (const x of dups(fns.map((f) => f.id))) say('错', cx, '业务', file, `功能号重复：${x}`)
     // 核心数据：每个主题都要认出来；写了的要写全，指着的功能要有，去到别的主题的要写对主题名；来路碰到另一样核心数据要停
     if (!(d.core ?? []).length) say('提醒', cx, '业务', file, '没写核心数据（core）：这块业务最后要留下的是哪样数据、它从哪来、去到哪')
+    const OPS = ['创建', '更新', '删除']
     for (const c of d.core ?? []) {
       const who = `核心数据「${c.title ?? '?'}」`
       if (!String(c.title ?? '').trim()) say('错', cx, '业务', file, '有一样核心数据没写名字（title）')
       if (!String(c.why ?? '').trim()) say('提醒', cx, '业务', file, `${who}没写为什么是它（why）`)
       const segs = [...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]), ...(c.targets ?? [])]
+      // 线上都要标做了什么：创建、更新、删除；看板只画把它新建出来的来路，所以每条来路的最后一步是创建
+      const badOp = segs.filter((x) => x.op && !OPS.includes(x.op))
+      for (const x of badOp) say('错', cx, '业务', file, `${who}的来路、去处上 op 写的是「${x.op}」：只能写创建、更新、删除`)
+      const noOp = segs.filter((x) => !x.op).length
+      if (noOp) say('提醒', cx, '业务', file, `${who}的来路、去处有 ${noOp} 段没标做了什么（op）：创建、更新或删除`)
+      for (const s of c.sources ?? []) {
+        if (s.change) say('提醒', cx, '业务', file, `${who}有一条来路标着 change：改动已有数据的事不上看板，删掉这一条，写到那项功能的业务数据上`)
+        const last = (s.steps ?? []).at(-1)
+        if (!s.change && last?.op && last.op !== '创建') say('提醒', cx, '业务', file, `${who}有一条来路的最后一步是「${last.op}」：看板只画把它新建出来的来路，最后一步是创建；改动它的事在功能里看`)
+      }
       // 一条来路只有头一站可以是另一样核心数据（从它起）；写了 heads 的，头一站在每个起点里
       const others = new Set((d.core ?? []).filter((x) => x !== c).map((x) => x.title))
       for (const s of c.sources ?? []) {
@@ -184,10 +195,20 @@ for (const cx of names) {
         if (x.fn && !fns.some((f) => f.id === x.fn)) say('错', cx, '业务', file, `${who}指着的功能 ${x.fn} 在这个主题里没有`)
       }
     }
+    // 概述里的核心概念都要在看板上找得到：是一样核心数据、装在哪一样里、是用到的资料，或者是来路去处上的一站
+    if ((d.core ?? []).length) {
+      const names = (xs) => (xs ?? []).map((x) => (typeof x === 'string' ? x : x?.title)).filter(Boolean)
+      const onBoard = new Set([...names(d.core), ...d.core.flatMap((c) => names(c.parts)), ...names(d.uses),
+        ...d.core.flatMap((c) => [...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]).filter((x) => !x.event).map((x) => x.data), ...(c.targets ?? []).map((x) => x.data)])])
+      for (const k of names(d.intro?.concepts)) if (!onBoard.has(k)) say('提醒', cx, '业务', file, `核心概念「${k}」在核心数据的看板上找不到：它该是一样核心数据、装在哪一样里（parts）、是用到的资料（uses），或者是来路、去处上的一站`)
+    }
     for (const f of fns) {
       const who = `功能 ${f.id ?? '?'}（${f.title ?? ''}）`
       if (!f.id) say('错', cx, '业务', file, `有一项功能没写号（id）：${f.title ?? ''}`)
       if (!f.subject?.title || !f.subject?.to) say('错', cx, '业务', file, `${who}没写业务数据：subject 写它主要动的那样数据（title）和变成什么（to）`)
+      if (f.subject?.op && !['创建', '更新', '删除'].includes(f.subject.op)) say('错', cx, '业务', file, `${who}的业务数据 op 写的是「${f.subject.op}」：只能写创建、更新、删除`)
+      else if (f.subject?.title && !f.subject.op) say('提醒', cx, '业务', file, `${who}的业务数据没标做了什么（subject.op）：创建、更新或删除`)
+      else if (['创建', '更新'].includes(f.subject?.op) && !(f.subject.edits ?? []).length) say('提醒', cx, '业务', file, `${who}没列出动了业务数据的哪几项（subject.edits）`)
       if (!String(f.intent ?? '').trim()) say('错', cx, '业务', file, `${who}没写操作意图（intent）`)
       // 要用到的数据：一样一条 { title, note }；只写名字的旧写法照认，提醒补解释
       for (const x of f.in ?? []) {

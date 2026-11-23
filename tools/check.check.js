@@ -46,10 +46,10 @@ function clean() {
   write(A + '业务/概念/g2/g2-2.json', { topic: 'g2', sub: 'g2-2', title: '对账', concepts: [], external: [], edges: [] })
   // 模块业务：g1 一份；两份流程接上：开户的出口接存钱的入口
   write(A + '业务/模块业务/g1.json', { topic: 'g1', title: '开户',
-    core: [{ title: '账户', why: '开户最后留下的是账户', sources: [{ steps: [{ data: '客户交来开户表', event: true, by: '柜员照开户表开立账户', fn: 'f-1' }] }], targets: [] }],
+    core: [{ title: '账户', why: '开户最后留下的是账户', sources: [{ steps: [{ data: '客户交来开户表', event: true, op: '创建', by: '柜员照开户表开立账户', fn: 'f-1' }] }], targets: [] }],
     intro: { context: '银行替人存钱', duty: '管开户，不管存取', concepts: [{ title: '账户', note: '一人存钱的那一份' }], users: [{ who: '柜员', aim: '开户', steps: ['照开户表开立账户'] }], usual: ['柜员照开户表开立账户'] },
     groups: [{ title: '账户', functions: [
-    { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '这位客户的账户', to: '账户开着，可以存钱' }, in: [{ title: '开户表', note: '客户填好交来的那一张' }], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
+    { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '这位客户的账户', op: '创建', to: '账户开着，可以存钱', edits: ['户名：照开户表记下'] }, in: [{ title: '开户表', note: '客户填好交来的那一张' }], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
     chains: [{ id: 'c-1', title: '开了以后', after: { title: '账户', to: '开着' }, then: [{ kind: '新记录', title: '卡' }] }],
     workflows: [{ id: 'w-1', title: '账户', states: [{ id: 's-1', title: '开着' }, { id: 's-2', title: '销了' }], moves: [{ from: 's-1', to: 's-2', label: '销户' }] }],
     asks: [{ id: 'q-1', q: '一人能开几个？', lean: '一个', options: ['一个', '不限'] }] })
@@ -119,6 +119,8 @@ broken('功能号重复', () => edit(M1, (d) => d.groups.push({ title: '卡', fu
 broken('核心数据指着没有的功能', () => edit(M1, (d) => { d.core = [{ title: '账户', why: '为什么', sources: [{ steps: [{ data: '申请', by: '照申请开立', fn: 'f-99' }] }], targets: [] }] }), '指着的功能 f-99 在这个主题里没有')
 broken('核心数据的起点指着没有的功能', () => edit(M1, (d) => { d.core[0].sources = [{ heads: [{ steps: [{ data: '客户来电', event: true, by: '柜员记下', fn: 'f-98' }] }, { steps: [{ data: '客户上门', event: true, by: '柜员记下', fn: 'f-1' }] }], steps: [{ data: '开户表', by: '照开户表开立账户', fn: 'f-1' }] }] }), '指着的功能 f-98 在这个主题里没有')
 broken('核心数据的去处写的主题对不上全局图', () => edit(M1, (d) => { d.core[0].targets.push({ by: '柜员记进总账', data: '总账', topic: '没有的主题' }) }), '来路或去处写的主题「没有的主题」不是全局图上的主题名')
+broken('看板线上的 op 不是那三个词', () => edit(M1, (d) => { d.core[0].sources[0].steps[0].op = '新增' }), 'op 写的是「新增」：只能写创建、更新、删除')
+broken('功能业务数据的 op 不是那三个词', () => edit(M1, (d) => { fn1(d).subject.op = '修改' }), '业务数据 op 写的是「修改」')
 broken('功能没写业务数据', () => edit(M1, (d) => { delete fn1(d).subject }), '功能 f-1（开立账户）没写业务数据')
 broken('功能没写操作意图', () => edit(M1, (d) => { fn1(d).intent = '' }), '没写操作意图')
 broken('功能指着的流程步没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '01-开户', step: 9 }] }), '「01-开户」第 9 步没有')
@@ -130,6 +132,15 @@ check('要用到的数据没写解释或例子：只提醒，只写名字的旧�
 clean(); edit(M1, (d) => { d.core.push({ title: '开户表', why: '也要留下', sources: [], targets: [] }); d.core[0].sources = [{ steps: [{ data: '客户上门', event: true, by: '柜员发一张开户表', fn: 'f-1' }, { data: '开户表', by: '照开户表开立账户', fn: 'f-1' }] }] })
 r = run()
 check('核心数据的来路中途经过另一样核心数据：只提醒', r.code === 0 && r.out.includes('来路中途经过了另一样核心数据「开户表」'), r.out)
+clean(); edit(M1, (d) => { delete d.core[0].sources[0].steps[0].op; delete fn1(d).subject.op })
+r = run()
+check('线上和功能上没标做了什么：只提醒', r.code === 0 && r.out.includes('有 1 段没标做了什么（op）') && r.out.includes('业务数据没标做了什么（subject.op）'), r.out)
+clean(); edit(M1, (d) => { d.core[0].sources[0].steps[0].op = '更新'; delete fn1(d).subject.edits; d.core[0].sources.push({ change: true, steps: [{ data: '客户改名', event: true, op: '更新', by: '柜员改户名', fn: 'f-1' }] }) })
+r = run()
+check('来路最后一步不是创建、标着 change 的来路、没列动了哪几项：只提醒', r.code === 0 && r.out.includes('最后一步是「更新」') && r.out.includes('标着 change') && r.out.includes('没列出动了业务数据的哪几项'), r.out)
+clean(); edit(M1, (d) => { d.intro.concepts.push({ title: '开户表', note: '客户填的那一张' }, { title: '利率表', note: '照它算利息' }, { title: '户名', note: '账户上写的名字' }); d.uses = [{ title: '利率表' }]; d.core[0].parts = ['户名'] })
+r = run()
+check('核心概念在看板上找不到：只提醒；装着的、用到的资料算找得到', r.code === 0 && r.out.includes('核心概念「开户表」在核心数据的看板上找不到') && !r.out.includes('核心概念「利率表」') && !r.out.includes('核心概念「户名」'), r.out)
 clean(); edit(M1, (d) => { delete d.intro })
 r = run()
 check('没写介绍：只提醒', r.code === 0 && r.out.includes('没写介绍（intro）'), r.out)
