@@ -217,7 +217,7 @@ const cases = [
   ['#flow/01-老人注册', (s) => !s.includes('class="it rule pending"') && (s.match(/class="it rule done"/g) ?? []).length === 2 && !s.includes('答：') && !s.includes('允许手改，记下为什么') && s.includes('<!--status:定了-->') && nav(s).includes('<i class="open">1</i>'),
     "answerQa({ flow: '01-老人注册', step: '5', kind: 'rule', id: 'r-1', opt: '允许手改，记下为什么' }); els.main.innerHTML += '<!--status:' + FLOWS[0].steps[4].rules[0].status + '-->'"],
   // 左边栏：流程那一行红点带条数（1 条待定规则 + 1 个没答的问题 = 2），上下文那行汇总（再加 g2 业务上 1 条待定 = 3）
-  ['#map', (s) => nav(s).includes('老人注册<i class="open">2</i>') && nav(s).includes('<small>3 条没答</small>')],
+  ['#map', (s) => nav(s).includes('老人注册<i class="open">2</i>') && nav(s).includes('<small>5 条没答</small>')],
   // 工作台注入 DATA.OPEN 时按它算
   ['#map', (s) => nav(s).includes('老人注册<i class="open">7</i>') && nav(s).includes('<small>9 条没答</small>'), '', { OPEN: { '样例系统/01-老人注册': 7, '样例系统/02-x': 2, '聊天 app/y': 5 } }],
   // 左边栏的组：默认折叠；当前这页所在的组展开；流程组折叠时组名右边是合计的红点
@@ -362,7 +362,7 @@ const cases = [
   ['#样例系统/module/g6/待定', (s) => s.includes('<a href="#module/g6/待定" class="on red">待定 <small>1 条没答</small>') && s.includes('class="mask pending"') && s.includes('偏向：要') && s.includes('class="mask done"') && s.includes('答：一个月') && s.includes('data-module="g6" data-ask="q-1" data-opt="要"'), '', STAGES],
   // 单开时点一个答法：只改内存里的那条、重画成答了
   ['#样例系统/module/g2/待定', (s) => s.includes('class="mask pending"'), ''],
-  ['#样例系统/module/g2/待定', (s) => !s.includes('class="mask pending"') && s.includes('答：不让建'), "answerModule({ module: 'g2', ask: 'q-1', opt: '不让建' })"],
+  ['#样例系统/module/g2/待定', (s) => (s.match(/class="mask pending"/g) ?? []).length === 1 && s.includes('答：不让建'), "answerModule({ module: 'g2', ask: 'q-1', opt: '不让建' })"],
   // 工作台上点：post 答，带主题、待定号、上下文、记号
   ['#样例系统/module/g6/待定', (s) => s.includes('<!--posted:{"module":"g6","context":"样例系统","ask":"q-1","text":"要","sig":"abc"}-->'),
     "answerModule({ module: 'g6', ask: 'q-1', opt: '要' }); els.main.innerHTML += '<!--posted:' + JSON.stringify(__posted) + '-->'", { ...STAGES, WB: { project: 'x' } }],
@@ -380,8 +380,8 @@ const cases = [
   // 功能图：要用到的数据，名字下面一行灰字是解释；只写名字的旧写法照认
   ['#样例系统/module/g2/功能/1/f-1', (s) => s.includes('<b>决定通知书</b><div class="note">政府评估后发给她的那一份'), ''],
   ['#样例系统/module/g6', (s) => s.includes('<div class="mc data"><b>外部发票</b></div>'), '', STAGES],
-  // 业务概述：页签上面，默认看业务背景；换一栏、收起，换了主题照旧记着
-  ['#样例系统/module/g2', (s) => s.includes('<div class="intro"><div class="ih" data-intro-shut="1"><span class="tri">▾</span>业务概述</div>') && s.includes('<button data-intro-tab="context" class="on">业务背景</button>') && s.includes('政府按评估结果') && s.indexOf('class="intro"') < s.indexOf('class="mtabs l1"'), ''],
+  // 业务概述：在最上面四段的下面、页签的上面，默认看模块职责；换一栏、收起，换了主题照旧记着
+  ['#样例系统/module/g2', (s) => s.includes('<div class="intro"><div class="ih" data-intro-shut="1"><span class="tri">▾</span>业务概述</div>') && s.includes('<button data-intro-tab="duty" class="on">模块职责</button>') && !s.includes('data-intro-tab="context"') && !s.includes('data-intro-tab="concepts"') && s.indexOf('class="fr"') < s.indexOf('class="intro"') && s.indexOf('class="intro"') < s.indexOf('class="mtabs l1"'), ''],
   ['#样例系统/module/g2', (s) => s.includes('<button data-intro-tab="users" class="on">使用角色</button>') && s.includes('<b>照护伙伴</b>') && s.includes('<li>照决定通知书给她建档</li>'), "introSet({ tab: 'users' })"],
   ['#样例系统/module/g2', (s) => s.includes('<span class="tri">▸</span>业务概述</div></div>') && !s.includes('class="itabs"'), "introSet({ shut: true })"],
   ['#样例系统/module/g6', (s) => s.includes('<!--记着:usual,true-->'), "introSet({ tab: 'usual', shut: true }); useCx(context); els.main.innerHTML += '<!--记着:' + introState.tab + ',' + introState.shut + '-->'", STAGES],
@@ -389,10 +389,10 @@ const cases = [
   ['#样例系统/module/g6', (s) => !s.includes('class="intro"'), "introSet({ shut: false })", STAGES],
   // ---- 核心数据：画在业务概述上面；每一站是一样数据，线上是业务 ----
   // 只有一样核心数据：不出页签；线上的功能能点到功能图
-  ['#样例系统/module/g2', (s) => s.includes('class="cf"') && !s.includes('class="ctabs"') && s.includes('<div class="d core"><i>核心数据</i><b>参与者档案</b>') && s.indexOf('class="intro"') < s.indexOf('class="cf"') && s.includes('<a href="#module/g2/功能/1/f-1">f-1 照决定通知书建立参与者档案</a>'), ''],
-  // 两样核心数据：排成页签，一次看一样；三条来路、三个去处，别的主题的数据画成虚框；没有直接关联就没有能点的站
+  ['#样例系统/module/g2', (s) => s.includes('class="cf"') && !s.includes('class="ctabs"') && s.includes('<div class="d core"><i>核心数据</i><b>参与者档案</b>') && s.indexOf('class="intro"') < s.indexOf('class="cf"') && s.includes('<a href="#module/g2/功能/1/f-1">f-1 照决定通知书建立参与者档案</a>'), "const was = MODULES.g2.core.pop(); coreTab['样例系统/g2'] = 0; render(); MODULES.g2.core.push(was)"],
+  // 几样核心数据：排成页签，一次看一样；服务记录三条来路、两个去处，去处本身是另一样核心数据的，那个框能点
   ['#样例系统/module/g5', (s) => s.includes('<button data-core-tab="0" data-core-key="样例系统/g5" class="on">服务记录</button>') && s.includes('<button data-core-tab="1" data-core-key="样例系统/g5">照护管理记录</button>')
-    && (s.match(/<div class="row">/g) ?? []).length === 6 && s.includes('<div class="d ev">外部服务方开来一张发票</div>') && s.includes('class="d ext"') && s.includes('别的主题：参与者档案与她名下的钱') && !s.includes(' go"'), "coreTab['样例系统/g5'] = 0; render()"],
+    && (s.match(/<div class="row">/g) ?? []).length === 5 && s.includes('<div class="d ev">外部服务方开来一张发票</div>') && !s.includes('class="d ext"') && s.includes('<i>也是核心数据 ›</i><b>申报行</b>') && s.includes('<i>也是核心数据 ›</i><b>月结单</b>'), "coreTab['样例系统/g5'] = 0; render()"],
   // 换到另一样：只画它的图
   ['#样例系统/module/g5', (s) => s.includes('class="on">照护管理记录</button>') && s.includes('<div class="d core"><i>核心数据</i><b>照护管理记录</b>') && (s.match(/<div class="row">/g) ?? []).length === 2 && !s.includes('发票行'.concat('</b>')), "coreTab['样例系统/g5'] = 1; render()"],
   // 图上的一站本身是另一样核心数据（直接关联）：那个框能点，点了切过去
@@ -402,8 +402,8 @@ const cases = [
   // 来路的起点是别的主题里发生的一件事：画成别的主题的虚框
   ['#样例系统/module/g5', (s) => s.includes('<div class="d ext"><i>别的主题：上游的主题</i>上游那边一件事成了</div>'), "MODULES.g5.core[0].sources.unshift({ steps: [{ data: '上游那边一件事成了', event: true, topic: '上游的主题', by: '照它记下' }] }); coreTab['样例系统/g5'] = 0; render(); MODULES.g5.core[0].sources.shift()"],
   // 看板只讲核心数据：框里是装着的概念、不带状态；线上标创建；底下一行用到的资料
-  ['#样例系统/module/g2', (s) => s.includes('<small>装着：批到的分级和路径、签了的服务协议、分到的资金</small>') && !s.includes('已建档 / 已签协议') && s.includes('<span><u class="op new">创建</u>照通知书上批下来的内容建立档案') && !s.includes('class="cu"'), ''],
-  ['#样例系统/module/g5', (s) => s.includes('<div class="cu"><span>用到的资料</span><b title="做的是清单上的哪一项，照它查">服务清单</b>') && s.includes('<u class="op upd">更新</u>申报通过以后扣款'), "coreTab['样例系统/g5'] = 0; render()"],
+  ['#样例系统/module/g2', (s) => s.includes('<small>装着：批到的分级和路径、签了的服务协议</small>') && !s.includes('已建档 / 已签协议') && s.includes('<span><u class="op new">创建</u>照通知书上批下来的内容建立档案') && !s.includes('class="cu"'), ''],
+  ['#样例系统/module/g5', (s) => s.includes('<div class="cu"><span>用到的资料</span><b title="做的是清单上的哪一项，照它查">服务清单</b>') && s.includes('<u class="op upd">更新</u>申报通过以后扣款') && s.includes('class="d ext"') && s.includes('别的主题：参与者档案与她名下的钱'), "coreTab['样例系统/g5'] = 2; render(); coreTab['样例系统/g5'] = 0"],
   // 线上的删除；旧数据里标着 change 的来路不画
   ['#样例系统/module/g5', (s) => s.includes('<u class="op del">删除</u>整份撤掉') && !s.includes('改了已有的那一条'), "MODULES.g5.core[0].targets.unshift({ op: '删除', by: '整份撤掉', data: '草稿' }); MODULES.g5.core[0].sources.push({ change: true, steps: [{ data: '改了已有的那一条', event: true, by: '改' }] }); coreTab['样例系统/g5'] = 0; render(); MODULES.g5.core[0].targets.shift(); MODULES.g5.core[0].sources.pop()"],
   // 功能图的业务数据：标做了什么，列出记下、会改的项，冒号前面加粗
@@ -411,7 +411,21 @@ const cases = [
   ['#样例系统/module/g2/功能/1/f-2', (s) => s.includes('<u class="op upd">更新</u>') && s.includes('<div class="mk">会改</div><div><b>签了的服务协议</b>：'), ''],
   // 模块职责：写成列表的一条一行；还是一段话的按句号、分号拆开
   ['#样例系统/module/g2', (s) => s.includes('<ul class="duty"><li>管每位老人的档案和她名下的基金、账户：建档，记下她签了协议、分到了资金，按申报从账户扣款。</li><li>不管评估怎么做、服务怎么排、发票怎么开。</li></ul>'), "introSet({ tab: 'duty', shut: false })"],
-  ['#样例系统/module/g2', (s) => s.includes('<ul class="duty"><li>甲；</li><li>乙。</li></ul>'), "const was = MODULES.g2.intro.duty; MODULES.g2.intro.duty = '甲；乙。'; introState.tab = 'duty'; introState.shut = false; render(); MODULES.g2.intro.duty = was; introState.tab = 'context'"],
+  ['#样例系统/module/g2', (s) => s.includes('<ul class="duty"><li>甲；</li><li>乙。</li></ul>'), "const was = MODULES.g2.intro.duty; MODULES.g2.intro.duty = '甲；乙。'; introState.tab = 'duty'; introState.shut = false; render(); MODULES.g2.intro.duty = was"],
+  // 主题页最上面四段：背景、核心数据和概念（核心数据实心能点、别的空心）、业务目的（对着背景哪一句、出处）、具体的需求（落到的核心数据和功能）
+  ['#样例系统/module/g5', (s) => s.includes('<div class="fh">背景</div><div class="fbg">政府出钱替老人买居家照护服务：注册服务方先把服务做了') && s.includes('<a class="fc" href="#module/g5" data-core-tab="2" data-core-key="样例系统/g5">申报行</a>') && s.includes('<span class="fd">发票行</span><span>')
+    && s.includes('<b>1</b>交给政府的申报行要通得过政府的审核。</div><div class="ffrom">背景里对着：政府审核通过才付钱　出处：人 2026-11-24 说') && s.includes('<a class="ff" href="#module/g5/功能/3/f-5">f-5 ') && s.indexOf('class="fr"') < s.indexOf('class="intro"'), ''],
+  // 没有需求落到它上面的核心数据：最下面列一行，指到待定
+  ['#样例系统/module/g5', (s) => s.includes('还没有需求落到它上面的核心数据：月结单。它是为了什么，见<a href="#module/g5/待定">待定</a>。'), ''],
+  // 业务目的没写出处：标「推出来的，等你确认」；每样核心数据都有需求落到的，不列那一行
+  ['#样例系统/module/g2', (s) => s.includes('后面的服务有一份说了算的依据：她批到了什么、签了什么协议。<span class="fs">推出来的，等你确认</span>') && !s.includes('还没有需求落到它上面'), ''],
+  // 业务目的还没写的主题：背景、核心数据和概念照画，说一句还没写
+  ['#样例系统/module/g2', (s) => s.includes('<div class="none">业务目的还没写。</div>') && s.includes('<div class="fh">背景</div>'), "const was = MODULES.g2.purposes; delete MODULES.g2.purposes; render(); MODULES.g2.purposes = was"],
+  // 功能上：操作意图下面列出对着的需求；没有需求落到它上面的功能不列
+  ['#样例系统/module/g5/功能/2/f-2', (s) => s.includes('<div class="fup"><i>对着的需求</i>外部来的服务要留下凭据：'), ''],
+  ['#样例系统/module/g5/功能/4/f-6', (s) => s.includes('出这个月的月结单') && !s.includes('class="fup"'), ''],
+  // 全局图上面：整个上下文的背景，和每个主题的业务目的；没写的主题说一句
+  ['#map', (s) => s.includes('<div class="fh">背景</div><div class="fbg">政府出钱替老人买居家照护服务：先评估批给她多少') && s.includes('<td><a href="#module/g5">服务发生与申报</a></td><td><div>交给政府的申报行要通得过政府的审核。</div>') && s.includes('<span class="none">业务目的还没写</span>') && s.indexOf('class="fr"') < s.indexOf('<svg')],
   // 没写核心数据的主题：不画这一块
   ['#样例系统/module/g6', (s) => !s.includes('class="cf"'), '', STAGES],
   // ---- 流程：入口出口、opt/alt、主题 ----

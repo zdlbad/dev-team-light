@@ -39,7 +39,7 @@ function clean() {
     { path: 'web/src/Open.tsx', kind: '页面', screen: 'N-1/a、N-1/b' }] })
   for (const f of ['backend/src/account.ts', 'backend/src/change.ts', 'web/src/Open.tsx']) write(A + '代码/伪代码/' + f + '.json', { file: f, blocks: [] })
   // 业务：两个主题，g2 分了两个子主题
-  write(A + '业务/全局图.json', { topics: [{ id: 'g1', title: '开户', x: 0, y: 0, does: [], concepts: [] }, { id: 'g2', title: '记账', x: 1, y: 0, does: [], concepts: [] }], edges: [] })
+  write(A + '业务/全局图.json', { background: '银行替人存钱，存了多少、取了多少都要记得清', topics: [{ id: 'g1', title: '开户', x: 0, y: 0, does: [], concepts: [] }, { id: 'g2', title: '记账', x: 1, y: 0, does: [], concepts: [] }], edges: [] })
   write(A + '业务/概念/g1.json', { topic: 'g1', title: '开户', concepts: [], external: [], edges: [] })
   write(A + '业务/概念/g2.json', { topic: 'g2', title: '记账', subs: [{ id: 'g2-1', title: '入账', x: 0, y: 0 }, { id: 'g2-2', title: '对账', x: 1, y: 0 }], edges: [{ from: 'g2-1', to: 'g2-2', label: 'x' }] })
   write(A + '业务/概念/g2/g2-1.json', { topic: 'g2', sub: 'g2-1', title: '入账', concepts: [], external: [], edges: [] })
@@ -47,6 +47,7 @@ function clean() {
   // 模块业务：g1 一份；两份流程接上：开户的出口接存钱的入口
   write(A + '业务/模块业务/g1.json', { topic: 'g1', title: '开户',
     core: [{ title: '账户', why: '开户最后留下的是账户', sources: [{ steps: [{ data: '客户交来开户表', event: true, op: '创建', by: '柜员照开户表开立账户', fn: 'f-1' }] }], targets: [] }],
+    purposes: [{ text: '每位客户的钱都记在他自己的账户上', from: '银行替人存钱', source: '人 2026-01-05 说：钱要记到人头上', needs: [{ text: '开户时照开户表给客户开立一个账户', cores: ['账户'], fns: ['f-1'] }] }],
     intro: { context: '银行替人存钱', duty: '管开户，不管存取', concepts: [{ title: '账户', note: '一人存钱的那一份' }], users: [{ who: '柜员', aim: '开户', steps: ['照开户表开立账户'] }], usual: ['柜员照开户表开立账户'] },
     groups: [{ title: '账户', functions: [
     { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '这位客户的账户', op: '创建', to: '账户开着，可以存钱', edits: ['户名：照开户表记下'] }, in: [{ title: '开户表', note: '客户填好交来的那一张' }], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
@@ -55,7 +56,7 @@ function clean() {
     asks: [{ id: 'q-1', q: '一人能开几个？', lean: '一个', options: ['一个', '不限'] }] })
   edit(A + '业务/流程/01-开户.json', (d) => { d.topic = 'g1'; d.exits = [{ text: '开好了去存钱', step: 2, flow: 'g1-02-存钱' }] })
   write(A + '业务/流程/g1-02-存钱.json', { file: 'g1-02-存钱', title: '存钱', topic: 'g1', entries: [{ text: '开好了户', step: 1, flow: '01-开户' }], steps: [{ id: 1, title: '存' }, { id: '1a', title: '存不进', alt: '存得进吗', case: '存不进' }] })
-  write(B + '业务/全局图.json', { topics: [{ id: 'm1', title: '登录' }], edges: [] })
+  write(B + '业务/全局图.json', { background: '用的人要先登录才能聊天', topics: [{ id: 'm1', title: '登录' }], edges: [] })
   edit(B + '业务/流程/02-登录.json', (d) => { d.topic = 'm1' })
   write(B + '代码/结构.json', { files: [{ path: 'src/Login.tsx', kind: '页面', screen: 'N-2/x' }, { path: 'src/push.ts', kind: '事件处理器', model: { context: '后台', item: 'open' } }] })
   for (const f of ['src/Login.tsx', 'src/push.ts']) write(B + '代码/伪代码/' + f + '.json', { file: f, blocks: [] })
@@ -123,6 +124,23 @@ broken('看板线上的 op 不是那三个词', () => edit(M1, (d) => { d.core[0
 broken('功能业务数据的 op 不是那三个词', () => edit(M1, (d) => { fn1(d).subject.op = '修改' }), '业务数据 op 写的是「修改」')
 broken('功能没写业务数据', () => edit(M1, (d) => { delete fn1(d).subject }), '功能 f-1（开立账户）没写业务数据')
 broken('功能没写操作意图', () => edit(M1, (d) => { fn1(d).intent = '' }), '没写操作意图')
+broken('需求落到的不是这个主题的核心数据', () => edit(M1, (d) => { d.purposes[0].needs[0].cores = ['总账'] }), '落到的「总账」不是这个主题的核心数据')
+broken('需求落到的功能没有', () => edit(M1, (d) => { d.purposes[0].needs[0].fns = ['f-77'] }), '落到的功能 f-77 在这个主题里没有')
+clean(); edit(M1, (d) => { delete d.purposes })
+r = run()
+check('没写业务目的：只提醒', r.code === 0 && r.out.includes('没写业务目的（purposes）'), r.out)
+clean(); edit(M1, (d) => { const p = d.purposes[0]; delete p.from; delete p.source; d.asks = []; p.needs[0].cores = [] })
+r = run()
+check('业务目的没写对着背景哪一句、没出处也没问人、核心数据没有需求落到它上面：只提醒', r.code === 0 && r.out.includes('没写它对着背景里的哪一句') && r.out.includes('没写出处（source），待定里也没有问人') && r.out.includes('核心数据「账户」没有哪一条具体的需求落到它上面'), r.out)
+clean(); edit(M1, (d) => { delete d.purposes[0].source; d.asks = [{ id: 'q-9', q: '这条业务目的对不对？' }] })
+r = run()
+check('业务目的没出处、但待定里问着人：不提醒出处', r.code === 0 && !r.out.includes('没写出处（source）'), r.out)
+clean(); edit(M1, (d) => { d.purposes[0].needs[0].cores = []; d.asks = [{ id: 'q-9', q: '账户接不上业务目的，它是为了什么？' }] })
+r = run()
+check('核心数据没有需求落到它上面、但待定里问着它：不提醒', r.code === 0 && !r.out.includes('没有哪一条具体的需求落到它上面'), r.out)
+clean(); edit(A + '业务/全局图.json', (d) => { delete d.background })
+r = run()
+check('全局图没写背景：只提醒', r.code === 0 && r.out.includes('全局图没写背景（background）'), r.out)
 broken('功能指着的流程步没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '01-开户', step: 9 }] }), '「01-开户」第 9 步没有')
 broken('功能指着的流程没有', () => edit(M1, (d) => { fn1(d).uses = [{ flow: '99-没有', step: 1 }] }), '「99-没有」在 业务/流程/ 下没有')
 broken('要用到的数据没写名字', () => edit(M1, (d) => { fn1(d).in.push({ note: '没名字' }) }), '功能 f-1（开立账户）要用到的数据有一样没写名字')

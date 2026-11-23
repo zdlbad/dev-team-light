@@ -7,6 +7,8 @@
 //   业务    一份流程里步号、规则号、问题号有没有重复；分了子主题的主题：子主题号重不重复、撞不撞主题号，每个子主题有没有概念文件，子主题之间的线两头在不在，子文件夹里有没有图上没有的文件
 //           流程：topic 是不是全局图上的主题（没写是提醒）；入口、出口接的步在不在，写了 flow 的那一份在不在、那一份有没有写回来对上；alt 的步写没写 case
 //           概念图：同样两样数据之间有几条线（提醒，并成一条）
+//           全局图：写没写整个上下文的背景（提醒）
+//           业务目的：每个主题写没写、对着背景哪一句、有没有出处或待定（都是提醒）；具体的需求落到的核心数据、功能在不在（不在是错）；每样核心数据有没有需求落到它上面（提醒）
 //           模块业务：主题号对不对；功能号、内部流程号、工作流程号、待定号有没有重复；每项功能写没写业务数据（subject 带 to）和操作意图（intent）；
 //           功能指着的流程步在不在；工作流程的线两头是不是它的状态；要用到的数据写没写名字（没写是错）、写没写解释或例子（提醒）；
 //           业务概述（intro）写没写、缺哪几样、使用角色写没写按先后做的事（都是提醒）
@@ -100,7 +102,8 @@ for (const cx of names) {
 
   // 子主题：主题那份概念文件里有 subs 的，每个子主题一份 概念/<主题>/<子主题>.json
   const cdir = path.join(c, '业务', '概念'), gp = path.join(c, '业务', '全局图.json')
-  const topicList = exists(gp) ? load(gp, cx, '业务')?.topics ?? [] : []
+  const gmap = exists(gp) ? load(gp, cx, '业务') : null, topicList = gmap?.topics ?? []
+  if (topicList.length && !String(gmap.background ?? '').trim()) say('提醒', cx, '业务', gp, '全局图没写背景（background）：用一两句话写整个上下文所处的情形')
   const topicIds = topicList.map((t) => t.id), topicTitles = topicList.map((t) => t.title)
   const allSubs = []
   for (const { name, file } of jsonIn(cdir)) {
@@ -201,6 +204,31 @@ for (const cx of names) {
       const onBoard = new Set([...names(d.core), ...d.core.flatMap((c) => names(c.parts)), ...names(d.uses),
         ...d.core.flatMap((c) => [...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]).filter((x) => !x.event).map((x) => x.data), ...(c.targets ?? []).map((x) => x.data)])])
       for (const k of names(d.intro?.concepts)) if (!onBoard.has(k)) say('提醒', cx, '业务', file, `核心概念「${k}」在核心数据的看板上找不到：它该是一样核心数据、装在哪一样里（parts）、是用到的资料（uses），或者是来路、去处上的一站`)
+    }
+    // 业务目的和具体的需求：每个主题都要写；需求落到的核心数据、功能要找得到；每样核心数据都要有需求落到它上面
+    {
+      const ps = d.purposes ?? [], names = (xs) => (xs ?? []).map((x) => (typeof x === 'string' ? x : x?.title)).filter(Boolean)
+      const coreNames = names(d.core), landed = new Set(), asking = (d.asks ?? []).some((a) => !a.answer)
+      const known = new Set([...coreNames, ...names(d.intro?.concepts), ...names(d.uses), ...(d.core ?? []).flatMap((c) => [...names(c.parts),
+        ...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]).filter((x) => !x.event).map((x) => x.data), ...(c.targets ?? []).map((x) => x.data)])])
+      if (!ps.length) say('提醒', cx, '业务', file, '没写业务目的（purposes）：背景里外面的人对这块业务提了哪几项要求，各落到哪样核心数据、哪项功能上')
+      else if (!String(d.intro?.context ?? '').trim()) say('提醒', cx, '业务', file, '写了业务目的却没写背景（intro.context）：业务目的是从背景里挖出来的')
+      ps.forEach((p, i) => {
+        const who = `第 ${i + 1} 条业务目的`
+        if (!String(p.text ?? '').trim()) say('错', cx, '业务', file, `${who}没写内容（text）`)
+        if (!String(p.from ?? '').trim()) say('提醒', cx, '业务', file, `${who}没写它对着背景里的哪一句（from）`)
+        if (!String(p.source ?? '').trim() && !asking) say('提醒', cx, '业务', file, `${who}没写出处（source），待定里也没有问人：推出来的业务目的要等人确认`)
+        if (!(p.needs ?? []).length) say('提醒', cx, '业务', file, `${who}下面没有具体的需求（needs）`)
+        for (const n of p.needs ?? []) {
+          const nw = `${who}下面的需求「${String(n.text ?? '').slice(0, 16)}」`
+          if (!String(n.text ?? '').trim()) say('错', cx, '业务', file, `${who}下面有一条需求没写内容（text）`)
+          for (const k of n.cores ?? []) { if (coreNames.includes(k)) landed.add(k); else say('错', cx, '业务', file, `${nw}落到的「${k}」不是这个主题的核心数据`) }
+          for (const k of n.fns ?? []) if (!fns.some((f) => f.id === k)) say('错', cx, '业务', file, `${nw}落到的功能 ${k} 在这个主题里没有`)
+          for (const k of n.data ?? []) if (!known.has(k)) say('提醒', cx, '业务', file, `${nw}落到的数据「${k}」在核心概念和看板上都找不到`)
+          if (!(n.cores ?? []).length && !(n.fns ?? []).length && !(n.data ?? []).length) say('提醒', cx, '业务', file, `${nw}没写落到哪里（cores、data、fns）`)
+        }
+      })
+      if (ps.length) for (const k of coreNames) if (!landed.has(k) && !(d.asks ?? []).some((a) => !a.answer && String(a.q ?? '').includes(k))) say('提醒', cx, '业务', file, `核心数据「${k}」没有哪一条具体的需求落到它上面：它是为了什么，分不出来就记成待定问人`)
     }
     for (const f of fns) {
       const who = `功能 ${f.id ?? '?'}（${f.title ?? ''}）`
