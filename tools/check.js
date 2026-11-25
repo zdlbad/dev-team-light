@@ -6,10 +6,10 @@
 //   全部    每份 .json 读不读得出（原料/、_wip/ 不看）
 //   业务    一份流程里步号、规则号、问题号有没有重复；分了子主题的主题：子主题号重不重复、撞不撞主题号，每个子主题有没有概念文件，子主题之间的线两头在不在，子文件夹里有没有图上没有的文件
 //           流程：topic 是不是全局图上的主题（没写是提醒）；入口、出口接的步在不在，写了 flow 的那一份在不在、那一份有没有写回来对上；alt 的步写没写 case
-//           概念图：同样两样数据之间有几条线（提醒，并成一条）；概念的 fields 是不是一列栏名（不是是错）
+//           概念图：同样两样数据之间有几条线（提醒，并成一条）；概念的 fields 是不是一列栏，每一项是栏名或者带 title 的对象（不是是错）；栏名带不带括号（带是提醒）
 //           全局图：写没写整个上下文的背景（提醒）
 //           业务目的：每个主题写没写、对着背景哪一句、有没有出处或待定（都是提醒）；更细的目的落到的核心数据、别的数据、功能、内部流程在不在（不在是错）；
-//           每条写没写更细的目的（aim）、每样核心数据有没有目的落到它上面、每项功能和每条内部流程有没有挂到哪条目的上（都是提醒）
+//           每条写没写更细的目的（aim）、每样核心数据有没有目的落到它上面、每项功能和每条内部流程有没有挂到哪条目的上、更细的目的有没有出处或待定（都是提醒）
 //           模块业务：主题号对不对；功能号、内部流程号、状态转换流程号、待定号有没有重复；每项功能写没写业务数据（subject 带 to）和操作意图（intent）；
 //           功能指着的流程步在不在；状态转换流程的线两头是不是它的状态，分了段的（stages）每个状态是不是正好在一段里（不是是错）；要用到的数据写没写名字（没写是错）、写没写解释或例子（提醒）；
 //           主要流程速览（tours）里用到的功能在不在（不在是错）；
@@ -138,7 +138,13 @@ for (const cx of names) {
   for (const { file } of conceptJson) {
     const d = load(file, cx, '业务'); if (!d || Array.isArray(d.subs)) continue
     const pairs = (d.edges ?? []).map((e) => [e.from, e.to].sort().join(' ↔ '))
-    for (const k of d.concepts ?? []) if (k.fields != null && !(Array.isArray(k.fields) && k.fields.every((x) => typeof x === 'string'))) say('错', cx, '业务', file, `概念「${k.title ?? k.id ?? '?'}」的 fields 要写成一列栏名，一栏一个名字`)
+    for (const k of d.concepts ?? []) {
+      if (k.fields == null) continue
+      const okField = (x) => (typeof x === 'string' ? !!x.trim() : !!x && typeof x === 'object' && !Array.isArray(x) && typeof x.title === 'string' && !!x.title.trim())
+      if (!(Array.isArray(k.fields) && k.fields.every(okField))) { say('错', cx, '业务', file, `概念「${k.title ?? k.id ?? '?'}」的 fields 要写成一列栏：每一项是一个栏名，或者带 title 的对象 { title, note?, ref?, topic? }`); continue }
+      const bracket = k.fields.map((x) => (typeof x === 'string' ? x : x.title)).filter((t) => /[（(]/.test(t))
+      if (bracket.length) say('提醒', cx, '业务', file, `概念「${k.title ?? k.id ?? '?'}」的栏名带括号：${bracket.join('、')}。栏名里不带括号，取值之类的话写进这一栏的 note`)
+    }
     for (const x of dups(pairs)) say('提醒', cx, '业务', file, `${x} 之间有 ${pairs.filter((p) => p === x).length} 条线：同样两样数据之间并成一条，几句话写进一个 label`)
   }
 
@@ -180,6 +186,7 @@ for (const cx of names) {
     const cmain = path.join(cdir, name + '.json'), cmainDoc = exists(cmain) ? load(cmain, cx, '业务') : null
     const cdocs = (!cmainDoc ? [] : Array.isArray(cmainDoc.subs) ? jsonIn(path.join(cdir, name)).map((x) => load(x.file, cx, '业务')) : [cmainDoc]).filter(Boolean)
     const conTitles = new Set(cdocs.flatMap((x) => nm(x.concepts)))
+    const conFields = new Map(cdocs.flatMap((x) => x.concepts ?? []).filter((k) => k?.title).map((k) => [k.title, new Set(Array.isArray(k.fields) ? nm(k.fields) : [])]))
     const allNames = new Set([...conTitles, ...nm(d.core), ...(d.core ?? []).flatMap((k) => nm(k.parts)), ...nm(d.uses), ...nm(d.intro?.concepts)])
     for (const x of dups(fns.map((f) => f.id))) say('错', cx, '业务', file, `功能号重复：${x}`)
     // 核心数据：每个主题都要认出来；写了的要写全，指着的功能要有，去到别的主题的要写对主题名；来路碰到另一样核心数据要停
@@ -265,11 +272,13 @@ for (const cx of names) {
           if (!(n.cores ?? []).length && !(n.fns ?? []).length && !(n.data ?? []).length && !(n.chains ?? []).length) say('提醒', cx, '业务', file, `${nw}没写落到哪里（cores、data、fns、chains）`)
         }
       })
+      const bare = ps.flatMap((p) => p.needs ?? []).filter((n) => String(n.aim ?? '').trim() && !String(n.source ?? '').trim()).length
+      if (bare && !asking) say('提醒', cx, '业务', file, `有 ${bare} 条更细的目的没写出处（source），待定里也没有问人：只在现成的做法里看到、原料和人都没讲的，记成待定问人`)
       if (ps.length) for (const k of coreNames) if (!landed.has(k) && !(d.asks ?? []).some((a) => !a.answer && String(a.q ?? '').includes(k))) say('提醒', cx, '业务', file, `核心数据「${k}」没有哪一条更细的目的落到它上面：它是为了什么，分不出来就记成待定问人`)
       // 每项功能、每条内部流程都要挂到某一条更细的目的上
       if (ps.some((p) => (p.needs ?? []).length)) {
         const looseF = fns.filter((f) => f.id && !hungF.has(f.id)).map((f) => f.id), looseC = chainIds.filter((k) => k && !hungC.has(k))
-        if (looseF.length) say('提醒', cx, '业务', file, `有 ${looseF.length} 项功能没有挂到哪一条更细的目的上：${looseF.join('、')}。说不出它为了什么的，补一条推出来的目的，并在待定里问人`)
+        if (looseF.length) say('提醒', cx, '业务', file, `有 ${looseF.length} 项功能没有挂到哪一条更细的目的上：${looseF.join('、')}。说不出它为了什么的，在待定里问人，不编一句话填上`)
         if (looseC.length) say('提醒', cx, '业务', file, `有 ${looseC.length} 条内部流程没有挂到哪一条更细的目的上：${looseC.join('、')}`)
       }
     }
@@ -280,6 +289,10 @@ for (const cx of names) {
       if (f.subject?.op && !['创建', '更新', '删除'].includes(f.subject.op)) say('错', cx, '业务', file, `${who}的业务数据 op 写的是「${f.subject.op}」：只能写创建、更新、删除`)
       else if (f.subject?.title && !f.subject.op) say('提醒', cx, '业务', file, `${who}的业务数据没标做了什么（subject.op）：创建、更新或删除`)
       else if (['创建', '更新'].includes(f.subject?.op) && !(f.subject.edits ?? []).length) say('提醒', cx, '业务', file, `${who}没列出动了业务数据的哪几项（subject.edits）`)
+      {
+        const lost = (f.subject?.edits ?? []).map((e) => /^\s*([^›：:]+?)\s*›\s*([^：:]+?)\s*[：:]/.exec(String(e))).filter((m) => m && conFields.has(m[1]) && !conFields.get(m[1]).has(m[2])).map((m) => `${m[1]} › ${m[2]}`)
+        if (lost.length) say('提醒', cx, '业务', file, `${who}的 edits 里「${lost.join('」「')}」的栏名在那个概念的栏（fields）里找不到：栏名要和 fields 里的 title 一样，一栏一条，不并写`)
+      }
       if (!String(f.intent ?? '').trim()) say('错', cx, '业务', file, `${who}没写操作意图（intent）`)
       if (f.subject?.title) {
         const t = String(f.subject.title).replace(/（[^（）]*）$/, ''), hit = [...allNames].filter((k) => t.includes(k)), top = hit.filter((k) => !hit.some((o) => o !== k && o.includes(k)))

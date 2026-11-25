@@ -249,8 +249,8 @@ const cases = [
   // 点一个答法＝答了：规则 status 变定了、卡变灰、answer 记下；左边栏条数跟着减
   ['#flow/01-老人注册', (s) => !s.includes('class="it rule pending"') && (s.match(/class="it rule done"/g) ?? []).length === 2 && !s.includes('答：') && !s.includes('允许手改，记下为什么') && s.includes('<!--status:定了-->') && nav(s).includes('<i class="open">1</i>'),
     "answerQa({ flow: '01-老人注册', step: '5', kind: 'rule', id: 'r-1', opt: '允许手改，记下为什么' }); els.main.innerHTML += '<!--status:' + FLOWS[0].steps[4].rules[0].status + '-->'"],
-  // 左边栏：流程那一行红点带条数（1 条待定规则 + 1 个没答的问题 = 2），上下文那行汇总（再加 g2 业务上 1 条待定 = 3）
-  ['#map', (s) => nav(s).includes('老人注册<i class="open">2</i>') && nav(s).includes('<small>5 条没答</small>')],
+  // 左边栏：流程那一行红点带条数（1 条待定规则 + 1 个没答的问题 = 2），上下文那行汇总（再加 g2 业务上 3 条待定、g5 业务上 2 条待定 = 7）
+  ['#map', (s) => nav(s).includes('老人注册<i class="open">2</i>') && nav(s).includes('<small>7 条没答</small>')],
   // 工作台注入 DATA.OPEN 时按它算
   ['#map', (s) => nav(s).includes('老人注册<i class="open">7</i>') && nav(s).includes('<small>9 条没答</small>'), '', { OPEN: { '样例系统/01-老人注册': 7, '样例系统/02-x': 2, '聊天 app/y': 5 } }],
   // 左边栏的组：默认折叠；当前这页所在的组展开；流程组折叠时组名右边是合计的红点
@@ -385,8 +385,8 @@ const cases = [
       && !m.includes('class="sb"') && !m.includes('收起') && popup(s) === '' && s.includes('参与者档案与她名下的钱 <span class="kind">· 业务</span></h1>') }],
   // 收着时的那句提示：业务概述是一句简介，别的是数出来的；待定有没答的标红
   ['#样例系统/module/g2', (s) => secOf(s, 'intro').includes('<span class="hint">注册服务方替每位老人留一份档案，并管着政府开在她名下的钱。</span>') && secOf(s, 'tours').includes('<span class="hint">最常走的 2 条流程：谁做了什么、碰到哪些概念</span>')
-    && secOf(s, 'core').includes('<span class="hint">2 样核心数据，1 份状态转换流程</span>') && secOf(s, 'purposes').includes('<span class="hint">2 条业务目的</span>') && secOf(s, 'asks').includes('<div class="sec red" data-sec="asks">') && secOf(s, 'asks').includes('<span class="hint">2 条没答</span>')],
-  ['#样例系统/module/g5', (s) => secOf(s, 'core').includes('<span class="hint">4 样核心数据，3 份状态转换流程</span>') && secOf(s, 'purposes').includes('<span class="hint">3 条业务目的</span>') && secOf(s, 'asks').includes('<span class="hint">1 条没答</span>')],
+    && secOf(s, 'core').includes('<span class="hint">2 样核心数据，1 份状态转换流程</span>') && secOf(s, 'purposes').includes('<span class="hint">2 条业务目的</span>') && secOf(s, 'asks').includes('<div class="sec red" data-sec="asks">') && secOf(s, 'asks').includes('<span class="hint">3 条没答</span>')],
+  ['#样例系统/module/g5', (s) => secOf(s, 'core').includes('<span class="hint">4 样核心数据，3 份状态转换流程</span>') && secOf(s, 'purposes').includes('<span class="hint">3 条业务目的</span>') && secOf(s, 'asks').includes('<span class="hint">2 条没答</span>')],
   // 展开一块：三角朝下、右上角有「收起」、内容出来；别的块照旧收着。展开的是哪几块只记在内存里，页面不往本机存
   ['#样例系统/module/g2', (s) => secOf(s, 'core').includes('<div class="sec open" data-sec="core">') && secOf(s, 'core').includes('<span class="tri">▾</span>') && secOf(s, 'core').includes('<span class="fold">▾ 收起</span></div><div class="sb">')
     && count(mainHtml(s), 'class="sb"') === 1 && count(mainHtml(s), '<span class="tri">▸</span>') === 4 && !html.includes("'dev-team-lite/业务/业务概述'"), open('g2', 'core')],
@@ -442,13 +442,13 @@ const cases = [
     open('g2', 'tours') + "; fire(els.main.on.click, { target: at({ '[data-tour-tab]': { dataset: { key: '样例系统/g2', tourTab: '1' } } }) })"],
 
   // ---- 第三块：核心数据和概念 ----
-  // 照核心数据分组，一组一样核心数据；它装着的概念缩进排在下面。名字后面的标签：有同名状态图的带「状态转换 · N 个状态」，每组顶头那一行带「概念图」，别的行没有
+  // 照核心数据分组，一组一样核心数据；它装着的概念缩进排在下面。名字后面的标签：有同名状态图的带「状态转换 · N 个状态」，每组顶头那一行带「概念图」，别的行没有；写了栏的概念，标签最后是灰色的「N 栏」，默认收着
   ['#样例系统/module/g5', (s) => { const t = secOf(s, 'core'), g = t.split('<div class="cg">').slice(1)
-    return g.length === 6 && g[0].startsWith('<div class="cr" style="padding-left:0px"><span class="chip core" data-pop="core:0">服务记录</span><span class="chip wf" data-pop="wf:w-1">状态转换 · 2 个状态</span><span class="chip cm" data-pop="concept:服务记录">概念图</span><span class="nt">做了一次服务记一条：哪天、哪项服务、多少、多少钱。</span></div>')
-      && g[0].includes('<div class="cr" style="padding-left:24px"><span class="chip part" data-pop="core:0:凭据">凭据</span><span class="nt">一条服务记录是照什么记下的：发票上的哪一行，或者老人交来的哪一张收据。</span></div>')
+    return g.length === 6 && g[0].startsWith('<div class="cr" style="padding-left:0px"><span class="chip core" data-pop="core:0">服务记录</span><span class="chip wf" data-pop="wf:w-1">状态转换 · 2 个状态</span><span class="chip cm" data-pop="concept:服务记录">概念图</span><span class="chip fc" data-fields="样例系统/g5/服务记录">6 栏 ▸</span><span class="nt">做了一次服务记一条：哪天、哪项服务、多少、多少钱。</span></div>')
+      && g[0].includes('<div class="cr" style="padding-left:24px"><span class="chip part" data-pop="core:0:凭据">凭据</span><span class="chip fc" data-fields="样例系统/g5/凭据">3 栏 ▸</span><span class="nt">一条服务记录是照什么记下的：发票上的哪一行，或者老人交来的哪一张收据。</span></div>')
       && g[1].startsWith('<div class="cr" style="padding-left:0px"><span class="chip core" data-pop="core:1">照护管理记录</span><span class="chip cm" data-pop="concept:照护管理记录">概念图</span>')
-      && g[2].includes('data-pop="core:2">申报行</span><span class="chip wf" data-pop="wf:w-3">状态转换 · 4 个状态</span><span class="chip cm"') && g[3].includes('data-pop="core:3:月结单明细">月结单明细</span><span class="nt">')
-      && count(t, 'class="chip cm"') === 4 && count(t, 'class="chip wf"') === 3 }, open('g5', 'core')],
+      && g[2].includes('data-pop="core:2">申报行</span><span class="chip wf" data-pop="wf:w-3">状态转换 · 4 个状态</span><span class="chip cm"') && g[3].includes('data-pop="core:3:月结单明细">月结单明细</span><span class="chip fc" data-fields="样例系统/g5/月结单明细">2 栏 ▸</span><span class="nt">')
+      && count(t, 'class="chip cm"') === 4 && count(t, 'class="chip wf"') === 3 && count(t, 'class="chip fc"') === 7 && !t.includes('<div class="fd"') && html.includes('.chip.fc{') }, open('g5', 'core')],
   // 每组最后：「用到」是概念图上和这样核心数据（或它装着的概念）连着线的资料；「交给」是去处里带主题的数据，点了去那个主题
   ['#样例系统/module/g5', (s) => { const g = secOf(s, 'core').split('<div class="cg">').slice(1)
     return g[0].includes('<div class="cr" style="padding-left:24px"><i class="ld">用到</i><span class="chip res">服务清单</span><span class="nt">政府定的服务组、服务类型、服务三层；做的是清单上的哪一项，照它查。</span></div>') && !g[0].includes('服务协议') && count(g.join(''), '<i class="ld">用到</i>') === 1
@@ -456,7 +456,7 @@ const cases = [
   // 最下面的组，有才出：没连到哪一样核心数据的资料、不归哪一样核心数据的概念（也带状态转换标签）；样例里没有名字对不上概念的状态转换流程
   ['#样例系统/module/g5', (s) => { const g = secOf(s, 'core').split('<div class="cg">').slice(1)
     return g[4].startsWith('<div class="gl">用到的资料</div><div class="cr" style="padding-left:0px"><span class="chip res">服务协议</span><span class="nt">老人跟注册服务方签的那一份；')
-      && g[5].startsWith('<div class="gl">不归哪一样核心数据的</div><div class="cr" style="padding-left:0px"><span class="chip part" data-pop="concept:发票行">发票行</span><span class="chip wf" data-pop="wf:w-2">状态转换 · 2 个状态</span><span class="nt">外部服务方开来的发票上的一行，对着一次服务。</span>') && !secOf(s, 'core').includes('名字对不上概念的状态转换流程') }, open('g5', 'core')],
+      && g[5].startsWith('<div class="gl">不归哪一样核心数据的</div><div class="cr" style="padding-left:0px"><span class="chip part" data-pop="concept:发票行">发票行</span><span class="chip wf" data-pop="wf:w-2">状态转换 · 2 个状态</span><span class="chip fc" data-fields="样例系统/g5/发票行">4 栏 ▸</span><span class="nt">外部服务方开来的发票上的一行，对着一次服务。</span>') && !secOf(s, 'core').includes('名字对不上概念的状态转换流程') }, open('g5', 'core')],
   ['#样例系统/module/g2', (s) => { const t = secOf(s, 'core'); return t.includes('<div class="gl">不归哪一样核心数据的</div><div class="cr" style="padding-left:0px"><span class="chip part" data-pop="concept:她名下的基金">她名下的基金</span><span class="nt">政府开在老人名下、替她保管的一笔钱。</span>')
     && t.includes('<i class="ld">交给</i><a class="chip ext" href="#module/g5">申报行<small>服务发生与申报</small></a><span class="nt">向政府申报的一行，对着一条服务记录。</span>') && !t.includes('<div class="gl">用到的资料</div>') && !t.includes('<i class="ld">用到</i>') && count(t, '<div class="cg">') === 3 }, open('g2', 'core')],
   // 状态转换流程的名字对不上概念：那个概念后面没有标签，状态图列到最下面那一组
@@ -464,8 +464,8 @@ const cases = [
     "MODULES.g5.workflows[0].title = '服务记录的状态'; " + open('g5', 'core')],
   // 三层上下层：一层缩进一格；资料连在装着的概念上也算这样核心数据用到的；去处里同一样数据、同一个主题只列一行；那个主题没写业务的，点了去它的概念图；说明取那边概念定义的头一句
   ['#样例系统/module/g1', (s) => { const t = secOf(s, 'core')
-    return t.includes('style="padding-left:24px"><span class="chip part" data-pop="core:0:明细">明细</span><span class="chip wf" data-pop="wf:w-1">状态转换 · 1 个状态</span><span class="nt">单据上的一行。</span>') && t.includes('style="padding-left:48px"><span class="chip part" data-pop="core:0:批注">批注</span><span class="nt">明细上的一句话。</span>')
-      && t.includes('<span class="chip cm" data-pop="concept:单据">概念图</span><span class="nt">一张单据。</span>') && t.includes('<i class="ld">用到</i><span class="chip res" data-pop="concept:模板">模板</span><span class="nt">开单照它抄。</span>')
+    return t.includes('style="padding-left:24px"><span class="chip part" data-pop="core:0:明细">明细</span><span class="chip wf" data-pop="wf:w-1">状态转换 · 1 个状态</span><span class="chip fc" data-fields="样例系统/g1/明细">1 栏 ▸</span><span class="nt">单据上的一行。</span>') && t.includes('style="padding-left:48px"><span class="chip part" data-pop="core:0:批注">批注</span><span class="nt">明细上的一句话。</span>')
+      && t.includes('<span class="chip cm" data-pop="concept:单据">概念图</span><span class="chip fc" data-fields="样例系统/g1/单据">2 栏 ▸</span><span class="nt">一张单据。</span>') && t.includes('<i class="ld">用到</i><span class="chip res" data-pop="concept:模板">模板</span><span class="nt">开单照它抄。</span>')
       && count(t, '<i class="ld">交给</i>') === 2 && t.includes('<a class="chip ext" href="#concepts/g2">货<small>库房</small></a><span class="nt">收进库房的货。</span>') && t.includes('<span class="chip ext">对账单<small>对账（财务系统）</small></span><span class="nt">告诉外面</span>')
       && t.includes('<div class="gl">用到的资料</div><div class="cr" style="padding-left:0px"><span class="chip res">名录</span>') && t.includes('<div class="gl">不归哪一样核心数据的</div><div class="cr" style="padding-left:0px"><span class="chip part" data-pop="concept:流水号">流水号</span>')
       && t.includes('<div class="gl">名字对不上概念的状态转换流程</div>') && t.includes('<b class="wn">对不上名字的</b><span class="chip wf" data-pop="wf:w-2">状态转换 · 2 个状态</span><span class="nt">这一份的名字不是概念</span>') }, open('g1', 'core'), DEEP],
@@ -473,6 +473,33 @@ const cases = [
   ['#样例系统/module/g1', (s) => secOf(s, 'core').includes('style="padding-left:24px"><span class="chip part" data-pop="core:0:没画的那一样">没画的那一样</span>'), "MODULES.g1.core[0].parts.push('没画的那一样'); " + open('g1', 'core'), fresh(DEEP)],
   // 没写核心数据的主题：概念图上的概念都列在「不归哪一样核心数据的」那一组，有同名状态图的照样带标签
   ['#样例系统/module/g6', (s) => { const t = secOf(s, 'core'); return count(t, '<div class="cg">') === 1 && t.includes('<div class="cg"><div class="gl">不归哪一样核心数据的</div>') && t.includes('<span class="chip part" data-pop="concept:报销">报销</span><span class="chip wf" data-pop="wf:w-1">状态转换 · 3 个状态</span>') && !t.includes('class="chip cm"') }, open('g6', 'core'), STAGES],
+  // ---- 第三块里的栏：名字那一行后面的灰色标签「N 栏」----
+  // 点「N 栏」：这一行下面一栏一行展开，标签上的三角朝下；再点收起。展开的是哪几个只记在内存里，页面不往本机存
+  ['#样例系统/module/g5', (s) => { const [a, b] = mainHtml(s).split('<!--2-->')
+    return a.includes('<span class="chip fc" data-fields="样例系统/g5/服务记录">6 栏 ▾</span>') && count(a, '<div class="fd"') === 6 && count(a, '栏 ▾</span>') === 1 && !b.includes('<div class="fd"') && b.includes('data-fields="样例系统/g5/服务记录">6 栏 ▸</span>') && !html.includes("'dev-team-lite/业务/栏") },
+    open('g5', 'core') + "; const tap = () => fire(els.main.on.click, { target: at({ '[data-fields]': { dataset: { fields: '样例系统/g5/服务记录' } } }) }); tap(); const a = els.main.innerHTML; tap(); els.main.innerHTML = a + '<!--2-->' + els.main.innerHTML"],
+  // 展开的一行：栏名加粗；写了 ref 的，后面蓝色小字「→ 数据名 · 主题名」，再后面灰字是 note；只有名字的只有栏名。缩进比它那个概念多一格
+  ['#样例系统/module/g5', (s) => { const t = secOf(s, 'core')
+    return t.includes('<div class="fd" style="padding-left:24px"><b>老人</b><span class="rf">→ 参与者档案 · 参与者档案与她名下的钱</span><span class="nt">这一次服务是给哪一位老人做的。</span></div>')
+      && t.includes('<div class="fd" style="padding-left:24px"><b>日期</b><span class="nt">这一次服务是哪天做的。</span></div>') && t.includes('<div class="fd" style="padding-left:24px"><b>数量</b></div>')
+      // 指着的数据在同一个主题里、只写了 ref 的：只有「→ 数据名」
+      && t.includes('<div class="fd" style="padding-left:48px"><b>发票行</b><span class="rf">→ 发票行</span><span class="nt">照发票记下的，写它对着发票上的哪一行。</span></div>') && html.includes('.fd .rf{font-size:11.5px;color:var(--accent-ink,var(--accent))}') },
+    "fieldsOpen['样例系统/g5/服务记录'] = fieldsOpen['样例系统/g5/凭据'] = true; " + open('g5', 'core')],
+  // 标签上的数和展开出来的行数一样：两个样例主题里带栏的概念全展开，一个一个数
+  ...['g2', 'g5'].map((g) => ['#样例系统/module/' + g, (s) => { const rows = secOf(s, 'core').split('<div class="cr"').slice(1).filter((r) => r.includes('class="chip fc"'))
+    return rows.length === (g === 'g2' ? 4 : 7) && rows.every((r) => +r.match(/>(\d+) 栏 ▾<\/span>/)[1] === count(r, '<div class="fd"')) },
+    "for (const t of topicInfo('" + g + "').names) fieldsOpen['样例系统/" + g + "/' + t] = true; " + open(g, 'core')]),
+  // 一栏指着的正是它下面装着的概念：不列，也不计入 N。指着谁看 ref，没写 ref 的看栏名：参与者档案的「批到的分级和路径」（写了 ref）「签了的服务协议」（只有栏名）、基金账户的「余额」都不列
+  ['#样例系统/module/g2', (s) => { const t = secOf(s, 'core')
+    return t.includes('data-fields="样例系统/g2/参与者档案">7 栏 ▾</span>') && t.includes('data-fields="样例系统/g2/基金账户">2 栏 ▾</span>') && !t.includes('<b>批到的分级和路径</b>') && !t.includes('<b>签了的服务协议</b>') && !t.includes('<b>余额</b>')
+      && t.includes('<b>她名下的基金</b><span class="rf">→ 她名下的基金</span>') && t.includes('<b>批了的服务类型</b><span class="rf">→ 服务类型 · 服务清单</span>')
+      // 没有栏的概念不出标签
+      && t.includes('data-pop="core:1:余额">余额</span><span class="nt">') && t.includes('data-pop="concept:她名下的基金">她名下的基金</span><span class="nt">') },
+    "fieldsOpen['样例系统/g2/参与者档案'] = fieldsOpen['样例系统/g2/基金账户'] = true; " + open('g2', 'core')],
+  ['#样例系统/module/g5', (s) => !secOf(s, 'core').includes('<b>凭据</b>') && secOf(s, 'core').includes('<b>凭据的种类</b>'), "fieldsOpen['样例系统/g5/服务记录'] = fieldsOpen['样例系统/g5/凭据'] = true; " + open('g5', 'core')],
+  // 下面装着的概念照上下层的线一层层往下算（单据装着明细，明细装着批注）；核心数据 parts 里写了、概念图上没连下来的也算
+  ['#样例系统/module/g1', (s) => { const t = secOf(s, 'core'); return t.includes('data-fields="样例系统/g1/单据">2 栏 ▾</span>') && count(t, '<div class="fd"') === 2 && t.includes('<b>单号</b>') && t.includes('<b>日期</b>') && !t.includes('<b>明细</b>') && !t.includes('<b>哪一句批注</b>') && !t.includes('<b>没画的那一样</b>') },
+    "CONCEPTS.g1.concepts[0].fields.push({ title: '明细', ref: '明细' }, { title: '哪一句批注', ref: '批注' }, '没画的那一样'); MODULES.g1.core[0].parts.push('没画的那一样'); fieldsOpen['样例系统/g1/单据'] = true; " + open('g1', 'core'), fresh(DEEP)],
 
   // ---- 第四块：业务目的及方案 ----
   // 每条业务目的默认收着，标题行右边写有几条更细的目的；有「全部展开」「全部收起」；没写出处的标「推出来的，等你确认」；样例里没有要提醒的
@@ -482,7 +509,7 @@ const cases = [
       && t.includes('每个月向老人交代清楚：用了哪些服务、花了多少钱。<span class="guess">推出来的，等你确认</span></span><span class="cnt">1 条更细的目的</span>') && count(t, 'class="guess"') === 1 && !t.includes('class="warn"') }, open('g5', 'purposes')],
   // 展开一条：先一行对着背景哪一句和出处，再一张表，一行一条更细的目的：左边更细的目的加粗、下面小字「做法」，右边是标签
   ['#样例系统/module/g5', (s) => { const t = secOf(s, 'purposes')
-    return count(t, '<div class="pu open">') === 1 && count(t, '<tr>') === 3 && t.includes('<div class="pf">背景里对着：政府审核通过才付钱　出处：人 2026-11-24 说：系统要提供出符合政府审核的申报项</div><table><tr><td><b>报上去的每一行都对得上一次真做了的服务。</b><div class="how"><i>做法</i>申报行只能从服务记录写出来，一条服务记录对一行。</div></td><td><div class="tags">')
+    return count(t, '<div class="pu open">') === 1 && count(t, '<tr>') === 3 && t.includes('<div class="pf">背景里对着：政府审核通过才付钱　出处：人 2026-11-24 说：系统要提供出符合政府审核的申报项</div><table><tr><td><b>报上去的每一行都对得上一次真做了的服务。</b><div class="how"><i>做法</i>申报行只能从服务记录写出来，一条服务记录对一行。</div><div class="ns">出处：申报格式 v1.14 第 4 节</div></td><td><div class="tags">')
       // 标签：核心数据实心、别的数据空心、功能、内部流程（样式和功能分开），能点的带 data-pop
       && t.includes('<div class="tags"><span class="chip core" data-pop="core:2">申报行</span><span class="chip fn" data-pop="fn:f-5">f-5 把服务记录写成申报行并报给政府</span></div>')
       && t.includes('<span class="chip core" data-pop="core:0">服务记录</span><span class="chip part">服务清单</span><span class="chip part">服务协议</span><span class="chip fn" data-pop="fn:f-1">')
@@ -503,18 +530,26 @@ const cases = [
   // 业务目的还没写的主题：说一句；功能和内部流程照样列在下面，点得开
   ['#样例系统/module/g6', (s) => { const t = secOf(s, 'purposes'); return t.includes('<p class="none">业务目的还没写。</p>') && !t.includes('全部展开') && t.includes('<span class="chip fn" data-pop="fn:f-1">f-1 登记老人先付的报销</span><span class="chip fn" data-pop="fn:f-2">') && t.includes('<span class="chip fn" data-pop="fn:f-3">f-3 作废服务记录</span>') && t.includes('<span class="chip ch" data-pop="chain:c-1">c-1 报销核过以后</span>') && !t.includes('没有目的落到它上面的核心数据') },
     open('g6', 'purposes'), STAGES],
+  // 更细的目的写了出处的：做法下面一行小字写出处，不标；没写出处的：旁边标「推出来的」，没有出处那一行
+  ['#样例系统/module/g5', (s) => { const t = secOf(s, 'purposes')
+    return count(t, '<tr>') === 7 && count(t, '<div class="ns">出处：') === 6 && count(t, '<span class="guess">推出来的</span>') === 1
+      && t.includes('<tr><td><b>老人每个月看得到自己用了哪些服务、每一项花了多少钱。</b><span class="guess">推出来的</span><div class="how"><i>做法</i>月底把这个月的服务记录和照护管理记录汇总成月结单，一条记录列一行，发给老人。</div></td>')
+      && t.includes('<b>做了的服务一次不漏。</b><div class="how"><i>做法</i>服务不管从哪里来，都要落成服务记录。</div><div class="ns">出处：人 2026-11-24 说：按照要求为服务留痕</div></td>') && html.includes('.pu .ns{') },
+    "for (const i of [0, 1, 2]) purposeOpen['样例系统/g5/' + i] = true; " + open('g5', 'purposes')],
+  ['#样例系统/module/g2', (s) => { const t = secOf(s, 'purposes'); return count(t, '<span class="guess">推出来的</span>') === 1 && t.includes('<b>看档案就知道她签没签服务协议、签的是哪一份。</b><span class="guess">推出来的</span><div class="how">') && count(t, '<div class="ns">出处：') === 3 },
+    "for (const i of [0, 1]) purposeOpen['样例系统/g2/' + i] = true; " + open('g2', 'purposes')],
 
   // ---- 第五块：待定 ----
   // 展开：没答的红框带偏向和按钮，答了的灰框写答案
   ['#样例系统/module/g6', (s) => { const t = secOf(s, 'asks'); return t.includes('class="mask pending"') && t.includes('偏向：要') && t.includes('class="mask done"') && t.includes('答：一个月') && t.includes('data-module="g6" data-ask="q-1" data-opt="要"') && t.includes('data-other="1">另说</button>') }, open('g6', 'asks'), STAGES],
   // 从别处点待定的链接过来（地址带 /待定）：替人把待定那一块展开一次，别的块照旧收着，地址换成主题页的；人收起以后重画不再自己展开
-  ['#样例系统/module/g2/待定', (s) => { const m = mainHtml(s); return secOf(s, 'asks').includes('<div class="sec open red" data-sec="asks">') && count(m, '<div class="sec open') === 1 && count(m, 'class="mask pending"') === 2 && m.includes('<!--at:#样例系统/module/g2,module/g2-->') },
+  ['#样例系统/module/g2/待定', (s) => { const m = mainHtml(s); return secOf(s, 'asks').includes('<div class="sec open red" data-sec="asks">') && count(m, '<div class="sec open') === 1 && count(m, 'class="mask pending"') === 3 && m.includes('<!--at:#样例系统/module/g2,module/g2-->') },
     "els.main.innerHTML += '<!--at:' + location.hash + ',' + view + '-->'"],
   ['#样例系统/module/g2/待定', (s) => !mainHtml(s).includes('<div class="sec open'), "fire(els.main.on.click, { target: at({ '[data-sec-toggle]': { dataset: { secToggle: '样例系统/g2/asks' } } }) }); render()"],
   // 单开时点一个答法：只改内存里的那条、重画成答了，提示里的条数跟着减
-  ['#样例系统/module/g2', (s) => count(secOf(s, 'asks'), 'class="mask pending"') === 1 && secOf(s, 'asks').includes('答：不让建') && secOf(s, 'asks').includes('<span class="hint">1 条没答</span>'), open('g2', 'asks') + "; answerModule({ module: 'g2', ask: 'q-1', opt: '不让建' })"],
+  ['#样例系统/module/g2', (s) => count(secOf(s, 'asks'), 'class="mask pending"') === 2 && secOf(s, 'asks').includes('答：不让建') && secOf(s, 'asks').includes('<span class="hint">2 条没答</span>'), open('g2', 'asks') + "; answerModule({ module: 'g2', ask: 'q-1', opt: '不让建' })"],
   // 全答了：不标红，提示写都答了
-  ['#样例系统/module/g5', (s) => secOf(s, 'asks').includes('<div class="sec" data-sec="asks">') && secOf(s, 'asks').includes('<span class="hint">1 条都答了</span>'), "answerModule({ module: 'g5', ask: 'q-1', opt: '是这个目的' })"],
+  ['#样例系统/module/g5', (s) => secOf(s, 'asks').includes('<div class="sec" data-sec="asks">') && secOf(s, 'asks').includes('<span class="hint">2 条都答了</span>'), "answerModule({ module: 'g5', ask: 'q-1', opt: '是这个目的' }); answerModule({ module: 'g5', ask: 'q-2', opt: '是，一条记录列一行' })"],
   // 工作台上点：post 答，带主题、待定号、上下文、记号
   ['#样例系统/module/g6', (s) => s.includes('<!--posted:{"module":"g6","context":"样例系统","ask":"q-1","text":"要","sig":"abc"}-->'),
     "answerModule({ module: 'g6', ask: 'q-1', opt: '要' }); els.main.innerHTML += '<!--posted:' + JSON.stringify(__posted) + '-->'", { ...STAGES, WB: { project: 'x' } }],
@@ -538,14 +573,31 @@ const cases = [
       && p.includes('<span><u class="op new">创建</u>直接记下这一次服务<em class="lk" data-pop="fn:f-1">f-1 记下自己的工作者做的一次服务</em></span>')
       // 用到的资料：只列概念图上和这样核心数据连着线的
       && p.includes('<div class="cu"><span>用到的资料</span><b title="政府定的服务组、服务类型、服务三层；做的是清单上的哪一项，照它查。">服务清单</b></div>') }, "popFrom('core:0')"],
-  // 中间的框是类图的画法：核心数据的框里列出栏名（写了 fields 的），套着它装着的概念，概念也列栏名
-  ['#样例系统/module/g5', (s) => popup(s).includes('<div class="cls core"><div class="ct"><i>核心数据</i>服务记录</div><div class="cb"><div class="fl">日期</div><div class="fl">服务项</div><div class="fl">数量</div><div class="fl">金额</div><div class="kids"><div class="cls part"><div class="ct">凭据</div><div class="cb"><div class="fl">凭据的种类</div><div class="fl">对着哪一行发票行或哪一张收据</div></div></div></div></div></div>') && !popup(s).includes('class="cls part hi"'), "popFrom('core:0')"],
+  // 中间的框是类图的画法：核心数据的框里列出栏（写了 fields 的），套着它装着的概念，概念也列栏。
+  // 栏照「核心数据和概念」那一块的规矩：指着下面装着的概念的不列（服务记录的「凭据」那一栏）；带说明或指向的，栏名加粗、后面是指向、下面一行小字是说明；只有名字的只写名字
+  ['#样例系统/module/g5', (s) => { const p = popup(s)
+    return p.includes('<div class="cls core cols2"><div class="ct"><i>核心数据</i>服务记录</div><div class="cb"><div class="fl"><b>老人</b><span class="rf">→ 参与者档案 · 参与者档案与她名下的钱</span><div class="fn">这一次服务是给哪一位老人做的。</div></div><div class="fl"><b>日期</b><div class="fn">这一次服务是哪天做的。</div></div><div class="fl"><b>服务项</b><span class="rf">→ 服务 · 服务清单</span><div class="fn">做的是服务清单上的哪一项。</div></div><div class="fl">数量</div><div class="fl">金额</div><div class="fl"><b>做服务的人</b><div class="fn">自己的工作者，或者外部服务方。</div></div>'
+        + '<div class="kids"><div class="cls part"><div class="ct">凭据</div><div class="cb"><div class="fl"><b>凭据的种类</b><div class="fn">发票上的一行，或者老人交来的收据。</div></div><div class="fl"><b>发票行</b><span class="rf">→ 发票行</span><div class="fn">照发票记下的，写它对着发票上的哪一行。</div></div><div class="fl"><b>收据</b><div class="fn">照收据记下的，写它对着老人交来的哪一张收据。</div></div></div></div></div></div></div>')
+      && !p.includes('<div class="fl"><b>凭据</b>') && !p.includes('<div class="fl">凭据</div>') && !p.includes('class="cls part hi"') }, "popFrom('core:0')"],
+  // 没写 ref、栏名等于下面装着的概念的也不列：参与者档案的看板上没有「批到的分级和路径」「签了的服务协议」这两栏，这两个概念套在框里
+  ['#样例系统/module/g2', (s) => { const p = popup(s); return p.includes('<div class="cls core cols2"><div class="ct"><i>核心数据</i>参与者档案</div>') && count(p.split('<div class="kids">')[0], '<div class="fl">') === 7 && !p.includes('<div class="fl"><b>批到的分级和路径</b>') && !p.includes('<div class="fl">签了的服务协议</div>')
+    && p.includes('<div class="kids"><div class="cls part"><div class="ct">批到的分级和路径</div>') && p.includes('<div class="cls part"><div class="ct">签了的服务协议</div><div class="cb"><div class="fl"><b>签的协议</b><span class="rf">→ 服务协议 · 服务方与协议</span>') }, "popFrom('core:0')"],
+  // 栏多的排成几列：6 栏以上 2 列，11 栏以上 3 列，16 栏以上 4 列，框上带 cols2、cols3、cols4；不到 6 栏的不分列。装着的概念那一排占满整行
+  ['#样例系统/module/g5', (s) => s.includes('<!--cols:cls core|cls core cols2|cls core cols2|cls core cols3|cls core cols3|cls core cols4|cls core cols4-->')
+    && html.includes('.cf .cls.cols2>.cb{grid-template-columns:repeat(2,auto)}.cf .cls.cols3>.cb{grid-template-columns:repeat(3,auto)}.cf .cls.cols4>.cb{grid-template-columns:repeat(4,auto)}') && html.includes('.cf .cls.cols4>.cb>.kids{grid-column:1/-1}'),
+    "const out = []; for (const n of [5, 6, 10, 11, 15, 16, 30]) { CONCEPTS.g5.concepts[1].fields = Array.from({ length: n }, (_, i) => '栏' + i); popFrom('core:0'); out.push(els.pop.innerHTML.match(/class=.(cls core[a-z0-9 ]*).><div class=.ct.><i>核心数据<.i>服务记录/)[1]) } els.main.innerHTML += '<!--cols:' + out.join('|') + '-->'"],
+  // 分列只数列出来的栏：指着下面装着的概念的那一栏不算（5 栏再加一栏「凭据」还是不分列）
+  ['#样例系统/module/g5', (s) => popup(s).includes('<div class="cls core"><div class="ct"><i>核心数据</i>服务记录</div>'), "CONCEPTS.g5.concepts[1].fields = ['一', '二', '三', '四', '五', { title: '凭据', ref: '凭据' }]; popFrom('core:0')"],
+  // 看板这一种浮层最宽 1880、四周留白小一些，字和间距比别的浮层小一号；别的浮层照旧最宽 1400。浮层上记着现在开的是哪一种，关了就去掉
+  ['#样例系统/module/g5', (s) => s.includes('<!--kinds:core,fn,-->') && html.includes('.pop .pw[data-kind="core"]{max-width:min(100%,1880px);') && html.includes('.pop[data-kind="core"]{padding:14px 12px}') && html.includes('max-width:min(100%,1400px);padding:16px 22px 20px;')
+    && html.includes('.cf .cls .fl{font-size:11.5px;') && html.includes('.cls .fl{font-size:12.5px;'),
+    "const ks = []; popFrom('core:0'); ks.push(els.pop.dataset.kind); popFrom('fn:f-1'); ks.push(els.pop.dataset.kind); closePop(); ks.push(els.pop.dataset.kind ?? ''); els.main.innerHTML += '<!--kinds:' + ks.join() + '-->'"],
   // 点的是装着的概念：标题写「X　装在核心数据「Y」里」，下面是它的完整定义，图上那一格标黄
   ['#样例系统/module/g5', (s) => { const p = popup(s); return p.includes('<div class="ph"><b>凭据</b><span class="in">装在核心数据「服务记录」里，下面图上标黄的那一格就是它</span>') && p.includes('<p class="pd">一条服务记录是照什么记下的：发票上的哪一行，或者老人交来的哪一张收据。自己的工作者做的服务没有凭据。</p>') && count(p, '<div class="cls part hi"><div class="ct">凭据</div>') === 1 && html.includes('.cls.hi{') }, "popFrom('core:0:凭据')"],
   // 概念里再套下一层：三层一层套一层；同一层横着排、放不下换行（kids 是能换行的一排）
   ['#样例系统/module/g1', (s) => popup(s).includes('<div class="kids"><div class="cls part"><div class="ct">明细</div><div class="cb"><div class="fl">数量</div><div class="kids"><div class="cls part hi"><div class="ct">批注</div></div></div></div></div></div>') && html.includes('.cls .kids{display:flex;flex-wrap:wrap;'), "popFrom('core:0:批注')", DEEP],
   // 浮层里点页签、点图上是另一样核心数据的那一站：换到那一样。去处是别的主题的数据：画成别的主题的虚框，线上是这里办这件事的那项功能；没有连着线的资料就没有那一行
-  ['#样例系统/module/g5', (s) => { const p = popup(s); return p.includes('<button data-pop="core:2" class="on">申报行</button>') && p.includes('<div class="cls core"><div class="ct"><i>核心数据</i>申报行</div>') && count(p, '<div class="row">') === 2
+  ['#样例系统/module/g5', (s) => { const p = popup(s); return p.includes('<button data-pop="core:2" class="on">申报行</button>') && p.includes('<div class="cls core cols2"><div class="ct"><i>核心数据</i>申报行</div>') && count(p, '<div class="row">') === 2
     && p.includes('<u class="op upd">更新</u>审核通过的一行交去扣款<em class="lk" data-pop="fn:f-8">f-8 记下政府对申报行的审核结果</em></span></div><div class="tip"></div><div class="dw"><div class="d ext"><i>别的主题：参与者档案与她名下的钱</i><b>基金账户</b>') && !p.includes('class="cu"') },
     "popFrom('core:0'); fire(els.pop.on.click, { target: at({ '[data-pop]': { dataset: { pop: 'core:2' } } }) })"],
   // 只有一样核心数据：不出页签。这个主题还没有概念图的：用到的资料都列上，装着的概念照 parts
@@ -592,6 +644,10 @@ const cases = [
   ['#样例系统/module/g5', (s) => popup(s).includes('<div class="cls core"><div class="ct"><i>核心数据</i>月结单</div><div class="cb"><div class="cls part main"><div class="ct"><u class="op new">创建</u>月结单明细</div><div class="cb"><div class="sn">这个月新添的月结单明细</div>'), "MODULES.g5.groups[3].functions[0].subject.title = '这个月新添的月结单明细'; popFrom('fn:f-6')"],
   // 旧写法：要用到的数据只写名字、业务数据没写 op 和 edits，照样画得出
   ['#样例系统/module/g6', (s) => { const p = popup(s); return p.includes('<b>登记老人先付的报销</b><span class="in">f-1 · 功能 · 页面上叫「报销」</span>') && p.includes('<div class="fi"><span class="idt"><u>ID</u>外部发票</span></div>') && p.includes('<div class="cls core"><div class="ct">报销</div><div class="cb"><div class="ft">新记下 → 待核</div></div></div>') && p.includes('href="#flow/g6-01-报销">报销</a> 第 2 步') }, "popFrom('fn:f-1')", STAGES],
+  // 概念的栏写成对象的：格子里的栏名取它的 title；「概念 › 栏：逻辑」照栏名对上，不多出一行。并写的两栏拆成了一栏一条
+  ['#样例系统/module/g5', (s) => { const p = popup(s); return p.includes('<div class="cls part"><div class="ct"><u class="op new">创建</u>凭据<div class="el">记下：记下这一条是照哪一张收据记的</div></div><div class="cb"><div class="fl"><b>凭据的种类</b></div><div class="fl"><b>发票行</b></div><div class="fl"><b>收据</b><div class="el">写上是老人交来的哪一张</div></div></div></div>')
+    && !p.includes('[object Object]') && p.includes('<b>服务项</b><div class="el">记下：照收据上写的服务记下</div>') && p.includes('<b>金额</b><div class="el">记下：照收据上写的金额记下</div>') },
+    "allFns(MODULES.g5).find((f) => f.id === 'f-4').subject.edits.push('凭据 › 收据：写上是老人交来的哪一张'); popFrom('fn:f-4')"],
 
   // ---- 浮层三：内部流程（沿用原来的画法）----
   // 起因一个框，后面几个数据变化框，箭头上是条件

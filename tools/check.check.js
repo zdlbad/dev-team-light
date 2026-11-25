@@ -40,14 +40,14 @@ function clean() {
   for (const f of ['backend/src/account.ts', 'backend/src/change.ts', 'web/src/Open.tsx']) write(A + '代码/伪代码/' + f + '.json', { file: f, blocks: [] })
   // 业务：两个主题，g2 分了两个子主题
   write(A + '业务/全局图.json', { background: '银行替人存钱，存了多少、取了多少都要记得清', topics: [{ id: 'g1', title: '开户', x: 0, y: 0, does: [], concepts: [] }, { id: 'g2', title: '记账', x: 1, y: 0, does: [], concepts: [] }], edges: [] })
-  write(A + '业务/概念/g1.json', { topic: 'g1', title: '开户', concepts: [{ id: 'acct', title: '账户', fields: ['户名', '开户日期'] }], external: [], edges: [] })
+  write(A + '业务/概念/g1.json', { topic: 'g1', title: '开户', concepts: [{ id: 'acct', title: '账户', fields: ['户名', { title: '开户日期', note: '柜员照开户表开立账户的那一天' }, { title: '客户', note: '这个账户是谁的', ref: '客户档案', topic: '客户' }] }], external: [], edges: [] })
   write(A + '业务/概念/g2.json', { topic: 'g2', title: '记账', subs: [{ id: 'g2-1', title: '入账', x: 0, y: 0 }, { id: 'g2-2', title: '对账', x: 1, y: 0 }], edges: [{ from: 'g2-1', to: 'g2-2', label: 'x' }] })
   write(A + '业务/概念/g2/g2-1.json', { topic: 'g2', sub: 'g2-1', title: '入账', concepts: [], external: [], edges: [] })
   write(A + '业务/概念/g2/g2-2.json', { topic: 'g2', sub: 'g2-2', title: '对账', concepts: [], external: [], edges: [] })
   // 模块业务：g1 一份；两份流程接上：开户的出口接存钱的入口
   write(A + '业务/模块业务/g1.json', { topic: 'g1', title: '开户',
     core: [{ title: '账户', why: '开户最后留下的是账户', sources: [{ steps: [{ data: '客户交来开户表', event: true, op: '创建', by: '柜员照开户表开立账户', fn: 'f-1' }] }], targets: [] }],
-    purposes: [{ text: '每位客户的钱都记在他自己的账户上', from: '银行替人存钱', source: '人 2026-01-05 说：钱要记到人头上', needs: [{ aim: '客户来存钱的时候，已经有一个记在他名下的账户', text: '开户时照开户表给客户开立一个账户', cores: ['账户'], fns: ['f-1'], chains: ['c-1'] }] }],
+    purposes: [{ text: '每位客户的钱都记在他自己的账户上', from: '银行替人存钱', source: '人 2026-01-05 说：钱要记到人头上', needs: [{ aim: '客户来存钱的时候，已经有一个记在他名下的账户', text: '开户时照开户表给客户开立一个账户', source: '人 2026-01-05 说：来了就能存', cores: ['账户'], fns: ['f-1'], chains: ['c-1'] }] }],
     intro: { context: '银行替人存钱', duty: '管开户，不管存取', concepts: [{ title: '账户', note: '一人存钱的那一份' }], users: [{ who: '柜员', aim: '开户', steps: ['照开户表开立账户'] }], usual: ['柜员照开户表开立账户'] },
     groups: [{ title: '账户', functions: [
     { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '这位客户的账户', op: '创建', to: '账户开着，可以存钱', edits: ['户名：照开户表记下'] }, in: [{ title: '开户表', note: '客户填好交来的那一张' }], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
@@ -172,7 +172,7 @@ broken('更细的目的落到的数据找不到', () => edit(M1, (d) => { d.purp
 broken('更细的目的和做法都没写', () => edit(M1, (d) => { const n = d.purposes[0].needs[0]; delete n.aim; delete n.text }), '既没写更细的目的（aim）也没写做法（text）')
 broken('主要流程速览用到的功能没有', () => edit(M1, (d) => { d.tours = [{ title: '开一个户', note: '最常走的', steps: [{ by: '柜员', text: '照开户表开立账户', concepts: ['账户'], fns: ['f-1'] }, { by: '柜员', text: '发卡', fns: ['f-8'] }] }] }), '主要流程速览「开一个户」里用到的功能 f-8 在这个主题里没有')
 broken('分段里的状态不是它的状态、分进两段、漏了一个', () => edit(M1, (d) => { d.workflows[0].states.push({ id: 's-3', title: '冻着' }); d.workflows[0].stages = [{ title: '前', states: ['s-1', 's-2'] }, { title: '后', states: ['s-2', 's-7'] }] }), '分段（stages）里的 s-7 不是它的状态', '状态 s-2 分进了不止一段', '状态 s-3 没有分进哪一段')
-broken('概念的 fields 不是一列栏名', () => edit(A + '业务/概念/g1.json', (d) => { d.concepts[0].fields = '户名、开户日期' }), '概念「账户」的 fields 要写成一列栏名')
+broken('概念的 fields 不是一列栏名', () => edit(A + '业务/概念/g1.json', (d) => { d.concepts[0].fields = '户名、开户日期' }), '概念「账户」的 fields 要写成一列栏')
 clean(); edit(M1, (d) => { d.tours = [{ title: '开一个户', note: '最常走的', steps: [{ by: '柜员', text: '照开户表开立账户', concepts: ['账户'], fns: ['f-1'] }, { by: '发卡中心', text: '照账户制卡' }] }]; d.workflows[0].stages = [{ title: '前', states: ['s-1'] }, { title: '后', states: ['s-2'] }] })
 r = run()
 check('写了主要流程速览、分了段的状态图：查不出毛病', r.code === 0 && r.out.includes('没查出毛病'), r.out)
@@ -192,6 +192,17 @@ check('出处和别的主题的功能是同一个代码文件：提醒里写着�
 clean(); edit(M1, (d) => { fn1(d).subject.title = '已发邮件（消息通知）'; d.intro.concepts.push({ title: '已发邮件', note: '发出去的一封' }, { title: '消息通知', note: '别的主题' }); d.uses = [{ title: '已发邮件', note: '发出去的一封' }, { title: '消息通知', note: '别的主题' }] })
 r = run()
 check('业务数据名字后面括号里的主题名不算概念名', r.code === 0 && !r.out.includes('认得出不止一个概念名'), r.out)
+broken('概念的栏是对象却没写 title', () => edit(A + '业务/概念/g1.json', (d) => { d.concepts[0].fields = ['户名', { note: '开户的那一天' }] }), '概念「账户」的 fields 要写成一列栏')
+clean(); edit(A + '业务/概念/g1.json', (d) => { d.concepts[0].fields.push('状态（开着、销了）') }); edit(M1, (d) => { fn1(d).subject.edits = ['账户 › 户名：照开户表记下', '账户 › 开户日期：记下当天', '账户 › 余额、利率：记下 0', '卡 › 卡号：照号段发一个'] })
+r = run()
+check('栏名带括号、edits 里的栏名在概念的栏里找不到：只提醒', r.code === 0 && r.out.includes('概念「账户」的栏名带括号：状态（开着、销了）') && r.out.includes('的 edits 里「账户 › 余额、利率」的栏名在那个概念的栏（fields）里找不到'), r.out)
+check('edits 里对得上的栏、这个主题的概念图上没有的概念：不提醒', !r.out.includes('账户 › 户名') && !r.out.includes('账户 › 开户日期') && !r.out.includes('卡 › 卡号'), r.out)
+clean(); edit(M1, (d) => { delete d.purposes[0].needs[0].source; d.asks = [] })
+r = run()
+check('更细的目的没出处也没问人：只提醒', r.code === 0 && r.out.includes('有 1 条更细的目的没写出处（source），待定里也没有问人'), r.out)
+clean(); edit(M1, (d) => { delete d.purposes[0].needs[0].source })
+r = run()
+check('更细的目的没出处、但待定里问着人：不提醒', r.code === 0 && !r.out.includes('条更细的目的没写出处'), r.out)
 broken('模块业务的待定号重复', () => edit(M1, (d) => d.asks.push({ id: 'q-1', q: '又一个？' })), '问题号重复：q-1', 'g1.json')
 broken('模块业务的主题号写错', () => edit(M1, (d) => { d.topic = 'g2' }), 'topic 要写主题号 g1')
 broken('模块业务的文件不是全局图上的主题', () => write(A + '业务/模块业务/g7.json', { topic: 'g7', groups: [] }), 'g7 不是全局图上的主题')

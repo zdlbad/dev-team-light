@@ -160,6 +160,10 @@ p.none,p.tip{margin:0 0 8px;font-size:13px}p.tip{color:var(--ink-3);font-size:12
 .cg .gl{font-size:11.5px;letter-spacing:1px;color:var(--ink-3);font-weight:600;margin-bottom:2px}
 .cr{display:flex;align-items:baseline;gap:8px;line-height:2;font-size:13px;color:var(--ink-2)}
 .cr>*{flex:none}.cr .nt{flex:1;min-width:0}.cr .ld{font-style:normal;font-size:11.5px;color:var(--ink-3);width:28px}.cr .wn{color:var(--ink)}
+/* 一个概念的栏：名字那一行后面的灰色标签「N 栏」，点了在这一行下面一栏一行展开：栏名加粗，蓝色小字是它指着的数据，灰字是说明 */
+.chip.fc{font-size:11px;border-color:var(--line);background:var(--area);color:var(--ink-3);cursor:pointer;user-select:none}.chip.fc:hover{box-shadow:0 0 0 2px var(--accent-bg)}
+.fd{display:flex;align-items:baseline;gap:10px;line-height:1.8;font-size:12.5px;color:var(--ink-3)}
+.fd>*{flex:none}.fd b{min-width:96px;color:var(--ink);font-weight:600}.fd .rf{font-size:11.5px;color:var(--accent-ink,var(--accent))}.fd .nt{flex:1;min-width:0}
 /* 业务目的及方案：一条业务目的一块，默认收着；展开是一张表，一行一条更细的目的 */
 .pa{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-3);margin-bottom:4px}.pa span{margin-right:auto}
 .pa button{font:inherit;font-size:12px;padding:2px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink-2);cursor:pointer}
@@ -169,6 +173,7 @@ p.none,p.tip{margin:0 0 8px;font-size:13px}p.tip{color:var(--ink-3);font-size:12
 .pu .pt .cnt{margin-left:auto;font-size:12px;color:var(--ink-3);font-weight:400;white-space:nowrap;flex:none;padding-left:12px}
 .pu .guess{display:inline-block;font-size:11px;line-height:1.6;padding:0 8px;border-radius:9px;border:1px solid var(--badge-line);background:var(--badge);color:var(--badge-ink);margin-left:8px;vertical-align:2px;font-weight:400;white-space:nowrap}
 .pu .pf{font-size:12px;color:var(--ink-3);margin:2px 0 6px 40px;line-height:1.6}
+.pu .ns{font-size:12px;color:var(--ink-3);margin-top:2px;line-height:1.6}
 .pu table{border-collapse:collapse;margin-left:40px;font-size:13.5px;width:calc(100% - 40px)}
 .pu td{padding:7px 18px 7px 0;vertical-align:top;border-top:1px solid var(--line);line-height:1.6}
 .pu td:first-child{width:38%;min-width:240px}.pu td b{color:var(--ink)}
@@ -179,6 +184,9 @@ p.none,p.tip{margin:0 0 8px;font-size:13px}p.tip{color:var(--ink-3);font-size:12
 .pop{position:fixed;inset:0;z-index:40;background:rgba(15,25,40,.45);display:flex;align-items:flex-start;justify-content:center;padding:36px 24px;overflow:auto}
 .pop[hidden]{display:none}
 .pop .pw{background:var(--panel);border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.35);width:max-content;min-width:min(100%,640px);max-width:min(100%,1400px);padding:16px 22px 20px;box-sizing:border-box}
+/* 核心数据的看板这一种浮层：最宽放到 1880，四周的留白小一些；别的浮层照旧 */
+.pop[data-kind="core"]{padding:14px 12px}
+.pop .pw[data-kind="core"]{max-width:min(100%,1880px);padding:12px 16px 14px}
 .pop .ph{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}.pop .ph>b{font-size:17px}.pop .ph .in{font-size:12.5px;color:var(--ink-3)}
 .pop .ph .x{margin-left:auto;font:inherit;font-size:12.5px;border:0;background:none;color:var(--ink-3);cursor:pointer;white-space:nowrap;padding:2px 0 2px 16px}.pop .ph .x:hover{color:var(--ink)}
 .pop .pd{font-size:13px;color:var(--ink-2);margin:0 0 10px;max-width:960px;line-height:1.6}
@@ -198,35 +206,44 @@ p.none,p.tip{margin:0 0 8px;font-size:13px}p.tip{color:var(--ink-3);font-size:12
 .cls .el{font-size:12px;font-weight:400;color:var(--ink-2);line-height:1.5}
 .cls .sn{font-size:12.5px;color:var(--ink-2)}.cls .ft{font-size:12.5px;color:var(--ink-2);margin:2px 0 4px}
 .cls .ei{padding:6px 0;border-top:1px dashed var(--line);font-size:13px}.cls .cb>.ei:first-child{border-top:0}
-/* 核心数据的浮层：每一站是一样数据，线上是把前一样变成后一样的那件业务 */
+/* 核心数据的浮层（看板）：每一站是一样数据，线上是把前一样变成后一样的那件业务；字和间距比别的浮层小一号 */
 .cf{padding:2px 2px 8px}
 .cf .ch{font-size:11.5px;letter-spacing:1px;color:var(--accent-ink,var(--accent));font-weight:600;margin-bottom:6px}.cf .ch span{color:var(--ink-3);font-weight:400;letter-spacing:0;margin-left:6px}
-.cf .cw{font-size:13px;color:var(--ink-2);margin:2px 0 16px;max-width:860px}
+.cf .cw{font-size:12px;color:var(--ink-2);margin:2px 0 12px;max-width:860px}
 .cf .flow{display:flex;align-items:center;width:max-content}
-.cf .d{flex:none;min-width:96px;max-width:170px;padding:8px 12px;text-align:center;border:2px solid var(--ink-2);border-radius:12px;background:var(--panel)}
-.cf .d b{display:block;font-size:14.5px}.cf .d i{display:block;font-style:normal;font-size:11px;color:var(--ink-3)}
+.cf .d{flex:none;min-width:88px;max-width:160px;padding:6px 10px;text-align:center;border:2px solid var(--ink-2);border-radius:12px;background:var(--panel)}
+.cf .d b{display:block;font-size:13.5px}.cf .d i{display:block;font-style:normal;font-size:10.5px;color:var(--ink-3)}
 .cf .d.ext{border-style:dashed;border-color:var(--badge-ink);background:var(--badge)}.cf .d.ext i{color:var(--badge-ink)}
-.cf .d.ev{border-style:dashed;border-color:var(--ink-3);font-size:12.5px;color:var(--ink-2);max-width:132px}
+.cf .d.ev{border-style:dashed;border-color:var(--ink-3);font-size:11.5px;color:var(--ink-2);max-width:124px}
 .cf .e{flex:none;display:flex;align-items:center}
 .cf .e::before{content:'';width:16px;height:2px;background:var(--ink-3)}.cf .e::after{content:'';width:20px;height:2px;background:var(--ink-3)}
-.cf .e span{max-width:168px;padding:5px 10px;border-radius:16px;background:var(--accent-bg);color:var(--accent-ink);font-size:12.5px;line-height:1.4;text-align:center;font-weight:600}
-.cf .e span em{display:block;font-style:normal;font-weight:400;font-size:11px;color:var(--ink-2)}.cf .e span em.lk{cursor:pointer}.cf .e span em.lk:hover{text-decoration:underline}
+.cf .e span{max-width:156px;padding:4px 9px;border-radius:16px;background:var(--accent-bg);color:var(--accent-ink);font-size:11.5px;line-height:1.4;text-align:center;font-weight:600}
+.cf .e span em{display:block;font-style:normal;font-weight:400;font-size:10.5px;color:var(--ink-2)}.cf .e span em.lk{cursor:pointer}.cf .e span em.lk:hover{text-decoration:underline}
 .cf .row{gap:0}
 .cf .tip{flex:none;width:0;height:0;border-left:9px solid var(--ink-3);border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:-1px}
-.cf .col{display:flex;flex-direction:column;gap:18px}
+.cf .col{display:flex;flex-direction:column;gap:14px}
 .cf .in>.row{display:flex;align-items:center;justify-content:flex-end;position:relative;padding-right:16px}
 .cf .in>.row::before{content:'';position:absolute;right:0;top:50%;width:16px;border-top:2px solid var(--ink-3)}
-.cf .in.fork>.row::after{content:'';position:absolute;right:0;border-right:2px solid var(--ink-3);top:-9px;bottom:-9px}
+.cf .in.fork>.row::after{content:'';position:absolute;right:0;border-right:2px solid var(--ink-3);top:-7px;bottom:-7px}
 .cf .in.fork>.row:first-child::after{top:50%}.cf .in.fork>.row:last-child::after{bottom:50%}
 .cf .out>.row{display:flex;align-items:center;position:relative;padding-left:16px}
 .cf .out>.row::before{content:'';position:absolute;left:0;top:50%;width:16px;border-top:2px solid var(--ink-3)}
-.cf .out.fork>.row::after{content:'';position:absolute;left:0;border-left:2px solid var(--ink-3);top:-9px;bottom:-9px}
+.cf .out.fork>.row::after{content:'';position:absolute;left:0;border-left:2px solid var(--ink-3);top:-7px;bottom:-7px}
 .cf .out.fork>.row:first-child::after{top:50%}.cf .out.fork>.row:last-child::after{bottom:50%}
 .cf .stub{flex:none;width:12px;height:2px;background:var(--ink-3)}
-.cf .cu{margin-top:14px;padding-top:10px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cf .cu{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .cf .cu b{font-weight:400;color:var(--ink-2);border:1px dashed var(--ink-3);border-radius:9px;padding:1px 9px;background:var(--panel)}
 .cf .dw{flex:none;position:relative}
 .cf .d.go{border-color:var(--accent);cursor:pointer}.cf .d.go i{color:var(--accent)}.cf .d.go:hover{background:var(--accent-bg)}
+/* 看板中间的框：带说明或指向的栏，栏名加粗、后面蓝色小字是它指着的数据、下面一行小字是说明；栏多的排成几列（cols2、cols3、cols4），装着的概念那一排占满整行 */
+.cf .cls>.ct{font-size:12px;padding:4px 10px}.cf .cls.core>.ct{font-size:15px;padding:7px 14px}
+.cf .cls>.cb{padding:5px 9px 7px}.cf .cls .fl{font-size:11.5px;line-height:1.6}.cf .cls .kids{gap:6px;margin-top:5px}
+.cf .cls .fl .rf{margin-left:6px;font-size:11px;color:var(--accent-ink,var(--accent));white-space:nowrap}
+.cf .cls .fl .fn{font-size:11px;color:var(--ink-3);line-height:1.45;max-width:230px;margin-bottom:3px}
+.cf .cls.cols2>.cb,.cf .cls.cols3>.cb,.cf .cls.cols4>.cb{display:grid;column-gap:18px;align-items:start}
+.cf .cls.cols2>.cb{grid-template-columns:repeat(2,auto)}.cf .cls.cols3>.cb{grid-template-columns:repeat(3,auto)}.cf .cls.cols4>.cb{grid-template-columns:repeat(4,auto)}
+.cf .cls.cols2>.cb>.kids,.cf .cls.cols3>.cb>.kids,.cf .cls.cols4>.cb>.kids{grid-column:1/-1}
+.cf .cls.cols2{max-width:660px}.cf .cls.cols3{max-width:900px}.cf .cls.cols4{max-width:1160px}
 .op{display:inline-block;text-decoration:none;font-style:normal;font-size:10.5px;font-weight:600;line-height:1.55;padding:0 6px;border-radius:8px;margin-right:5px;vertical-align:1px;color:#fff}
 .op.new{background:#2e9e6b}.op.upd{background:var(--accent);color:var(--on-accent)}.op.del{background:var(--bad)}
 /* 全局图上面：整个上下文的背景和每个主题的业务目的 */
@@ -352,7 +369,9 @@ const post = (action, body) => fetch('api/' + action, { method: 'POST', headers:
 //      edges:  [{ from, to, label }] }                                          label 是主题之间主要的业务交流，人写的，「；」分句
 // 2. 概念/<主题>.json（一个主题一份，这里写 g2、g5 做例子）
 //    { topic, title, summary,
-//      concepts: [{ id, title, by: [角色], order, definition, source, fields?: [栏名], nudge?, table?: { columns: [列名], rows: [[一格一格]] } }],  这一块自己的数据；fields 是这个概念有哪几栏；
+//      concepts: [{ id, title, by: [角色], order, definition, source, fields?: [栏名 | { title, note?, ref?, topic? }], nudge?, table?: { columns: [列名], rows: [[一格一格]] } }],  这一块自己的数据；
+//                                                                                 fields 是这个概念有哪几栏：一项是栏名，或者一个对象，note 是这一栏在业务上是什么，ref 是它指着的另一样数据的名字，
+//                                                                                 topic 是那样数据归的主题的名字（同一主题里的只写 ref）；栏名里不带括号；
 //                                                                                 先后（列）由线算出来，order 定同一列里的上下，nudge 是人手指定的上下挪动
 //      external: [{ id, title, topic, context? }],                                别的主题里连着的数据，画成虚框；只连进来的在左、其余在右，由线定
 //                                                                                 别的上下文的带 context（topic 是那边的主题号）；共享内核里的 topic 写「共享内核」
@@ -379,8 +398,8 @@ const post = (action, body) => fetch('api/' + action, { method: 'POST', headers:
 //               targets: [{ op, by, fn?, data, topic? }] }],                                     去处；带 topic 的是交给别的主题的数据，每条写 fn：这里的哪项功能让它新建或改变的
 //      uses?: [{ title, note }],                                                                 用到的资料，每条都写 note
 //      purposes: [{ text, from, source?,                                                         业务目的；from 是它对着背景里的哪一句，没写 source 的是推出来的
-//                   needs: [{ aim, text, cores?: [核心数据名], data?: [数据名], fns?: [功能号], chains?: [内部流程号] }] }],
-//                                                                                                needs 一条是一条更细的目的：aim 是更细的目的，text 是做法，后面四样是它落到哪里
+//                   needs: [{ aim, text, source?, cores?: [核心数据名], data?: [数据名], fns?: [功能号], chains?: [内部流程号] }] }],
+//                                                                                                needs 一条是一条更细的目的：aim 是更细的目的，text 是做法，source 是出处、没写的是推出来的，后面四样是它落到哪里
 //      intro: { context, duty: [一条一句], concepts: [{ title, note }], users: [{ who, aim, steps: [一件一句] }], usual: [一步一句] },   业务概述：context 是背景，usual 是典型流程
 //      groups: [{ title, functions: [{ id, title, called?, does, intent,
 //        subject: { title, op, from?, to, edits: ['名字：逻辑'] },                                业务数据：title 里只带一个概念名，页面从里面认主数据；数据归别的主题的写成「已发邮件（消息通知）」；
@@ -422,19 +441,35 @@ const SAMPLE_CONCEPTS = {
   g2: { topic: 'g2', title: '参与者档案与她名下的钱',
     summary: '这一块管两件事：注册服务方替老人留的档案，和政府开在她名下、替她保管的钱。评估批了什么、她跟哪家签了协议、共付比例多少，都记在档案上；后面每一笔钱怎么花、怎么报都照着来。',
     concepts: [
-      { id: 'file', title: '参与者档案', by: ['注册服务方'], order: 1, fields: ['My Aged Care 编号', '共付比例', '她在哪一段'],
+      // 栏的两种写法都有：只写栏名的；带说明和指向的。「批到的分级和路径」「签了的服务协议」指着档案下面装着的概念，页面不列这两栏
+      { id: 'file', title: '参与者档案', by: ['注册服务方'], order: 1,
+        fields: [
+          { title: 'My Aged Care 编号', note: '政府给每位老人编的号，申报和扣款都按它认人。' },
+          { title: '决定通知书', ref: '决定通知书', topic: '评估与分资金', note: '这份档案是照哪一份决定通知书建立的。' },
+          { title: '批到的分级和路径', ref: '批到的分级和路径' },
+          '签了的服务协议',
+          { title: '批了的服务类型', ref: '服务类型', topic: '服务清单', note: '支持计划批给她的那几类服务，基金只能买这几类。' },
+          '共付比例',
+          { title: '分到的资金', note: '哪天分到资金，分到的是全额还是一部分。' },
+          '建档日期',
+          '她在哪一段' ],
         definition: '注册服务方从老人第一次联系起替她留的一份记录：批了哪一级、哪条路径、允许的服务类型、共付比例、她在哪一段。',
         source: '手册 v4.4 §3 Participant；§6.6 行 562–568' },
       { id: 'level', title: '批到的分级和路径', order: 1, fields: ['分级', '路径'],
         definition: '决定通知书上批给她的那一级和那条路径。建档时照通知书记进档案，以后每季分多少钱照这一级算。',
         source: '§6.6 行 562–568' },
-      { id: 'signed', title: '签了的服务协议', order: 2, fields: ['签的协议', '签约日期'],
+      { id: 'signed', title: '签了的服务协议', order: 2,
+        fields: [{ title: '签的协议', ref: '服务协议', topic: '服务方与协议', note: '她签的是哪一份服务协议。' }, '签约日期'],
         definition: '档案上记着的一笔：她跟注册服务方签的是哪一份服务协议、哪天签的。',
         source: '§7.1 行 676' },
       { id: 'fund', title: '她名下的基金', by: ['Services Australia'], order: 2,
         definition: '政府开在老人名下、替她保管的钱。持续服务按分级每季一笔；批了辅助技术、家居改造、复健、临终的各多一笔。',
         source: '§9.2 行 1290' },
-      { id: 'acct', title: '基金账户', order: 3, fields: ['服务类型'],
+      { id: 'acct', title: '基金账户', order: 3,
+        fields: [
+          { title: '她名下的基金', ref: '她名下的基金', note: '这个账户是从哪一笔基金里分出来的。' },
+          { title: '服务类型', ref: '服务类型', topic: '服务清单', note: '这个账户只能买这一类服务。' },
+          { title: '余额', ref: '余额' } ],
         definition: '一笔基金一个账户，只能买她批了的服务类型；申报行按她的编号从对应的账户扣。',
         source: '§9.2 行 1290；申报格式 v1.14 第 4 节第 9 项' },
       { id: 'bal', title: '余额', order: 3,
@@ -466,16 +501,35 @@ const SAMPLE_CONCEPTS = {
       { id: 'inv', title: '发票行', by: ['照护伙伴'], order: 1, fields: ['发票号', '服务项', '数量', '金额'],
         definition: '外部服务方开来的发票上的一行，对着一次服务。先登记下来，核对无误才记成服务记录。',
         source: '手册 v4.4 §10.3 行 1512' },
-      { id: 'rec', title: '服务记录', by: ['照护伙伴'], order: 1, fields: ['日期', '服务项', '数量', '金额'],
+      { id: 'rec', title: '服务记录', by: ['照护伙伴'], order: 1,
+        fields: [
+          { title: '老人', ref: '参与者档案', topic: '参与者档案与她名下的钱', note: '这一次服务是给哪一位老人做的。' },
+          { title: '日期', note: '这一次服务是哪天做的。' },
+          { title: '服务项', ref: '服务', topic: '服务清单', note: '做的是服务清单上的哪一项。' },
+          '数量',
+          '金额',
+          { title: '做服务的人', note: '自己的工作者，或者外部服务方。' },
+          { title: '凭据', ref: '凭据' } ],
         definition: '做了一次服务记一条：哪天、哪项服务、做了多少、多少钱。申报、扣款和月结单都从它开始。',
         source: '手册 v4.4 §10.1 行 1466' },
-      { id: 'proof', title: '凭据', order: 2, fields: ['凭据的种类', '对着哪一行发票行或哪一张收据'],
+      { id: 'proof', title: '凭据', order: 2,
+        fields: [
+          { title: '凭据的种类', note: '发票上的一行，或者老人交来的收据。' },
+          { title: '发票行', ref: '发票行', note: '照发票记下的，写它对着发票上的哪一行。' },
+          { title: '收据', note: '照收据记下的，写它对着老人交来的哪一张收据。' } ],
         definition: '一条服务记录是照什么记下的：发票上的哪一行，或者老人交来的哪一张收据。自己的工作者做的服务没有凭据。',
         source: '手册 v4.4 §10.3 行 1520' },
       { id: 'cm', title: '照护管理记录', by: ['照护伙伴'], order: 2, fields: ['日期', '做了多久', '做了什么'],
         definition: '照护伙伴替老人做一次照护管理记一条：哪天、做了多久、做了什么。',
         source: '手册 v4.4 §8.4 行 960' },
-      { id: 'claim', title: '申报行', by: ['财务'], order: 1, fields: ['老人的编号', '服务类型', '申报的金额'],
+      { id: 'claim', title: '申报行', by: ['财务'], order: 1,
+        fields: [
+          { title: '服务记录', ref: '服务记录', note: '这一行申报的是哪一条服务记录。' },
+          { title: '老人的编号', note: '她的 My Aged Care 编号，政府按它从她名下扣款。' },
+          '服务类型',
+          '申报的金额',
+          '状态',
+          { title: '退回的原因', note: '被政府退回的申报行才有。' } ],
         definition: '向政府申报的一行，对着一条服务记录。报上去以后政府审核，通过了才从老人名下的基金账户扣款，被退回的改了重新报。',
         source: '申报格式 v1.14 第 4 节' },
       { id: 'stmt', title: '月结单', by: ['财务'], order: 2, fields: ['月份', '合计'],
@@ -552,7 +606,7 @@ const SAMPLE_LAYOUT = {
           asks: [{ id: 'a-1', q: '一季的行太多时分几页还是一张长表？', lean: '分页，每页表头重复', options: ['分页', '一张长表'], by: 'UI 设计', screen: 'N-09/form' }] },
         { id: '2', from: 'rp', to: 'sa', title: '上传申报表', date: '02/10/2026', data: ['申报表'] } ] } ] }
 
-const SAMPLE_MODULES = {"g2":{"topic":"g2","title":"参与者档案与她名下的钱","summary":"注册服务方替每位老人留一份档案，并管着政府开在她名下的钱。","tours":[{"title":"一位老人从建档到分到资金","note":"照护伙伴替一位新来的老人建档；她签了服务协议、分到资金以后，钱开在她名下，后面做的服务才有钱可扣。","steps":[{"by":"老人","text":"评估批下来以后，把政府发的决定通知书和支持计划交给注册服务方。评估在「评估与分资金」里办。","concepts":["决定通知书","支持计划"]},{"by":"照护伙伴","text":"照决定通知书给她建立参与者档案，记下她批到的分级和路径。","concepts":["参与者档案","批到的分级和路径"],"fns":["f-1"]},{"by":"老人","text":"和注册服务方签服务协议。签协议在「服务方与协议」里办。","concepts":["服务协议"]},{"by":"照护伙伴","text":"在她的档案上记下她签了哪一份服务协议、哪天签的。","concepts":["签了的服务协议"],"fns":["f-2"]},{"by":"卫生部","text":"来信通知她分到了资金。排队和分资金在「评估与分资金」里办。","concepts":["分资金的信"]},{"by":"照护伙伴","text":"记下分到资金的那天，开出她名下的基金；批了几类服务，就开几个基金账户。","concepts":["她名下的基金","基金账户"],"fns":["f-3"]}]},{"title":"做了服务以后从基金账户扣款","note":"服务做了、申报通过以后，这一行申报的钱从她名下对应的基金账户里扣掉。","steps":[{"by":"财务","text":"照服务记录写出申报行报给政府，政府审核通过。申报在「服务发生与申报」里办。","concepts":["申报行"]},{"by":"财务","text":"照审核通过的申报行，从她名下对应这一类服务的基金账户扣款，余额跟着减少。","concepts":["基金账户","余额"],"fns":["f-4"]}]}],"core":[{"title":"参与者档案","why":"注册服务方替一位老人做的每一件事都记在她的档案上：签了什么协议、分到了什么钱，后面的服务和扣款都照这份档案来。","parts":["批到的分级和路径","签了的服务协议"],"sources":[{"steps":[{"data":"决定通知书","op":"创建","by":"照通知书上批下来的内容建立档案","fn":"f-1"}]}],"targets":[{"op":"创建","by":"记下分到资金的那天，开出她名下的基金","fn":"f-3","data":"她名下的基金"},{"op":"创建","by":"批了几类服务，就开几个基金账户","fn":"f-3","data":"基金账户"}]},{"title":"基金账户","why":"分到的钱开在她名下的基金账户里，一类服务一个账户。账户有自己的余额，每一次扣款都照账户办。","parts":["余额"],"sources":[{"steps":[{"data":"参与者档案","op":"创建","by":"记下分到资金的那天，批了几类服务就开几个账户","fn":"f-3"}]}],"targets":[{"op":"更新","by":"扣成了，把这一行申报行记成已扣","fn":"f-4","data":"申报行","topic":"服务发生与申报"}]}],"purposes":[{"text":"随时说得清每位老人名下的钱：分到多少、扣了多少、还剩多少。","from":"钱开在她名下，做了服务从账户里扣","source":"人 2026-11-24 说：要有个地方管理资金，把资金的出入都放在这里管理","needs":[{"aim":"分到的钱和扣掉的钱，每一笔都查得到。","text":"钱的每一笔进出都记在基金账户上：分到资金时开出账户，每扣一笔就从余额里减一笔。","cores":["基金账户"],"data":["余额"],"fns":["f-3","f-4"],"chains":["c-1"]},{"aim":"同一笔钱只有一处说了算。","text":"别的业务要动钱，都到这里来办，不各自去改余额。","cores":["基金账户"],"fns":["f-4"]}]},{"text":"后面的服务有一份说了算的依据：她批到了什么、签了什么协议。","from":"注册服务方替她建档","needs":[{"aim":"她批到了什么，以政府发的决定通知书为准。","text":"批下来的内容照决定通知书记进档案。","cores":["参与者档案"],"data":["批到的分级和路径"],"fns":["f-1"]},{"aim":"看档案就知道她签没签服务协议、签的是哪一份。","text":"签了的服务协议记在档案上。","cores":["参与者档案"],"data":["签了的服务协议"],"fns":["f-2"]}]}],"intro":{"context":"政府批给老人的钱开在她名下，由 Services Australia 保管；注册服务方替她建档，做了服务以后从她名下的账户里扣。","duty":["管每位老人的档案和她名下的基金、账户：建档，记下她签了协议、分到了资金，按申报从账户扣款。","不管评估怎么做、服务怎么排、发票怎么开。"],"concepts":[{"title":"参与者档案","note":"注册服务方替一位老人留的记录，写着她批了什么、走到了哪一步。"},{"title":"她名下的基金","note":"政府开在老人名下、替她保管的一笔钱。"},{"title":"基金账户","note":"一笔基金按批了的服务类型分开的账户，扣款只从对应的那一个扣。"}],"users":[{"who":"照护伙伴","aim":"替老人把档案建好、记准，钱到了就能开始用","steps":["照决定通知书给她建档","她签了服务协议，在档案上记下来","分到资金那天记下来，开出她名下的基金"]},{"who":"财务","aim":"服务做完、申报以后，把钱从对的账户里扣掉","steps":["照申报行从基金账户扣款"]}],"usual":["照护伙伴照决定通知书给老人建档","她签了服务协议，档案上记下","卫生部来信说分到了资金，开出她名下的基金和账户","做了服务、申报以后，从对应的账户扣款"]},"groups":[{"title":"参与者档案","functions":[{"id":"f-1","title":"照决定通知书建立参与者档案","called":"建档","does":"照决定通知书记下她批了哪一级、哪条路径","intent":"老人交来决定通知书，给她留一份档案，以后签协议、分资金、记服务都记在这一份上。","subject":{"title":"这位老人的参与者档案","op":"创建","to":"档案建好了，记着她批到的分级和路径","edits":["My Aged Care 编号：照决定通知书上印的编号记下","批到的分级和路径：照决定通知书记下","批到的分级和路径 › 路径：只记通知书上批的那一条，不替她另选"]},"in":[{"title":"决定通知书","by":"老人交来的","note":"政府评估后发给她的那一份，上面写着分级和路径"},{"title":"支持计划","by":"老人交来的","note":"同一次评估一起发的，写着批了她哪些服务类型"},{"title":"分级","by":"政府批的","note":"通知书上批给她的那一级，一共八级"}],"out":[],"rules":["一位老人只有一份档案，按 My Aged Care 编号认"],"uses":[{"flow":"01-老人注册","step":5}],"source":"手册 v4.4 §3 Participant"},{"id":"f-2","title":"在参与者档案上记下签了的服务协议","does":"记下她跟哪家签了协议、哪天签的","intent":"她跟注册服务方签了服务协议，档案上要看得出她已经签了、签的是哪一份。","subject":{"title":"这位老人档案上签了的服务协议","op":"创建","from":"档案建好了，还没记她签协议","to":"档案上记着她签了哪一份服务协议、哪天签的","edits":["签的协议：记下她签的是哪一份服务协议","签约日期：记下协议上写的那一天"]},"in":[{"title":"参与者档案","note":"记在哪一位老人的档案上"},{"title":"服务协议","by":"老人签的","note":"她跟注册服务方签的那一份"},{"title":"签约日期","by":"照护伙伴填的","note":"协议上写的签约那一天，日/月/年"}],"out":[{"kind":"事件","title":"协议已签","when":"记下以后告知聊天 app，给她开聊天"}],"uses":[{"flow":"01-老人注册","step":6}]},{"id":"f-3","title":"记下分到资金并开出她名下的基金","does":"记下分到资金那天和分到的是全额还是一部分，开出她名下的基金","intent":"卫生部来信说她分到了资金，从这一天起钱开在她名下，后面的服务才能从这笔钱里扣。","subject":{"title":"这位老人的参与者档案","op":"更新","from":"档案上记着她签了协议，还没分到资金","to":"档案上记着她哪天分到资金、分到的是全额还是一部分","edits":["分到的资金：记下哪天分到、分到的是全额还是一部分"]},"in":[{"title":"参与者档案","note":"哪一位老人分到了资金"},{"title":"分资金的信","by":"卫生部发的","note":"写着分到资金的日期，分到的是全额还是一部分"}],"out":[{"kind":"新记录","title":"她名下的基金"},{"kind":"新记录","title":"基金账户","when":"批了几类服务就开几个"}],"uses":[{"flow":"01-老人注册","step":8}]}]},{"title":"基金账户","functions":[{"id":"f-4","title":"照申报行从基金账户扣款","does":"按申报行上她的编号和服务类型，从对应的账户扣","intent":"服务做了、申报了，这一行的钱要从她名下对应的那个账户里扣掉。","subject":{"title":"她名下这一类服务的基金账户","op":"更新","from":"账户里是扣款之前的余额","to":"账户里扣掉了这一行申报的金额","edits":["余额：减去这一行申报的金额"]},"in":[{"title":"基金账户","note":"她名下对着这一类服务的那一个"},{"title":"申报行","by":"政府审核通过的","note":"要扣的是哪一行：带着她的编号、服务类型和金额（澳元）"}],"out":[{"kind":"状态改变","title":"申报行","when":"扣成了就记成已扣"}],"rules":["只能扣她批了的那一类服务的账户"]}]}],"chains":[{"id":"c-1","title":"分到资金以后","after":{"title":"参与者档案","from":"已签协议","to":"分到资金"},"then":[{"kind":"新记录","title":"她名下的基金","to":"开着"},{"kind":"新记录","title":"基金账户","to":"可以扣款","when":"批了几类服务就开几个","note":"一笔基金一个账户"}]}],"workflows":[{"id":"w-1","title":"参与者档案","states":[{"id":"s-1","title":"已建档"},{"id":"s-2","title":"已签协议"},{"id":"s-3","title":"分到资金"},{"id":"s-4","title":"已停用","called":"离开"}],"moves":[{"from":"s-1","to":"s-2","label":"签了服务协议"},{"from":"s-2","to":"s-3","label":"卫生部来信分到资金"},{"from":"s-1","to":"s-3","label":"还没签协议就分到资金"},{"from":"s-3","to":"s-4","label":"她走了或者换了注册服务方"}],"note":"档案停用以后不删，留着查"}],"asks":[{"id":"q-1","q":"档案上的分级、路径跟决定通知书不一样时，是不让建，还是先建了再标出来？","lean":"不让建，等通知书改了再建","options":["不让建","先建了再标出来"]},{"id":"q-2","q":"「后面的服务有一份说了算的依据」这条业务目的是推出来的，原料没有写为什么要替老人建档。建档是为了这个吗？","lean":"是这个目的","options":["是这个目的","建档只是为了记下她是谁"]}]},"g5":{"topic":"g5","title":"服务发生与申报","summary":"注册服务方把做了的每一次服务记成服务记录，再照服务记录向政府申报。","tours":[{"title":"外部服务方做的服务：从发票到申报、月结单","note":"请外部服务方做的服务，从发票登记进来，核对后记成服务记录，写成申报行报给政府，月底列进月结单。","steps":[{"by":"照护伙伴","text":"外部服务方开来发票，把发票上的每一行登记成发票行。","concepts":["发票行"],"fns":["f-2"]},{"by":"照护伙伴","text":"对着老人签的服务协议核对发票行，核对无误的一行记成一条服务记录。","concepts":["服务协议","服务记录","凭据"],"fns":["f-3"]},{"by":"财务","text":"把还没申报的服务记录写成申报行，报给政府。","concepts":["申报行"],"fns":["f-5"]},{"by":"财务","text":"政府审核完，记下每一行申报行是通过还是被退回。","concepts":["申报行"],"fns":["f-8"]},{"by":"财务","text":"审核通过的一行，从老人名下的基金账户扣款。扣款在「参与者档案与她名下的钱」里办。","concepts":["基金账户"]},{"by":"财务","text":"月底把这个月的服务记录和照护管理记录汇总成月结单，发给老人。","concepts":["月结单","月结单明细"],"fns":["f-6"]}]},{"title":"自己做的服务、老人先付的钱和照护管理","note":"另外三种情形各记各的：自己的工作者做的服务直接记，老人先付的钱照收据记，照护伙伴做的照护管理单独记。","steps":[{"by":"照护伙伴","text":"自己的工作者上门做了一次服务，照服务清单选出做的是哪一项，记下一条服务记录。","concepts":["服务清单","服务记录"],"fns":["f-1"]},{"by":"照护伙伴","text":"老人自己先付了钱、交来收据的，核对收据以后记成服务记录。","concepts":["服务记录","凭据"],"fns":["f-4"]},{"by":"照护伙伴","text":"替老人做了一次照护管理，记下一条照护管理记录。","concepts":["照护管理记录"],"fns":["f-7"]}]}],"core":[{"title":"服务记录","why":"这块业务最后要留下的是「做了哪一次服务」。发票和收据是凭据，处理它们是为了把服务记录记准；申报、扣款和月结单都从服务记录开始。","parts":["凭据"],"sources":[{"steps":[{"data":"自己的工作者做了一次服务","event":true,"op":"创建","by":"直接记下这一次服务","fn":"f-1"}]},{"steps":[{"data":"外部服务方开来一张发票","event":true,"op":"创建","by":"把发票一行一行登记下来","fn":"f-2"},{"data":"发票行","op":"创建","by":"核对无误，一行记成一条","fn":"f-3"}]},{"steps":[{"data":"老人交来先付的收据","event":true,"op":"创建","by":"核对收据，照它记下","fn":"f-4"}]}],"targets":[{"op":"创建","by":"一条写成一行，报给政府","fn":"f-5","data":"申报行"},{"op":"创建","by":"按月汇总，发给老人","fn":"f-6","data":"月结单"}]},{"title":"照护管理记录","why":"照护伙伴替老人做的照护管理也要留下记录：这个月做没做、做了多久，照这些记录来看，月结单上也要列出来。","sources":[{"steps":[{"data":"照护伙伴做了一次照护管理","event":true,"op":"创建","by":"记下这一次照护管理","fn":"f-7"}]}],"targets":[{"op":"创建","by":"按月汇总，发给老人","fn":"f-6","data":"月结单"}]},{"title":"申报行","why":"向政府申报是一行一行办的：报上去、通过或者退回，通过了才扣款，每一步都照申报行办。","sources":[{"steps":[{"data":"服务记录","op":"创建","by":"一条写成一行，报给政府","fn":"f-5"}]}],"targets":[{"op":"更新","by":"审核通过的一行交去扣款","fn":"f-8","data":"基金账户","topic":"参与者档案与她名下的钱"}]},{"title":"月结单","why":"月结单出了以后是留下来的一份：发给老人，老人照它付自己该付的钱，有异议也照它更正。","parts":["月结单明细"],"sources":[{"steps":[{"data":"服务记录","op":"创建","by":"按月汇总，发给老人","fn":"f-6"}]},{"steps":[{"data":"照护管理记录","op":"创建","by":"按月汇总，发给老人","fn":"f-6"}]}],"targets":[]}],"uses":[{"title":"服务清单","note":"政府定的服务组、服务类型、服务三层；做的是清单上的哪一项，照它查。"},{"title":"服务协议","note":"老人跟注册服务方签的那一份；核对一项服务在不在她签的协议里，照它查。"}],"purposes":[{"text":"交给政府的申报行要通得过政府的审核。","from":"政府审核通过才付钱","source":"人 2026-11-24 说：系统要提供出符合政府审核的申报项","needs":[{"aim":"报上去的每一行都对得上一次真做了的服务。","text":"申报行只能从服务记录写出来，一条服务记录对一行。","cores":["申报行"],"fns":["f-5"]},{"aim":"不报政府不认的服务。","text":"申报的服务要是批给这位老人的服务类型，并且在她签的协议里。","cores":["服务记录"],"data":["服务清单","服务协议"],"fns":["f-1"]},{"aim":"政府审核的结果有着落：通过的扣款，被退回的改了重报。","text":"审核结果记在申报行上；审核通过的一行交去从老人名下的基金账户扣款。","cores":["申报行"],"fns":["f-8"],"chains":["c-2"]}]},{"text":"每一次服务都照政府的要求留痕，查的时候拿得出依据。","from":"先把服务做了再申报；有的服务是请外部服务方做的","source":"人 2026-11-24 说：按照要求为服务留痕","needs":[{"aim":"做了的服务一次不漏。","text":"服务不管从哪里来，都要落成服务记录。","cores":["服务记录"],"fns":["f-1","f-3","f-4"],"chains":["c-1"]},{"aim":"每条服务记录都指得出它的依据。","text":"外部来的服务要留下凭据：发票一行一行录进来，核对过才记成服务记录，每条服务记录都指得出它的凭据是哪一行。","data":["发票行","凭据"],"fns":["f-2","f-3","f-4"]},{"aim":"照护伙伴做的照护管理也查得到。","text":"照护管理也要留记录。","cores":["照护管理记录"],"fns":["f-7"]}]},{"text":"每个月向老人交代清楚：用了哪些服务、花了多少钱。","from":"政府出钱替老人买居家照护服务","needs":[{"aim":"老人每个月看得到自己用了哪些服务、每一项花了多少钱。","text":"月底把这个月的服务记录和照护管理记录汇总成月结单，一条记录列一行，发给老人。","cores":["月结单"],"data":["月结单明细"],"fns":["f-6"]}]}],"intro":{"context":"政府出钱替老人买居家照护服务：注册服务方先把服务做了，或者请外部服务方做，再向政府申报，政府审核通过才付钱。","duty":["管服务记录和照它做的申报：把做了的服务记准，登记和核对外面开来的发票，向政府申报，按月给老人出月结单。","不管钱从哪个账户扣、协议怎么签。"],"concepts":[{"title":"服务记录","note":"做了一次服务记一条：哪天、哪项服务、多少、多少钱。"},{"title":"发票行","note":"外部服务方开来的发票上的一行，对着一次服务。"},{"title":"申报行","note":"向政府申报的一行，对着一条服务记录。"},{"title":"月结单","note":"每月给老人的一份清单，列着这个月的服务和花的钱。"},{"title":"照护管理记录","note":"照护伙伴替老人做一次照护管理记一条：哪天、做了多久、做了什么。"}],"users":[{"who":"照护伙伴","aim":"把做了的服务记准","steps":["记下自己的工作者做的服务","登记外部服务方开来的发票，核对以后记成服务记录","核对老人交来的收据，记成服务记录","记下做了的照护管理"]},{"who":"财务","aim":"照服务记录向政府申报，按月给老人出清单","steps":["把服务记录写成申报行","记下政府对申报行的审核结果","出月结单"]}],"usual":["做了一次服务，记下一条服务记录","外面开来的发票登记、核对，记成服务记录","财务照服务记录写申报行，报给政府","政府审核通过的申报行交去扣款","月底给老人出月结单"]},"groups":[{"title":"服务记录","functions":[{"id":"f-1","title":"记下自己的工作者做的一次服务","does":"记下哪天、哪项服务、做了多少","intent":"自己的工作者上门做了一次服务，要有一条记录，后面才能申报。","subject":{"title":"这一次服务的服务记录","op":"创建","to":"服务记录记下了，等着申报","edits":["服务项：做的是服务清单上的哪一项","数量：做了多少","日期：哪天做的"]},"in":[{"title":"参与者档案","note":"给哪一位老人做的"},{"title":"服务项","by":"照护伙伴选的","note":"做的是服务清单上的哪一项"},{"title":"数量","by":"工作者报的","note":"做了几小时，或者做了几次"}],"out":[]},{"id":"f-4","title":"核对老人先付的收据并记成服务记录","does":"核对收据上的服务和金额，照它记下服务记录","intent":"老人自己先付了钱，交来收据；核对无误才记成服务记录，后面照它申报、把钱退给她。","subject":{"title":"这张收据对着的服务记录","op":"创建","to":"服务记录记下了，等着申报","edits":["服务项和金额：照收据上写的记下","凭据：记下这一条是照哪一张收据记的"]},"in":[{"title":"参与者档案","note":"哪一位老人交来的收据"},{"title":"收据","by":"老人交来的","note":"她付款的凭据，写着哪天、哪项服务、付了多少（澳元）"}],"out":[]}]},{"title":"发票行","functions":[{"id":"f-2","title":"登记外部服务方开来的发票行","does":"把发票上的每一行登记下来，等着核对","intent":"外部服务方做了服务、开来发票；先一行一行登记下来，核对以后才能记成服务记录。","subject":{"title":"这张发票上的每一行发票行","op":"创建","to":"发票行登记了，等着核对","edits":["发票行：照发票一行记一条"]},"in":[{"title":"发票","by":"外部服务方开的","note":"开来的那一张，附上图片或 PDF"}],"out":[]},{"id":"f-3","title":"核对发票行并记成服务记录","does":"核对发票行和实际做的服务对不对得上，对得上的一行记成一条服务记录","intent":"登记了的发票行要有人核对过才算数，核对无误的才落成服务记录。","subject":{"title":"这一行发票行","op":"更新","from":"发票行登记了，等着核对","to":"发票行核对过了","edits":["状态：等着核对 → 核对过了"]},"in":[{"title":"发票行","note":"核对的是哪一行"},{"title":"服务协议","by":"老人签的","note":"看这项服务在不在她签的协议里"}],"out":[{"kind":"新记录","title":"服务记录","when":"核对无误的一行记一条"}]}]},{"title":"申报行","functions":[{"id":"f-5","title":"把服务记录写成申报行并报给政府","does":"一条服务记录写成一行申报行，报给政府","intent":"政府照申报付钱，所以每一条服务记录都要写成申报行报上去。","subject":{"title":"新写出的这一行申报行","op":"创建","to":"申报行写好了，报给了政府","edits":["服务类型：照服务记录上的服务项写","申报的金额：照服务记录写"]},"in":[{"title":"服务记录","by":"系统带出的","note":"还没申报的那几条"}],"out":[{"kind":"状态改变","title":"服务记录","when":"从等着申报变成已申报"}]},{"id":"f-8","title":"记下政府对申报行的审核结果","does":"记下这一行是通过了还是被退回；通过的交去扣款","intent":"政府审核完一行申报，结果要记在申报行上：通过的才能从老人名下的账户扣款，被退回的要有人改了重新报。","subject":{"title":"政府回了结果的那一行申报行","op":"更新","from":"申报行报给了政府，等着审核","to":"申报行上记着审核通过，或者被退回和退回的原因","edits":["状态：已报给政府 → 审核通过，或者被退回","退回的原因：被退回的才记"]},"in":[{"title":"申报行","note":"政府回了结果的那一行"},{"title":"审核结果","by":"政府回的","note":"通过，或者退回；退回的带着原因"}],"out":[{"kind":"事件","title":"申报行审核通过","when":"通过的那一行交给「参与者档案与她名下的钱」扣款"}]}]},{"title":"月结单","functions":[{"id":"f-6","title":"出这个月的月结单","does":"把这个月的服务记录和照护管理记录汇总成一份月结单，发给老人","intent":"老人每个月要看到自己用了哪些服务、花了多少钱。","subject":{"title":"这位老人这个月的月结单","op":"创建","to":"月结单出好了，发给了老人","edits":["月结单明细：这个月的每条服务记录、每条照护管理记录各列一行","月结单明细 › 金额：照那一条记录上的金额写"]},"in":[{"title":"参与者档案","note":"给哪一位老人出"},{"title":"服务记录","by":"系统带出的","note":"这位老人这个月的每一条"},{"title":"照护管理记录","by":"系统带出的","note":"这位老人这个月的每一条"}],"out":[]}]},{"title":"照护管理记录","functions":[{"id":"f-7","title":"记下一次照护管理","does":"记下哪天、做了多久、做了什么","intent":"照护伙伴替老人联系、安排了一次，要有一条记录，月底才看得出这个月做没做。","subject":{"title":"这一次照护管理的照护管理记录","op":"创建","to":"照护管理记录记下了","edits":["日期：哪天做的","做了多久：照护伙伴填的分钟数","做了什么：用一两句话写"]},"in":[{"title":"参与者档案","note":"替哪一位老人做的"},{"title":"做了多久","by":"照护伙伴填的","note":"这一次花的时间，按分钟记"}],"out":[]}]}],"chains":[{"id":"c-1","title":"发票行核对过以后","after":{"title":"发票行","from":"等着核对","to":"核对过了"},"then":[{"kind":"新记录","title":"服务记录","to":"等着申报","when":"核对无误的一行一条"}]},{"id":"c-2","title":"申报行审核通过以后","after":{"title":"申报行","from":"已报给政府","to":"审核通过"},"then":[{"kind":"状态改变","title":"基金账户","to":"扣掉这一行申报的金额","note":"在「参与者档案与她名下的钱」里办"},{"kind":"状态改变","title":"申报行","from":"审核通过","to":"已扣款","when":"扣成了"}]}],"workflows":[{"id":"w-1","title":"服务记录","states":[{"id":"s-1","title":"等着申报"},{"id":"s-2","title":"已申报"}],"moves":[{"from":"s-1","to":"s-2","label":"写成申报行报给了政府"}]},{"id":"w-2","title":"发票行","states":[{"id":"s-1","title":"等着核对"},{"id":"s-2","title":"核对过了"}],"moves":[{"from":"s-1","to":"s-2","label":"核对无误"}]},{"id":"w-3","title":"申报行","states":[{"id":"s-1","title":"已报给政府"},{"id":"s-2","title":"被退回"},{"id":"s-3","title":"审核通过"},{"id":"s-4","title":"已扣款"}],"moves":[{"from":"s-1","to":"s-3","label":"政府审核通过"},{"from":"s-1","to":"s-2","label":"政府退回，带着原因"},{"from":"s-2","to":"s-1","label":"改了以后重新报上去"},{"from":"s-3","to":"s-4","label":"从老人名下的基金账户扣成了"}],"stages":[{"title":"申报和审核","states":["s-1","s-2"]},{"title":"通过以后","states":["s-3","s-4"]}],"note":"被退回的申报行改了以后重新报，不另写一行。"}],"asks":[{"id":"q-1","q":"「每个月向老人交代清楚用了哪些服务、花了多少钱」这条业务目的是推出来的，原料没有写为什么要出月结单。出月结单是为了这个吗？","lean":"是这个目的","options":["是这个目的","月结单不该放在这个主题里"]}]}}
+const SAMPLE_MODULES = {"g2":{"topic":"g2","title":"参与者档案与她名下的钱","summary":"注册服务方替每位老人留一份档案，并管着政府开在她名下的钱。","tours":[{"title":"一位老人从建档到分到资金","note":"照护伙伴替一位新来的老人建档；她签了服务协议、分到资金以后，钱开在她名下，后面做的服务才有钱可扣。","steps":[{"by":"老人","text":"评估批下来以后，把政府发的决定通知书和支持计划交给注册服务方。评估在「评估与分资金」里办。","concepts":["决定通知书","支持计划"]},{"by":"照护伙伴","text":"照决定通知书给她建立参与者档案，记下她批到的分级和路径。","concepts":["参与者档案","批到的分级和路径"],"fns":["f-1"]},{"by":"老人","text":"和注册服务方签服务协议。签协议在「服务方与协议」里办。","concepts":["服务协议"]},{"by":"照护伙伴","text":"在她的档案上记下她签了哪一份服务协议、哪天签的。","concepts":["签了的服务协议"],"fns":["f-2"]},{"by":"卫生部","text":"来信通知她分到了资金。排队和分资金在「评估与分资金」里办。","concepts":["分资金的信"]},{"by":"照护伙伴","text":"记下分到资金的那天，开出她名下的基金；批了几类服务，就开几个基金账户。","concepts":["她名下的基金","基金账户"],"fns":["f-3"]}]},{"title":"做了服务以后从基金账户扣款","note":"服务做了、申报通过以后，这一行申报的钱从她名下对应的基金账户里扣掉。","steps":[{"by":"财务","text":"照服务记录写出申报行报给政府，政府审核通过。申报在「服务发生与申报」里办。","concepts":["申报行"]},{"by":"财务","text":"照审核通过的申报行，从她名下对应这一类服务的基金账户扣款，余额跟着减少。","concepts":["基金账户","余额"],"fns":["f-4"]}]}],"core":[{"title":"参与者档案","why":"注册服务方替一位老人做的每一件事都记在她的档案上：签了什么协议、分到了什么钱，后面的服务和扣款都照这份档案来。","parts":["批到的分级和路径","签了的服务协议"],"sources":[{"steps":[{"data":"决定通知书","op":"创建","by":"照通知书上批下来的内容建立档案","fn":"f-1"}]}],"targets":[{"op":"创建","by":"记下分到资金的那天，开出她名下的基金","fn":"f-3","data":"她名下的基金"},{"op":"创建","by":"批了几类服务，就开几个基金账户","fn":"f-3","data":"基金账户"}]},{"title":"基金账户","why":"分到的钱开在她名下的基金账户里，一类服务一个账户。账户有自己的余额，每一次扣款都照账户办。","parts":["余额"],"sources":[{"steps":[{"data":"参与者档案","op":"创建","by":"记下分到资金的那天，批了几类服务就开几个账户","fn":"f-3"}]}],"targets":[{"op":"更新","by":"扣成了，把这一行申报行记成已扣","fn":"f-4","data":"申报行","topic":"服务发生与申报"}]}],"purposes":[{"text":"随时说得清每位老人名下的钱：分到多少、扣了多少、还剩多少。","from":"钱开在她名下，做了服务从账户里扣","source":"人 2026-11-24 说：要有个地方管理资金，把资金的出入都放在这里管理","needs":[{"aim":"分到的钱和扣掉的钱，每一笔都查得到。","text":"钱的每一笔进出都记在基金账户上：分到资金时开出账户，每扣一笔就从余额里减一笔。","source":"手册 v4.4 §9.2 行 1290","cores":["基金账户"],"data":["余额"],"fns":["f-3","f-4"],"chains":["c-1"]},{"aim":"同一笔钱只有一处说了算。","text":"别的业务要动钱，都到这里来办，不各自去改余额。","source":"人 2026-11-24 说：把资金的出入都放在这里管理","cores":["基金账户"],"fns":["f-4"]}]},{"text":"后面的服务有一份说了算的依据：她批到了什么、签了什么协议。","from":"注册服务方替她建档","needs":[{"aim":"她批到了什么，以政府发的决定通知书为准。","text":"批下来的内容照决定通知书记进档案。","source":"手册 v4.4 §6.6 行 562–568","cores":["参与者档案"],"data":["批到的分级和路径"],"fns":["f-1"]},{"aim":"看档案就知道她签没签服务协议、签的是哪一份。","text":"签了的服务协议记在档案上。","cores":["参与者档案"],"data":["签了的服务协议"],"fns":["f-2"]}]}],"intro":{"context":"政府批给老人的钱开在她名下，由 Services Australia 保管；注册服务方替她建档，做了服务以后从她名下的账户里扣。","duty":["管每位老人的档案和她名下的基金、账户：建档，记下她签了协议、分到了资金，按申报从账户扣款。","不管评估怎么做、服务怎么排、发票怎么开。"],"concepts":[{"title":"参与者档案","note":"注册服务方替一位老人留的记录，写着她批了什么、走到了哪一步。"},{"title":"她名下的基金","note":"政府开在老人名下、替她保管的一笔钱。"},{"title":"基金账户","note":"一笔基金按批了的服务类型分开的账户，扣款只从对应的那一个扣。"}],"users":[{"who":"照护伙伴","aim":"替老人把档案建好、记准，钱到了就能开始用","steps":["照决定通知书给她建档","她签了服务协议，在档案上记下来","分到资金那天记下来，开出她名下的基金"]},{"who":"财务","aim":"服务做完、申报以后，把钱从对的账户里扣掉","steps":["照申报行从基金账户扣款"]}],"usual":["照护伙伴照决定通知书给老人建档","她签了服务协议，档案上记下","卫生部来信说分到了资金，开出她名下的基金和账户","做了服务、申报以后，从对应的账户扣款"]},"groups":[{"title":"参与者档案","functions":[{"id":"f-1","title":"照决定通知书建立参与者档案","called":"建档","does":"照决定通知书记下她批了哪一级、哪条路径","intent":"老人交来决定通知书，给她留一份档案，以后签协议、分资金、记服务都记在这一份上。","subject":{"title":"这位老人的参与者档案","op":"创建","to":"档案建好了，记着她批到的分级和路径","edits":["My Aged Care 编号：照决定通知书上印的编号记下","批到的分级和路径：照决定通知书记下","批到的分级和路径 › 路径：只记通知书上批的那一条，不替她另选"]},"in":[{"title":"决定通知书","by":"老人交来的","note":"政府评估后发给她的那一份，上面写着分级和路径"},{"title":"支持计划","by":"老人交来的","note":"同一次评估一起发的，写着批了她哪些服务类型"},{"title":"分级","by":"政府批的","note":"通知书上批给她的那一级，一共八级"}],"out":[],"rules":["一位老人只有一份档案，按 My Aged Care 编号认"],"uses":[{"flow":"01-老人注册","step":5}],"source":"手册 v4.4 §3 Participant"},{"id":"f-2","title":"在参与者档案上记下签了的服务协议","does":"记下她跟哪家签了协议、哪天签的","intent":"她跟注册服务方签了服务协议，档案上要看得出她已经签了、签的是哪一份。","subject":{"title":"这位老人档案上签了的服务协议","op":"创建","from":"档案建好了，还没记她签协议","to":"档案上记着她签了哪一份服务协议、哪天签的","edits":["签的协议：记下她签的是哪一份服务协议","签约日期：记下协议上写的那一天"]},"in":[{"title":"参与者档案","note":"记在哪一位老人的档案上"},{"title":"服务协议","by":"老人签的","note":"她跟注册服务方签的那一份"},{"title":"签约日期","by":"照护伙伴填的","note":"协议上写的签约那一天，日/月/年"}],"out":[{"kind":"事件","title":"协议已签","when":"记下以后告知聊天 app，给她开聊天"}],"uses":[{"flow":"01-老人注册","step":6}]},{"id":"f-3","title":"记下分到资金并开出她名下的基金","does":"记下分到资金那天和分到的是全额还是一部分，开出她名下的基金","intent":"卫生部来信说她分到了资金，从这一天起钱开在她名下，后面的服务才能从这笔钱里扣。","subject":{"title":"这位老人的参与者档案","op":"更新","from":"档案上记着她签了协议，还没分到资金","to":"档案上记着她哪天分到资金、分到的是全额还是一部分","edits":["分到的资金：记下哪天分到、分到的是全额还是一部分"]},"in":[{"title":"参与者档案","note":"哪一位老人分到了资金"},{"title":"分资金的信","by":"卫生部发的","note":"写着分到资金的日期，分到的是全额还是一部分"}],"out":[{"kind":"新记录","title":"她名下的基金"},{"kind":"新记录","title":"基金账户","when":"批了几类服务就开几个"}],"uses":[{"flow":"01-老人注册","step":8}]}]},{"title":"基金账户","functions":[{"id":"f-4","title":"照申报行从基金账户扣款","does":"按申报行上她的编号和服务类型，从对应的账户扣","intent":"服务做了、申报了，这一行的钱要从她名下对应的那个账户里扣掉。","subject":{"title":"她名下这一类服务的基金账户","op":"更新","from":"账户里是扣款之前的余额","to":"账户里扣掉了这一行申报的金额","edits":["余额：减去这一行申报的金额"]},"in":[{"title":"基金账户","note":"她名下对着这一类服务的那一个"},{"title":"申报行","by":"政府审核通过的","note":"要扣的是哪一行：带着她的编号、服务类型和金额（澳元）"}],"out":[{"kind":"状态改变","title":"申报行","when":"扣成了就记成已扣"}],"rules":["只能扣她批了的那一类服务的账户"]}]}],"chains":[{"id":"c-1","title":"分到资金以后","after":{"title":"参与者档案","from":"已签协议","to":"分到资金"},"then":[{"kind":"新记录","title":"她名下的基金","to":"开着"},{"kind":"新记录","title":"基金账户","to":"可以扣款","when":"批了几类服务就开几个","note":"一笔基金一个账户"}]}],"workflows":[{"id":"w-1","title":"参与者档案","states":[{"id":"s-1","title":"已建档"},{"id":"s-2","title":"已签协议"},{"id":"s-3","title":"分到资金"},{"id":"s-4","title":"已停用","called":"离开"}],"moves":[{"from":"s-1","to":"s-2","label":"签了服务协议"},{"from":"s-2","to":"s-3","label":"卫生部来信分到资金"},{"from":"s-1","to":"s-3","label":"还没签协议就分到资金"},{"from":"s-3","to":"s-4","label":"她走了或者换了注册服务方"}],"note":"档案停用以后不删，留着查"}],"asks":[{"id":"q-1","q":"档案上的分级、路径跟决定通知书不一样时，是不让建，还是先建了再标出来？","lean":"不让建，等通知书改了再建","options":["不让建","先建了再标出来"]},{"id":"q-2","q":"「后面的服务有一份说了算的依据」这条业务目的是推出来的，原料没有写为什么要替老人建档。建档是为了这个吗？","lean":"是这个目的","options":["是这个目的","建档只是为了记下她是谁"]},{"id":"q-3","q":"「看档案就知道她签没签服务协议、签的是哪一份」这条更细的目的是推出来的，原料只写了签了协议要记进档案，没有写记下来是为了什么。记下来是为了这个吗？","lean":"是这个目的","options":["是这个目的","记下来只是为了留一份底"]}]},"g5":{"topic":"g5","title":"服务发生与申报","summary":"注册服务方把做了的每一次服务记成服务记录，再照服务记录向政府申报。","tours":[{"title":"外部服务方做的服务：从发票到申报、月结单","note":"请外部服务方做的服务，从发票登记进来，核对后记成服务记录，写成申报行报给政府，月底列进月结单。","steps":[{"by":"照护伙伴","text":"外部服务方开来发票，把发票上的每一行登记成发票行。","concepts":["发票行"],"fns":["f-2"]},{"by":"照护伙伴","text":"对着老人签的服务协议核对发票行，核对无误的一行记成一条服务记录。","concepts":["服务协议","服务记录","凭据"],"fns":["f-3"]},{"by":"财务","text":"把还没申报的服务记录写成申报行，报给政府。","concepts":["申报行"],"fns":["f-5"]},{"by":"财务","text":"政府审核完，记下每一行申报行是通过还是被退回。","concepts":["申报行"],"fns":["f-8"]},{"by":"财务","text":"审核通过的一行，从老人名下的基金账户扣款。扣款在「参与者档案与她名下的钱」里办。","concepts":["基金账户"]},{"by":"财务","text":"月底把这个月的服务记录和照护管理记录汇总成月结单，发给老人。","concepts":["月结单","月结单明细"],"fns":["f-6"]}]},{"title":"自己做的服务、老人先付的钱和照护管理","note":"另外三种情形各记各的：自己的工作者做的服务直接记，老人先付的钱照收据记，照护伙伴做的照护管理单独记。","steps":[{"by":"照护伙伴","text":"自己的工作者上门做了一次服务，照服务清单选出做的是哪一项，记下一条服务记录。","concepts":["服务清单","服务记录"],"fns":["f-1"]},{"by":"照护伙伴","text":"老人自己先付了钱、交来收据的，核对收据以后记成服务记录。","concepts":["服务记录","凭据"],"fns":["f-4"]},{"by":"照护伙伴","text":"替老人做了一次照护管理，记下一条照护管理记录。","concepts":["照护管理记录"],"fns":["f-7"]}]}],"core":[{"title":"服务记录","why":"这块业务最后要留下的是「做了哪一次服务」。发票和收据是凭据，处理它们是为了把服务记录记准；申报、扣款和月结单都从服务记录开始。","parts":["凭据"],"sources":[{"steps":[{"data":"自己的工作者做了一次服务","event":true,"op":"创建","by":"直接记下这一次服务","fn":"f-1"}]},{"steps":[{"data":"外部服务方开来一张发票","event":true,"op":"创建","by":"把发票一行一行登记下来","fn":"f-2"},{"data":"发票行","op":"创建","by":"核对无误，一行记成一条","fn":"f-3"}]},{"steps":[{"data":"老人交来先付的收据","event":true,"op":"创建","by":"核对收据，照它记下","fn":"f-4"}]}],"targets":[{"op":"创建","by":"一条写成一行，报给政府","fn":"f-5","data":"申报行"},{"op":"创建","by":"按月汇总，发给老人","fn":"f-6","data":"月结单"}]},{"title":"照护管理记录","why":"照护伙伴替老人做的照护管理也要留下记录：这个月做没做、做了多久，照这些记录来看，月结单上也要列出来。","sources":[{"steps":[{"data":"照护伙伴做了一次照护管理","event":true,"op":"创建","by":"记下这一次照护管理","fn":"f-7"}]}],"targets":[{"op":"创建","by":"按月汇总，发给老人","fn":"f-6","data":"月结单"}]},{"title":"申报行","why":"向政府申报是一行一行办的：报上去、通过或者退回，通过了才扣款，每一步都照申报行办。","sources":[{"steps":[{"data":"服务记录","op":"创建","by":"一条写成一行，报给政府","fn":"f-5"}]}],"targets":[{"op":"更新","by":"审核通过的一行交去扣款","fn":"f-8","data":"基金账户","topic":"参与者档案与她名下的钱"}]},{"title":"月结单","why":"月结单出了以后是留下来的一份：发给老人，老人照它付自己该付的钱，有异议也照它更正。","parts":["月结单明细"],"sources":[{"steps":[{"data":"服务记录","op":"创建","by":"按月汇总，发给老人","fn":"f-6"}]},{"steps":[{"data":"照护管理记录","op":"创建","by":"按月汇总，发给老人","fn":"f-6"}]}],"targets":[]}],"uses":[{"title":"服务清单","note":"政府定的服务组、服务类型、服务三层；做的是清单上的哪一项，照它查。"},{"title":"服务协议","note":"老人跟注册服务方签的那一份；核对一项服务在不在她签的协议里，照它查。"}],"purposes":[{"text":"交给政府的申报行要通得过政府的审核。","from":"政府审核通过才付钱","source":"人 2026-11-24 说：系统要提供出符合政府审核的申报项","needs":[{"aim":"报上去的每一行都对得上一次真做了的服务。","text":"申报行只能从服务记录写出来，一条服务记录对一行。","source":"申报格式 v1.14 第 4 节","cores":["申报行"],"fns":["f-5"]},{"aim":"不报政府不认的服务。","text":"申报的服务要是批给这位老人的服务类型，并且在她签的协议里。","source":"手册 v4.4 §10.1 行 1466","cores":["服务记录"],"data":["服务清单","服务协议"],"fns":["f-1"]},{"aim":"政府审核的结果有着落：通过的扣款，被退回的改了重报。","text":"审核结果记在申报行上；审核通过的一行交去从老人名下的基金账户扣款。","source":"申报格式 v1.14 第 6 节","cores":["申报行"],"fns":["f-8"],"chains":["c-2"]}]},{"text":"每一次服务都照政府的要求留痕，查的时候拿得出依据。","from":"先把服务做了再申报；有的服务是请外部服务方做的","source":"人 2026-11-24 说：按照要求为服务留痕","needs":[{"aim":"做了的服务一次不漏。","text":"服务不管从哪里来，都要落成服务记录。","source":"人 2026-11-24 说：按照要求为服务留痕","cores":["服务记录"],"fns":["f-1","f-3","f-4"],"chains":["c-1"]},{"aim":"每条服务记录都指得出它的依据。","text":"外部来的服务要留下凭据：发票一行一行录进来，核对过才记成服务记录，每条服务记录都指得出它的凭据是哪一行。","source":"手册 v4.4 §10.3 行 1520","data":["发票行","凭据"],"fns":["f-2","f-3","f-4"]},{"aim":"照护伙伴做的照护管理也查得到。","text":"照护管理也要留记录。","source":"手册 v4.4 §8.4 行 960","cores":["照护管理记录"],"fns":["f-7"]}]},{"text":"每个月向老人交代清楚：用了哪些服务、花了多少钱。","from":"政府出钱替老人买居家照护服务","needs":[{"aim":"老人每个月看得到自己用了哪些服务、每一项花了多少钱。","text":"月底把这个月的服务记录和照护管理记录汇总成月结单，一条记录列一行，发给老人。","cores":["月结单"],"data":["月结单明细"],"fns":["f-6"]}]}],"intro":{"context":"政府出钱替老人买居家照护服务：注册服务方先把服务做了，或者请外部服务方做，再向政府申报，政府审核通过才付钱。","duty":["管服务记录和照它做的申报：把做了的服务记准，登记和核对外面开来的发票，向政府申报，按月给老人出月结单。","不管钱从哪个账户扣、协议怎么签。"],"concepts":[{"title":"服务记录","note":"做了一次服务记一条：哪天、哪项服务、多少、多少钱。"},{"title":"发票行","note":"外部服务方开来的发票上的一行，对着一次服务。"},{"title":"申报行","note":"向政府申报的一行，对着一条服务记录。"},{"title":"月结单","note":"每月给老人的一份清单，列着这个月的服务和花的钱。"},{"title":"照护管理记录","note":"照护伙伴替老人做一次照护管理记一条：哪天、做了多久、做了什么。"}],"users":[{"who":"照护伙伴","aim":"把做了的服务记准","steps":["记下自己的工作者做的服务","登记外部服务方开来的发票，核对以后记成服务记录","核对老人交来的收据，记成服务记录","记下做了的照护管理"]},{"who":"财务","aim":"照服务记录向政府申报，按月给老人出清单","steps":["把服务记录写成申报行","记下政府对申报行的审核结果","出月结单"]}],"usual":["做了一次服务，记下一条服务记录","外面开来的发票登记、核对，记成服务记录","财务照服务记录写申报行，报给政府","政府审核通过的申报行交去扣款","月底给老人出月结单"]},"groups":[{"title":"服务记录","functions":[{"id":"f-1","title":"记下自己的工作者做的一次服务","does":"记下哪天、哪项服务、做了多少","intent":"自己的工作者上门做了一次服务，要有一条记录，后面才能申报。","subject":{"title":"这一次服务的服务记录","op":"创建","to":"服务记录记下了，等着申报","edits":["服务项：做的是服务清单上的哪一项","数量：做了多少","日期：哪天做的"]},"in":[{"title":"参与者档案","note":"给哪一位老人做的"},{"title":"服务项","by":"照护伙伴选的","note":"做的是服务清单上的哪一项"},{"title":"数量","by":"工作者报的","note":"做了几小时，或者做了几次"}],"out":[]},{"id":"f-4","title":"核对老人先付的收据并记成服务记录","does":"核对收据上的服务和金额，照它记下服务记录","intent":"老人自己先付了钱，交来收据；核对无误才记成服务记录，后面照它申报、把钱退给她。","subject":{"title":"这张收据对着的服务记录","op":"创建","to":"服务记录记下了，等着申报","edits":["服务项：照收据上写的服务记下","金额：照收据上写的金额记下","凭据：记下这一条是照哪一张收据记的"]},"in":[{"title":"参与者档案","note":"哪一位老人交来的收据"},{"title":"收据","by":"老人交来的","note":"她付款的凭据，写着哪天、哪项服务、付了多少（澳元）"}],"out":[]}]},{"title":"发票行","functions":[{"id":"f-2","title":"登记外部服务方开来的发票行","does":"把发票上的每一行登记下来，等着核对","intent":"外部服务方做了服务、开来发票；先一行一行登记下来，核对以后才能记成服务记录。","subject":{"title":"这张发票上的每一行发票行","op":"创建","to":"发票行登记了，等着核对","edits":["发票行：照发票一行记一条"]},"in":[{"title":"发票","by":"外部服务方开的","note":"开来的那一张，附上图片或 PDF"}],"out":[]},{"id":"f-3","title":"核对发票行并记成服务记录","does":"核对发票行和实际做的服务对不对得上，对得上的一行记成一条服务记录","intent":"登记了的发票行要有人核对过才算数，核对无误的才落成服务记录。","subject":{"title":"这一行发票行","op":"更新","from":"发票行登记了，等着核对","to":"发票行核对过了","edits":["状态：等着核对 → 核对过了"]},"in":[{"title":"发票行","note":"核对的是哪一行"},{"title":"服务协议","by":"老人签的","note":"看这项服务在不在她签的协议里"}],"out":[{"kind":"新记录","title":"服务记录","when":"核对无误的一行记一条"}]}]},{"title":"申报行","functions":[{"id":"f-5","title":"把服务记录写成申报行并报给政府","does":"一条服务记录写成一行申报行，报给政府","intent":"政府照申报付钱，所以每一条服务记录都要写成申报行报上去。","subject":{"title":"新写出的这一行申报行","op":"创建","to":"申报行写好了，报给了政府","edits":["服务类型：照服务记录上的服务项写","申报的金额：照服务记录写"]},"in":[{"title":"服务记录","by":"系统带出的","note":"还没申报的那几条"}],"out":[{"kind":"状态改变","title":"服务记录","when":"从等着申报变成已申报"}]},{"id":"f-8","title":"记下政府对申报行的审核结果","does":"记下这一行是通过了还是被退回；通过的交去扣款","intent":"政府审核完一行申报，结果要记在申报行上：通过的才能从老人名下的账户扣款，被退回的要有人改了重新报。","subject":{"title":"政府回了结果的那一行申报行","op":"更新","from":"申报行报给了政府，等着审核","to":"申报行上记着审核通过，或者被退回和退回的原因","edits":["状态：已报给政府 → 审核通过，或者被退回","退回的原因：被退回的才记"]},"in":[{"title":"申报行","note":"政府回了结果的那一行"},{"title":"审核结果","by":"政府回的","note":"通过，或者退回；退回的带着原因"}],"out":[{"kind":"事件","title":"申报行审核通过","when":"通过的那一行交给「参与者档案与她名下的钱」扣款"}]}]},{"title":"月结单","functions":[{"id":"f-6","title":"出这个月的月结单","does":"把这个月的服务记录和照护管理记录汇总成一份月结单，发给老人","intent":"老人每个月要看到自己用了哪些服务、花了多少钱。","subject":{"title":"这位老人这个月的月结单","op":"创建","to":"月结单出好了，发给了老人","edits":["月结单明细：这个月的每条服务记录、每条照护管理记录各列一行","月结单明细 › 金额：照那一条记录上的金额写"]},"in":[{"title":"参与者档案","note":"给哪一位老人出"},{"title":"服务记录","by":"系统带出的","note":"这位老人这个月的每一条"},{"title":"照护管理记录","by":"系统带出的","note":"这位老人这个月的每一条"}],"out":[]}]},{"title":"照护管理记录","functions":[{"id":"f-7","title":"记下一次照护管理","does":"记下哪天、做了多久、做了什么","intent":"照护伙伴替老人联系、安排了一次，要有一条记录，月底才看得出这个月做没做。","subject":{"title":"这一次照护管理的照护管理记录","op":"创建","to":"照护管理记录记下了","edits":["日期：哪天做的","做了多久：照护伙伴填的分钟数","做了什么：用一两句话写"]},"in":[{"title":"参与者档案","note":"替哪一位老人做的"},{"title":"做了多久","by":"照护伙伴填的","note":"这一次花的时间，按分钟记"}],"out":[]}]}],"chains":[{"id":"c-1","title":"发票行核对过以后","after":{"title":"发票行","from":"等着核对","to":"核对过了"},"then":[{"kind":"新记录","title":"服务记录","to":"等着申报","when":"核对无误的一行一条"}]},{"id":"c-2","title":"申报行审核通过以后","after":{"title":"申报行","from":"已报给政府","to":"审核通过"},"then":[{"kind":"状态改变","title":"基金账户","to":"扣掉这一行申报的金额","note":"在「参与者档案与她名下的钱」里办"},{"kind":"状态改变","title":"申报行","from":"审核通过","to":"已扣款","when":"扣成了"}]}],"workflows":[{"id":"w-1","title":"服务记录","states":[{"id":"s-1","title":"等着申报"},{"id":"s-2","title":"已申报"}],"moves":[{"from":"s-1","to":"s-2","label":"写成申报行报给了政府"}]},{"id":"w-2","title":"发票行","states":[{"id":"s-1","title":"等着核对"},{"id":"s-2","title":"核对过了"}],"moves":[{"from":"s-1","to":"s-2","label":"核对无误"}]},{"id":"w-3","title":"申报行","states":[{"id":"s-1","title":"已报给政府"},{"id":"s-2","title":"被退回"},{"id":"s-3","title":"审核通过"},{"id":"s-4","title":"已扣款"}],"moves":[{"from":"s-1","to":"s-3","label":"政府审核通过"},{"from":"s-1","to":"s-2","label":"政府退回，带着原因"},{"from":"s-2","to":"s-1","label":"改了以后重新报上去"},{"from":"s-3","to":"s-4","label":"从老人名下的基金账户扣成了"}],"stages":[{"title":"申报和审核","states":["s-1","s-2"]},{"title":"通过以后","states":["s-3","s-4"]}],"note":"被退回的申报行改了以后重新报，不另写一行。"}],"asks":[{"id":"q-1","q":"「每个月向老人交代清楚用了哪些服务、花了多少钱」这条业务目的是推出来的，原料没有写为什么要出月结单。出月结单是为了这个吗？","lean":"是这个目的","options":["是这个目的","月结单不该放在这个主题里"]},{"id":"q-2","q":"「老人每个月看得到自己用了哪些服务、每一项花了多少钱」这条更细的目的是推出来的，原料只写了每月要出月结单，没有写月结单要列到每一项服务。月结单要一条记录列一行吗？","lean":"是，一条记录列一行","options":["是，一条记录列一行","只列这个月的合计"]}]}}
 // 工作台给 BIZ；只给了 MAP/CONCEPTS/FLOWS 的旧数据当第一个上下文的；单开时用写死的两个上下文
 const BIZ = DATA.BIZ ?? (DATA.MAP ? { [(DATA.CONTEXTS ?? ['样例系统'])[0]]: { MAP: DATA.MAP, CONCEPTS: DATA.CONCEPTS ?? {}, FLOWS: DATA.FLOWS ?? [] } }
   : { '样例系统': { MAP: SAMPLE_MAP, CONCEPTS: SAMPLE_CONCEPTS, FLOWS: SAMPLE_FLOWS, MODULES: SAMPLE_MODULES }, '排版系统': SAMPLE_LAYOUT })
@@ -1651,6 +1705,8 @@ const OPS = { 创建: 'new', 更新: 'upd', 删除: 'del' }
 const opTag = (op) => (OPS[op] ? `<u class="op ${OPS[op]}">${esc(op)}</u>` : '')
 // 哪几块展开着、每块里看的是哪个页签、哪几条业务目的展开着：键都带「上下文/主题」，只记在内存里，默认都收着
 const secOpen = {}, introTab = {}, tourTab = {}, purposeOpen = {}
+// 「核心数据和概念」那一块里哪几个概念的栏展开着：键是「上下文/主题/概念名」，也只记在内存里，默认都收着
+const fieldsOpen = {}
 // 浮层：全页共用一个。{ cx, topic, kind: 'core' | 'fn' | 'chain' | 'wf' | 'concept', id, hi?, stage?, sel? }
 let pop = null
 /** 一块里的图能用的宽：每块最宽 1400，减去块自己的边框和左右留白 */
@@ -1672,6 +1728,10 @@ function cxFrame() {
   const rows = MAP.topics.map((t) => { const ps = MODULES[t.id]?.purposes ?? []; return `<tr><td><a href="#module/${esc(t.id)}">${esc(t.title)}</a></td><td>${ps.length ? ps.map((p) => `<div>${esc(p.text ?? '')}</div>`).join('') : '<span class="none">业务目的还没写</span>'}</td></tr>` }).join('')
   return `<div class="fr">${MAP.background ? `<div class="fh">背景</div><div class="fbg">${esc(MAP.background)}</div>` : ''}<div class="fh${MAP.background ? ' gap' : ''}">每个主题的业务目的</div><table class="ftp">${rows}</table></div>`
 }
+/** 一个概念的栏：fields 的每一项是栏名，或者 { title, note?, ref?, topic? }，都换成对象 */
+const fieldsOf = (n) => (Array.isArray(n?.fields) ? n.fields : []).map((x) => (typeof x === 'string' ? { title: x } : x)).filter((x) => x && typeof x.title === 'string' && x.title.trim())
+/** 一栏指着的数据：蓝色小字「→ 数据名 · 主题名」，没写 topic 的只有数据名；没写 ref 的不出 */
+const refTag = (f) => (f.ref ? `<span class="rf">→ ${esc(f.ref)}${f.topic ? ' · ' + esc(f.topic) : ''}</span>` : '')
 /** 一个主题的概念和它们的上下层：照这个主题的概念图（分了子主题的是各子主题那几份）和业务文件算出来，主题页的几块和浮层都用它。
  *  概念靠名字对上：业务文件里核心数据、装着的概念、用到的资料的名字，和概念图上的名字一样 */
 function topicInfo(id, m = MODULES[id] ?? {}) {
@@ -1714,7 +1774,16 @@ function topicInfo(id, m = MODULES[id] ?? {}) {
   const noteOf = (t) => intro[t] || uses.find((u) => u.title === t)?.note || first(node[t]?.definition)
   const names = [...new Set([...coreNames, ...under.flat().map((x) => x.title), ...uses.map((u) => u.title), ...Object.keys(intro), ...Object.keys(node)])]
   const wfOf = (t) => (m.workflows ?? []).find((w) => w.title === t)
-  return { docs, cores, coreNames, uses, node, kids, under, nest, ownerOf, useOf, noteOf, names, wfOf }
+  // 一个概念列出来的栏：一栏指着的正是它下面装着的概念，就不列，那个概念已经排在它下面了。
+  // 下面装着的概念：概念图上上下层的线一层层连下去的，和核心数据 parts 里写的；一栏指着谁，看它的 ref，没写 ref 的看栏名
+  const shown = (t) => {
+    const low = new Set(), walk = (x) => { for (const k of kids[x] ?? []) if (!low.has(k)) { low.add(k); walk(k) } }
+    walk(t)
+    const i = coreNames.indexOf(t)
+    if (i >= 0) for (const x of under[i]) low.add(x.title)
+    return fieldsOf(node[t]).filter((f) => !low.has(f.ref || f.title))
+  }
+  return { docs, cores, coreNames, uses, node, kids, under, nest, ownerOf, useOf, noteOf, names, wfOf, shown }
 }
 /** 功能的业务数据名字里认出它主要动的那个概念：名字里带着的概念名取最长的一个；末尾括号里是别的主题的名字，不算。认不出给 null */
 function mainOf(info, title) {
@@ -1848,11 +1917,19 @@ function drawTour(t, m, info, maxW) {
 }
 // 核心数据和概念：照核心数据分组，一组一样核心数据，它装着的概念照上下层的线缩进排在下面；每行后面一句说明。
 // 名字后面的标签：有同名状态图的概念带「状态转换 · N 个状态」，每组顶头那一行带「概念图」。每组最后是「用到」的资料和「交给」别的主题的数据。
+// 写了栏的概念，标签最后多一个灰色的「N 栏」：点了在这一行下面一栏一行展开，再点收起，默认收着；指着它下面装着的概念的那一栏不列、也不计入 N。
+// 展开的一行：栏名加粗；写了 ref 的，后面蓝色小字「→ 数据名 · 主题名」（没写 topic 的只有数据名）；再后面灰字是 note
 // 最下面三组，有才出：没连到哪一样核心数据的资料、不归哪一样核心数据的概念、名字对不上概念的状态转换流程
 function coreList(m, id, info) {
   const { cores, under, useOf, uses, noteOf, wfOf } = info, wfs = m.workflows ?? []
   const wfTag = (w) => (w ? `<span class="chip wf" data-pop="wf:${esc(w.id)}">状态转换 · ${(w.states ?? []).length} 个状态</span>` : '')
-  const row = (depth, lead, name, tags, note) => `<div class="cr" style="padding-left:${depth * 24}px">${lead ? `<i class="ld">${lead}</i>` : ''}${name}${tags}<span class="nt">${esc(note ?? '')}</span></div>`
+  const key = context + '/' + id
+  // t 是这一行的概念名：照它取栏；没给的那几种行（交给别的主题的数据、名字对不上概念的状态转换流程）不出「N 栏」
+  const row = (depth, lead, name, tags, note, t) => {
+    const fs = t ? info.shown(t) : [], open = fs.length > 0 && !!fieldsOpen[key + '/' + t]
+    return `<div class="cr" style="padding-left:${depth * 24}px">${lead ? `<i class="ld">${lead}</i>` : ''}${name}${tags}${fs.length ? `<span class="chip fc" data-fields="${esc(key + '/' + t)}">${fs.length} 栏 ${open ? '▾' : '▸'}</span>` : ''}<span class="nt">${esc(note ?? '')}</span></div>`
+      + (open ? fs.map((f) => `<div class="fd" style="padding-left:${depth * 24 + (lead ? 36 : 0) + 24}px"><b>${esc(f.title)}</b>${refTag(f)}${f.note ? `<span class="nt">${esc(f.note)}</span>` : ''}</div>`).join('') : '')
+  }
   const res = (u) => `<span class="chip res"${findConcept(id, u.title) ? ` data-pop="concept:${esc(u.title)}"` : ''}>${esc(u.title)}</span>`
   // 交给别的主题的数据：去处里带主题的；点了去那个主题。别的上下文的主题写成「主题名（上下文名）」
   const given = (t) => {
@@ -1866,9 +1943,9 @@ function coreList(m, id, info) {
   }
   const groups = cores.map((c, i) => {
     const out = [...new Map((c.targets ?? []).filter((t) => t.topic).map((t) => [t.data + '\n' + t.topic, t])).values()]
-    return `<div class="cg">${row(0, '', `<span class="chip core" data-pop="core:${i}">${esc(c.title)}</span>`, wfTag(wfOf(c.title)) + `<span class="chip cm" data-pop="concept:${esc(c.title)}">概念图</span>`, noteOf(c.title) || c.why)}`
-      + under[i].map((x) => row(x.depth, '', `<span class="chip part" data-pop="core:${i}:${esc(x.title)}">${esc(x.title)}</span>`, wfTag(wfOf(x.title)), noteOf(x.title))).join('')
-      + useOf[i].map((u) => row(1, '用到', res(u), '', u.note)).join('') + out.map(given).join('') + '</div>'
+    return `<div class="cg">${row(0, '', `<span class="chip core" data-pop="core:${i}">${esc(c.title)}</span>`, wfTag(wfOf(c.title)) + `<span class="chip cm" data-pop="concept:${esc(c.title)}">概念图</span>`, noteOf(c.title) || c.why, c.title)}`
+      + under[i].map((x) => row(x.depth, '', `<span class="chip part" data-pop="core:${i}:${esc(x.title)}">${esc(x.title)}</span>`, wfTag(wfOf(x.title)), noteOf(x.title), x.title)).join('')
+      + useOf[i].map((u) => row(1, '用到', res(u), '', u.note, u.title)).join('') + out.map(given).join('') + '</div>'
   })
   const inCore = new Set([...info.coreNames, ...under.flat().map((x) => x.title)]), useNames = new Set(uses.map((u) => u.title))
   const looseUses = uses.filter((u) => !useOf.some((list) => list.includes(u)))
@@ -1876,13 +1953,14 @@ function coreList(m, id, info) {
   const lostWfs = wfs.filter((w) => !info.names.includes(w.title))
   const tail = (title, rows) => (rows.length ? `<div class="cg"><div class="gl">${title}</div>${rows.join('')}</div>` : '')
   const html = groups.join('')
-    + tail('用到的资料', looseUses.map((u) => row(0, '', res(u), '', u.note)))
-    + tail('不归哪一样核心数据的', others.map((t) => row(0, '', `<span class="chip part"${findConcept(id, t) ? ` data-pop="concept:${esc(t)}"` : ''}>${esc(t)}</span>`, wfTag(wfOf(t)), noteOf(t))))
+    + tail('用到的资料', looseUses.map((u) => row(0, '', res(u), '', u.note, u.title)))
+    + tail('不归哪一样核心数据的', others.map((t) => row(0, '', `<span class="chip part"${findConcept(id, t) ? ` data-pop="concept:${esc(t)}"` : ''}>${esc(t)}</span>`, wfTag(wfOf(t)), noteOf(t), t)))
     + tail('名字对不上概念的状态转换流程', lostWfs.map((w) => row(0, '', `<b class="wn">${esc(w.title ?? w.id)}</b>`, wfTag(w), w.note)))
-  return html ? `<p class="tip">点名字看它装着什么、从哪里来到哪里去；带「状态转换」的点了看它的状态怎么走；「用到」是只读的资料，「交给」是这里的功能让别的主题新建或改变的数据。</p>${html}` : '<p class="none">核心数据还没写。</p>'
+  return html ? `<p class="tip">点名字看它装着什么、从哪里来到哪里去；带「状态转换」的点了看它的状态怎么走；点「N 栏」看它有哪几栏；「用到」是只读的资料，「交给」是这里的功能让别的主题新建或改变的数据。</p>${html}` : '<p class="none">核心数据还没写。</p>'
 }
 // 业务目的及方案：每条业务目的默认收着，标题行右边写有几条更细的目的；展开后先一行对着背景哪一句和出处，再一张表，一行一条更细的目的：
 // 左边是更细的目的和它的做法，右边是它落到的核心数据（实心）、别的数据（空心）、功能、内部流程，都能点。
+// 更细的目的没写 source 的，旁边标「推出来的」；写了的，做法下面一行小字写出处
 // 最下面三行提醒，有才出：没有目的落到它上面的核心数据、没挂到目的上的功能、没挂到目的上的内部流程
 function purposesView(m, id, key, info) {
   const ps = m.purposes ?? [], fns = allFns(m), chains = m.chains ?? [], fnOf = fnIndex(m), chOf = Object.fromEntries(chains.map((c) => [c.id, c]))
@@ -1894,7 +1972,7 @@ function purposesView(m, id, key, info) {
   const fn = (k) => (fnOf[k] ? `<span class="chip fn" data-pop="fn:${esc(k)}">${esc(k)} ${esc(fnOf[k].title)}</span>` : '')
   const ch = (k) => (chOf[k] ? `<span class="chip ch" data-pop="chain:${esc(k)}">${esc(k)} ${esc(chOf[k].title)}</span>` : '')
   const tags = (n) => [...(n.cores ?? []).map(data), ...(n.data ?? []).map(data), ...(n.fns ?? []).map(fn), ...(n.chains ?? []).map(ch)].join('')
-  const need = (n) => `<tr><td>${n.aim ? `<b>${esc(n.aim)}</b>${n.text ? `<div class="how"><i>做法</i>${esc(n.text)}</div>` : ''}` : esc(n.text ?? '')}</td><td><div class="tags">${tags(n)}</div></td></tr>`
+  const need = (n) => `<tr><td>${n.aim ? `<b>${esc(n.aim)}</b>${n.source ? '' : '<span class="guess">推出来的</span>'}${n.text ? `<div class="how"><i>做法</i>${esc(n.text)}</div>` : ''}${n.source ? `<div class="ns">出处：${esc(n.source)}</div>` : ''}` : esc(n.text ?? '')}</td><td><div class="tags">${tags(n)}</div></td></tr>`
   const one = (p, i) => {
     const open = !!purposeOpen[key + '/' + i], needs = p.needs ?? []
     return `<div class="pu${open ? ' open' : ''}"><div class="pt" data-purpose="${i}" data-key="${esc(key)}"><span class="tri">${open ? '▾' : '▸'}</span><span class="no">${i + 1}</span><span class="tx">${esc(p.text ?? '')}${p.source ? '' : '<span class="guess">推出来的，等你确认</span>'}</span><span class="cnt">${needs.length} 条更细的目的</span></div>`
@@ -1923,7 +2001,8 @@ function drawPop() {
   if (!el) return
   const m = pop && pop.cx === context ? MODULES[pop.topic] : null
   const v = m ? ({ core: corePop, fn: fnPop, chain: chainPop, wf: wfPop, concept: conceptPop }[pop.kind])?.(m, topicInfo(pop.topic, m), pop) : null
-  if (!v) { pop = null; el.hidden = true; el.innerHTML = ''; return }
+  if (!v) { pop = null; el.hidden = true; el.innerHTML = ''; delete el.dataset.kind; return }
+  el.dataset.kind = pop.kind      // 样式照它分：核心数据的看板这一种浮层更宽、四周留白更小
   el.innerHTML = `<div class="pw" data-kind="${esc(pop.kind)}"><div class="ph"><b>${v.title}</b>${v.sub ? `<span class="in">${v.sub}</span>` : ''}<button class="x" data-pop-close="1">关闭 ✕</button></div>${v.desc ? `<p class="pd">${v.desc}</p>` : ''}<div class="pb">${v.body}</div></div>`
   el.hidden = false
 }
@@ -1933,7 +2012,9 @@ function fnFor(f, m) {
   return hit.map((n) => `<div class="fup"><i>对着的目的</i>${esc(n.aim ?? n.text ?? '')}</div>`).join('')
 }
 /** 核心数据的浮层：左边是把它新建出来的来路，中间是核心数据，右边是去处，下面一行用到的资料。每一站是一样数据，线上是把前一样变成后一样的那件业务。
- *  中间的框照类图画：核心数据的框里套着它装着的概念，概念里再套下一层，写了 fields 的列出栏名，同一层横着排、放不下换行；点的是装着的概念时，图上那一格标黄。
+ *  中间的框照类图画：核心数据的框里套着它装着的概念，概念里再套下一层，同一层横着排、放不下换行；点的是装着的概念时，图上那一格标黄。
+ *  写了 fields 的列出栏：指着它下面装着的概念的那一栏不列；带说明或指向的，栏名加粗、后面是指向、下面一行小字是说明；只有名字的只写名字。
+ *  栏多的排成几列：6 栏以上 2 列，11 栏以上 3 列，16 栏以上 4 列，框上带 cols2、cols3、cols4；装着的概念那一排占满整行。
  *  有几样核心数据就排成页签，一次看一样；图上的一站本身是另一样核心数据的，那个框能点，点了切过去 */
 function corePop(m, info, p) {
   const cores = info.cores, ci = Math.min(cores.length - 1, Math.max(0, +p.id || 0)), c = cores[ci]
@@ -1954,9 +2035,10 @@ function corePop(m, info, p) {
   // 来路写了 heads 的：几个起点先各画一行，并到一起，再接着画后面只写一遍的那几站
   const rowIn = (s) => (s.heads ?? []).length ? `<div class="row"><div class="col in${s.heads.length > 1 ? ' fork' : ''}">${s.heads.map((h) => `<div class="row">${run(h.steps)}</div>`).join('')}</div><div class="stub"></div>${tip}${run(s.steps)}</div>` : `<div class="row">${run(s.steps)}</div>`
   const rowOut = (t) => `<div class="row">${e(t)}${tip}${d(t.data, t.topic ? '别的主题：' + t.topic : '', t.topic ? 'ext' : '')}</div>`
+  const fl = (x) => (x.note || x.ref ? `<div class="fl"><b>${esc(x.title)}</b>${refTag(x)}${x.note ? `<div class="fn">${esc(x.note)}</div>` : ''}</div>` : `<div class="fl">${esc(x.title)}</div>`)
   const cls = (n, top) => {
-    const fields = info.node[n.title]?.fields ?? []
-    return `<div class="cls ${top ? 'core' : 'part'}${n.title === hi ? ' hi' : ''}"><div class="ct">${top ? '<i>核心数据</i>' : ''}${esc(n.title)}</div>${fields.length || n.kids.length ? `<div class="cb">${fields.map((x) => `<div class="fl">${esc(x)}</div>`).join('')}${n.kids.length ? `<div class="kids">${n.kids.map((k) => cls(k, false)).join('')}</div>` : ''}</div>` : ''}</div>`
+    const fields = info.shown(n.title), cols = fields.length >= 16 ? 4 : fields.length >= 11 ? 3 : fields.length >= 6 ? 2 : 1
+    return `<div class="cls ${top ? 'core' : 'part'}${cols > 1 ? ' cols' + cols : ''}${n.title === hi ? ' hi' : ''}"><div class="ct">${top ? '<i>核心数据</i>' : ''}${esc(n.title)}</div>${fields.length || n.kids.length ? `<div class="cb">${fields.map(fl).join('')}${n.kids.length ? `<div class="kids">${n.kids.map((k) => cls(k, false)).join('')}</div>` : ''}</div>` : ''}</div>`
   }
   // 用到的资料：概念图上和这样核心数据连着线的那几样；这个主题还没有概念图的，把用到的资料都列上
   const uses = info.docs.length ? info.useOf[ci] : info.uses
@@ -1970,7 +2052,7 @@ function corePop(m, info, p) {
 }
 /** 功能的浮层。左边一列：操作意图的卡片；指明办的是哪条记录的输入（没写 by）画成一个 ID 标签；其余输入各一个框，框里上面一行灰字是这样数据谁给的、下面是名字，说明写在框左边的小卡上。
  *  中间是类图画法的框：蓝色的头是主数据（从业务数据的名字里认出来的那个概念），只是更新的不标，新建、删除的才标；动的是核心数据里装着的概念时，头写核心数据，里面套一个绿色的格子写这个概念。
- *  被动到的每一项一行：前面标创建、更新或删除，名字，下面一句；是业务概念的那一项画成一格，里面一栏一行，每栏下面写它的逻辑：取自「概念 › 栏：逻辑」，没写的、栏名和某项输入同名就写「照」加那项输入是谁给的。
+ *  被动到的每一项一行：前面标创建、更新或删除，名字，下面一句；是业务概念的那一项画成一格，里面一栏一行（栏名取这个概念 fields 里每一项的 title），每栏下面写它的逻辑：取自「概念 › 栏：逻辑」，没写的、栏名和某项输入同名就写「照」加那项输入是谁给的。
  *  右边是顺带留下的，分新记录、状态改变、事件几组，每组一根线指过去。图下面：规则、用在流程的哪一步、出处 */
 function fnPop(m, info, p) {
   const f = allFns(m).find((x) => x.id === p.id)
@@ -1990,7 +2072,7 @@ function fnPop(m, info, p) {
   const say = (logic) => (logic ? `<div class="el">${verb}：${esc(logic)}</div>` : '')
   const line = (name, logic) => `<div class="ei">${opTag(sj.op)}<b>${esc(name)}</b>${say(logic)}</div>`
   const cell = (it) => {
-    const fields = [...new Set([...(info.node[it.name]?.fields ?? []), ...it.fields.map((x) => x.name)])]
+    const fields = [...new Set([...fieldsOf(info.node[it.name]).map((x) => x.title), ...it.fields.map((x) => x.name)])]
     const rows = fields.map((k) => { const lg = it.fields.find((x) => x.name === k)?.logic || (byOf[k] ? '照' + byOf[k] : ''); return `<div class="fl"><b>${esc(k)}</b>${lg ? `<div class="el">${esc(lg)}</div>` : ''}</div>` }).join('')
     return `<div class="ei"><div class="cls part"><div class="ct">${opTag(sj.op)}${esc(it.name)}${say(it.logic)}</div>${rows ? `<div class="cb">${rows}</div>` : ''}</div></div>`
   }
@@ -2291,6 +2373,9 @@ function bind() {
     // 主题页：点标签浮出浮层；换页签；业务目的一条一条或者全部展开、收起；点一块的标题行收起、展开
     const dp = ev.target.closest('[data-pop]')
     if (dp) { popFrom(dp.dataset.pop); return }
+    // 「N 栏」：展开、收起这个概念的栏
+    const fc = ev.target.closest('[data-fields]')
+    if (fc) { fieldsOpen[fc.dataset.fields] = !fieldsOpen[fc.dataset.fields]; render(); return }
     const itab = ev.target.closest('[data-intro-tab]'), ttab = ev.target.closest('[data-tour-tab]'), pall = ev.target.closest('[data-purposes-all]'), pone = ev.target.closest('[data-purpose]'), sh = ev.target.closest('[data-sec-toggle]')
     if (itab) { introTab[itab.dataset.key] = itab.dataset.introTab; render(); return }
     if (ttab) { tourTab[ttab.dataset.key] = +ttab.dataset.tourTab; render(); return }
