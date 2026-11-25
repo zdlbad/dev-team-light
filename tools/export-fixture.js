@@ -27,10 +27,11 @@ write('项目管理/需求.json', p.需求)
 write('项目管理/日程.json', p.日程)
 
 // 业务
-const b = sampleData(W('业务'), ['MAP', 'CONCEPTS', 'FLOWS'])
+const b = sampleData(W('业务'), ['MAP', 'CONCEPTS', 'FLOWS', 'MODULES'])
 write(CX + '业务/全局图.json', { ...b.MAP, topics: b.MAP.topics.map(({ tx, ty, ...t }) => t) })
 for (const [id, cpt] of Object.entries(b.CONCEPTS)) write(CX + `业务/概念/${id}.json`, cpt)
 for (const f of b.FLOWS) write(CX + `业务/流程/${f.file}.json`, f)
+for (const [id, mod] of Object.entries(b.MODULES)) write(CX + `业务/模块业务/${id}.json`, mod)
 
 // 界面：一条需求一份 json（按视角分屏，屏的 decidedAt 就在里面），屏的 html 一个文件
 const u = sampleData(W('界面'), ['REQS', 'MOCKS'])

@@ -6,11 +6,15 @@
 //   全部    每份 .json 读不读得出（原料/、_wip/ 不看）
 //   业务    一份流程里步号、规则号、问题号有没有重复；分了子主题的主题：子主题号重不重复、撞不撞主题号，每个子主题有没有概念文件，子主题之间的线两头在不在，子文件夹里有没有图上没有的文件
 //           流程：topic 是不是全局图上的主题（没写是提醒）；入口、出口接的步在不在，写了 flow 的那一份在不在、那一份有没有写回来对上；alt 的步写没写 case
-//           概念图：同样两样数据之间有几条线（提醒，并成一条）
+//           概念图：同样两样数据之间有几条线（提醒，并成一条）；概念的 fields 是不是一列栏名（不是是错）
 //           全局图：写没写整个上下文的背景（提醒）
-//           业务目的：每个主题写没写、对着背景哪一句、有没有出处或待定（都是提醒）；具体的需求落到的核心数据、功能在不在（不在是错）；每样核心数据有没有需求落到它上面（提醒）
-//           模块业务：主题号对不对；功能号、内部流程号、工作流程号、待定号有没有重复；每项功能写没写业务数据（subject 带 to）和操作意图（intent）；
-//           功能指着的流程步在不在；工作流程的线两头是不是它的状态；要用到的数据写没写名字（没写是错）、写没写解释或例子（提醒）；
+//           业务目的：每个主题写没写、对着背景哪一句、有没有出处或待定（都是提醒）；更细的目的落到的核心数据、别的数据、功能、内部流程在不在（不在是错）；
+//           每条写没写更细的目的（aim）、每样核心数据有没有目的落到它上面、每项功能和每条内部流程有没有挂到哪条目的上（都是提醒）
+//           模块业务：主题号对不对；功能号、内部流程号、状态转换流程号、待定号有没有重复；每项功能写没写业务数据（subject 带 to）和操作意图（intent）；
+//           功能指着的流程步在不在；状态转换流程的线两头是不是它的状态，分了段的（stages）每个状态是不是正好在一段里（不是是错）；要用到的数据写没写名字（没写是错）、写没写解释或例子（提醒）；
+//           主要流程速览（tours）里用到的功能在不在（不在是错）；
+//           提醒的还有：核心数据的 parts 和概念图上的上下层线对不对得上；概念图上的概念在业务文件里出没出现；状态转换流程的名字对不对得上一个概念；用到的资料写没写说明；
+//           去到别的主题的数据写没写功能号；功能的业务数据名字里是不是认得出不止一个概念名；功能的出处和别的主题的功能是不是同一个代码文件
 //           业务概述（intro）写没写、缺哪几样、使用角色写没写按先后做的事（都是提醒）
 //   界面    屏号、问题号有没有重复；每一屏的小样文件在不在；does 的 to 指不指得到屏；flow 那份流程在不在、step 那一步在不在；
 //           小样里 data-ask 标的问题在不在这一屏的 asks 里；文件夹里有没有哪一屏都不用的小样文件（提醒）
@@ -134,6 +138,7 @@ for (const cx of names) {
   for (const { file } of conceptJson) {
     const d = load(file, cx, '业务'); if (!d || Array.isArray(d.subs)) continue
     const pairs = (d.edges ?? []).map((e) => [e.from, e.to].sort().join(' ↔ '))
+    for (const k of d.concepts ?? []) if (k.fields != null && !(Array.isArray(k.fields) && k.fields.every((x) => typeof x === 'string'))) say('错', cx, '业务', file, `概念「${k.title ?? k.id ?? '?'}」的 fields 要写成一列栏名，一栏一个名字`)
     for (const x of dups(pairs)) say('提醒', cx, '业务', file, `${x} 之间有 ${pairs.filter((p) => p === x).length} 条线：同样两样数据之间并成一条，几句话写进一个 label`)
   }
 
@@ -151,6 +156,10 @@ for (const cx of names) {
     }
   }
 
+  // 功能的出处里写着的代码文件：同一个文件出现在两个主题的功能里，可能有一项放错了主题
+  const codeIn = (t) => [...new Set(String(t ?? '').match(/[\w\-./\\]+\.(?:tsx?|jsx?|vue|py|java|cs|go|rb|php|kt|swift|sql)\b/g) ?? [])]
+  const srcTopics = new Map()
+  for (const { name, file } of jsonIn(path.join(c, '业务', '模块业务'))) for (const f of (load(file, cx, '业务')?.groups ?? []).flatMap((g) => g.functions ?? [])) for (const p of codeIn(f.source)) srcTopics.set(p, (srcTopics.get(p) ?? new Set()).add(name))
   // 模块业务：一个主题一份
   for (const { name, file } of jsonIn(path.join(c, '业务', '模块业务'))) {
     const d = load(file, cx, '业务'); if (!d) continue
@@ -166,6 +175,12 @@ for (const cx of names) {
       for (const u of d.intro.users ?? []) if (!filled(u.steps)) say('提醒', cx, '业务', file, `介绍里的「${u.who ?? '?'}」没写按先后做哪几件事`)
     }
     const fns = (d.groups ?? []).flatMap((g) => g.functions ?? [])
+    const nm = (xs) => (xs ?? []).map((x) => (typeof x === 'string' ? x : x?.title)).filter(Boolean)
+    // 这个主题的概念图：没分子主题的是一份，分了子主题的是每个子主题一份
+    const cmain = path.join(cdir, name + '.json'), cmainDoc = exists(cmain) ? load(cmain, cx, '业务') : null
+    const cdocs = (!cmainDoc ? [] : Array.isArray(cmainDoc.subs) ? jsonIn(path.join(cdir, name)).map((x) => load(x.file, cx, '业务')) : [cmainDoc]).filter(Boolean)
+    const conTitles = new Set(cdocs.flatMap((x) => nm(x.concepts)))
+    const allNames = new Set([...conTitles, ...nm(d.core), ...(d.core ?? []).flatMap((k) => nm(k.parts)), ...nm(d.uses), ...nm(d.intro?.concepts)])
     for (const x of dups(fns.map((f) => f.id))) say('错', cx, '业务', file, `功能号重复：${x}`)
     // 核心数据：每个主题都要认出来；写了的要写全，指着的功能要有，去到别的主题的要写对主题名；来路碰到另一样核心数据要停
     if (!(d.core ?? []).length) say('提醒', cx, '业务', file, '没写核心数据（core）：这块业务最后要留下的是哪样数据、它从哪来、去到哪')
@@ -197,6 +212,25 @@ for (const cx of names) {
         if (x.topic && !/（.+）$/.test(x.topic) && topicTitles.length && !topicTitles.includes(x.topic)) say('错', cx, '业务', file, `${who}的来路或去处写的主题「${x.topic}」不是全局图上的主题名（别的上下文的主题写成「主题名（上下文名）」）`)
         if (x.fn && !fns.some((f) => f.id === x.fn)) say('错', cx, '业务', file, `${who}指着的功能 ${x.fn} 在这个主题里没有`)
       }
+      for (const x of c.targets ?? []) if (x.topic && !x.fn) say('提醒', cx, '业务', file, `${who}去到主题「${x.topic}」的「${x.data ?? '?'}」没写功能号（fn）：交给别的主题的数据，是这里的哪项功能让它新建或改变的`)
+      // 装着的概念（parts）和概念图上的上下层线（tree：from 装着 to）要对得上；另一样核心数据下面的不算它的
+      if (conTitles.has(c.title)) {
+        const titleIn = (doc, id) => [...(doc.concepts ?? []), ...(doc.external ?? [])].find((k) => k.id === id)?.title
+        const kids = new Map(), cores = new Set(nm(d.core))
+        for (const doc of cdocs) for (const e of doc.edges ?? []) if (e.tree) { const a = titleIn(doc, e.from), b = titleIn(doc, e.to); if (a && b) kids.set(a, [...(kids.get(a) ?? []), b]) }
+        const under = new Set(), walk = (t) => { for (const k of kids.get(t) ?? []) if (!under.has(k) && !cores.has(k)) { under.add(k); walk(k) } }
+        walk(c.title)
+        const parts = nm(c.parts), lost = parts.filter((k) => !under.has(k)), extra = [...under].filter((k) => !parts.includes(k))
+        if (lost.length) say('提醒', cx, '业务', file, `${who}的 parts 里写着「${lost.join('、')}」，概念图上没有用上下层的线（tree）把它连到这样核心数据下面`)
+        if (extra.length) say('提醒', cx, '业务', file, `概念图上「${extra.join('、')}」用上下层的线连在${who}下面，它的 parts 里没写`)
+      }
+    }
+    for (const u of d.uses ?? []) if (typeof u === 'string' || !String(u.note ?? '').trim()) say('提醒', cx, '业务', file, `用到的资料「${typeof u === 'string' ? u : u.title ?? '?'}」没写说明（note）：用一句话说它是什么`)
+    // 概念图上的概念都要在业务文件里出现：是一样核心数据、装在哪一样里、是用到的资料，或者是业务概述里的概念
+    if ((d.core ?? []).length && conTitles.size) {
+      const inBiz = new Set([...nm(d.core), ...d.core.flatMap((k) => nm(k.parts)), ...nm(d.uses), ...nm(d.intro?.concepts)])
+      const out = [...conTitles].filter((k) => !inBiz.has(k))
+      if (out.length) say('提醒', cx, '业务', file, `概念图上的「${out.join('、')}」在这份业务里没有出现：它该是一样核心数据、装在哪一样里（parts）、是用到的资料（uses），或者是业务概述里的概念`)
     }
     // 概述里的核心概念都要在看板上找得到：是一样核心数据、装在哪一样里、是用到的资料，或者是来路去处上的一站
     if ((d.core ?? []).length) {
@@ -205,12 +239,13 @@ for (const cx of names) {
         ...d.core.flatMap((c) => [...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]).filter((x) => !x.event).map((x) => x.data), ...(c.targets ?? []).map((x) => x.data)])])
       for (const k of names(d.intro?.concepts)) if (!onBoard.has(k)) say('提醒', cx, '业务', file, `核心概念「${k}」在核心数据的看板上找不到：它该是一样核心数据、装在哪一样里（parts）、是用到的资料（uses），或者是来路、去处上的一站`)
     }
-    // 业务目的和具体的需求：每个主题都要写；需求落到的核心数据、功能要找得到；每样核心数据都要有需求落到它上面
+    // 业务目的和更细的目的：每个主题都要写；目的落到的核心数据、别的数据、功能、内部流程要找得到；每样核心数据、每项功能、每条内部流程都要有目的落到它上面
     {
       const ps = d.purposes ?? [], names = (xs) => (xs ?? []).map((x) => (typeof x === 'string' ? x : x?.title)).filter(Boolean)
       const coreNames = names(d.core), landed = new Set(), asking = (d.asks ?? []).some((a) => !a.answer)
       const known = new Set([...coreNames, ...names(d.intro?.concepts), ...names(d.uses), ...(d.core ?? []).flatMap((c) => [...names(c.parts),
-        ...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]).filter((x) => !x.event).map((x) => x.data), ...(c.targets ?? []).map((x) => x.data)])])
+        ...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]).filter((x) => !x.event).map((x) => x.data), ...(c.targets ?? []).map((x) => x.data)]), ...conTitles])
+      const chainIds = (d.chains ?? []).map((ch) => ch.id), hungF = new Set(), hungC = new Set()
       if (!ps.length) say('提醒', cx, '业务', file, '没写业务目的（purposes）：背景里外面的人对这块业务提了哪几项要求，各落到哪样核心数据、哪项功能上')
       else if (!String(d.intro?.context ?? '').trim()) say('提醒', cx, '业务', file, '写了业务目的却没写背景（intro.context）：业务目的是从背景里挖出来的')
       ps.forEach((p, i) => {
@@ -218,17 +253,25 @@ for (const cx of names) {
         if (!String(p.text ?? '').trim()) say('错', cx, '业务', file, `${who}没写内容（text）`)
         if (!String(p.from ?? '').trim()) say('提醒', cx, '业务', file, `${who}没写它对着背景里的哪一句（from）`)
         if (!String(p.source ?? '').trim() && !asking) say('提醒', cx, '业务', file, `${who}没写出处（source），待定里也没有问人：推出来的业务目的要等人确认`)
-        if (!(p.needs ?? []).length) say('提醒', cx, '业务', file, `${who}下面没有具体的需求（needs）`)
+        if (!(p.needs ?? []).length) say('提醒', cx, '业务', file, `${who}下面没有更细的目的（needs）`)
         for (const n of p.needs ?? []) {
-          const nw = `${who}下面的需求「${String(n.text ?? '').slice(0, 16)}」`
-          if (!String(n.text ?? '').trim()) say('错', cx, '业务', file, `${who}下面有一条需求没写内容（text）`)
+          const nw = `${who}下面的目的「${String(n.aim ?? n.text ?? '').slice(0, 16)}」`
+          if (!String(n.aim ?? '').trim() && !String(n.text ?? '').trim()) say('错', cx, '业务', file, `${who}下面有一条既没写更细的目的（aim）也没写做法（text）`)
+          else if (!String(n.aim ?? '').trim()) say('提醒', cx, '业务', file, `${nw}没写更细的目的（aim）：aim 回答为了什么，text 是怎么做到的`)
           for (const k of n.cores ?? []) { if (coreNames.includes(k)) landed.add(k); else say('错', cx, '业务', file, `${nw}落到的「${k}」不是这个主题的核心数据`) }
-          for (const k of n.fns ?? []) if (!fns.some((f) => f.id === k)) say('错', cx, '业务', file, `${nw}落到的功能 ${k} 在这个主题里没有`)
-          for (const k of n.data ?? []) if (!known.has(k)) say('提醒', cx, '业务', file, `${nw}落到的数据「${k}」在核心概念和看板上都找不到`)
-          if (!(n.cores ?? []).length && !(n.fns ?? []).length && !(n.data ?? []).length) say('提醒', cx, '业务', file, `${nw}没写落到哪里（cores、data、fns）`)
+          for (const k of n.fns ?? []) { if (fns.some((f) => f.id === k)) hungF.add(k); else say('错', cx, '业务', file, `${nw}落到的功能 ${k} 在这个主题里没有`) }
+          for (const k of n.chains ?? []) { if (chainIds.includes(k)) hungC.add(k); else say('错', cx, '业务', file, `${nw}落到的内部流程 ${k} 在这个主题里没有`) }
+          for (const k of n.data ?? []) if (!known.has(k)) say('错', cx, '业务', file, `${nw}落到的数据「${k}」在概念图、核心概念和看板上都找不到`)
+          if (!(n.cores ?? []).length && !(n.fns ?? []).length && !(n.data ?? []).length && !(n.chains ?? []).length) say('提醒', cx, '业务', file, `${nw}没写落到哪里（cores、data、fns、chains）`)
         }
       })
-      if (ps.length) for (const k of coreNames) if (!landed.has(k) && !(d.asks ?? []).some((a) => !a.answer && String(a.q ?? '').includes(k))) say('提醒', cx, '业务', file, `核心数据「${k}」没有哪一条具体的需求落到它上面：它是为了什么，分不出来就记成待定问人`)
+      if (ps.length) for (const k of coreNames) if (!landed.has(k) && !(d.asks ?? []).some((a) => !a.answer && String(a.q ?? '').includes(k))) say('提醒', cx, '业务', file, `核心数据「${k}」没有哪一条更细的目的落到它上面：它是为了什么，分不出来就记成待定问人`)
+      // 每项功能、每条内部流程都要挂到某一条更细的目的上
+      if (ps.some((p) => (p.needs ?? []).length)) {
+        const looseF = fns.filter((f) => f.id && !hungF.has(f.id)).map((f) => f.id), looseC = chainIds.filter((k) => k && !hungC.has(k))
+        if (looseF.length) say('提醒', cx, '业务', file, `有 ${looseF.length} 项功能没有挂到哪一条更细的目的上：${looseF.join('、')}。说不出它为了什么的，补一条推出来的目的，并在待定里问人`)
+        if (looseC.length) say('提醒', cx, '业务', file, `有 ${looseC.length} 条内部流程没有挂到哪一条更细的目的上：${looseC.join('、')}`)
+      }
     }
     for (const f of fns) {
       const who = `功能 ${f.id ?? '?'}（${f.title ?? ''}）`
@@ -238,6 +281,14 @@ for (const cx of names) {
       else if (f.subject?.title && !f.subject.op) say('提醒', cx, '业务', file, `${who}的业务数据没标做了什么（subject.op）：创建、更新或删除`)
       else if (['创建', '更新'].includes(f.subject?.op) && !(f.subject.edits ?? []).length) say('提醒', cx, '业务', file, `${who}没列出动了业务数据的哪几项（subject.edits）`)
       if (!String(f.intent ?? '').trim()) say('错', cx, '业务', file, `${who}没写操作意图（intent）`)
+      if (f.subject?.title) {
+        const t = String(f.subject.title).replace(/（[^（）]*）$/, ''), hit = [...allNames].filter((k) => t.includes(k)), top = hit.filter((k) => !hit.some((o) => o !== k && o.includes(k)))
+        if (top.length > 1) say('提醒', cx, '业务', file, `${who}的业务数据名字（subject.title）里认得出不止一个概念名：${top.join('、')}。只带它主要动的那一样的名字，页面从名字里认主数据`)
+      }
+      {
+        const shared = codeIn(f.source).filter((p) => [...(srcTopics.get(p) ?? [])].some((t) => t !== name))
+        if (shared.length) say('提醒', cx, '业务', file, `${who}的出处 ${shared.join('、')} 也是别的主题（${[...new Set(shared.flatMap((p) => [...srcTopics.get(p)]).filter((t) => t !== name))].join('、')}）里功能的出处：看一看这项功能是不是放错了主题，归属看谁在哪张单据上发起`)
+      }
       // 要用到的数据：一样一条 { title, note }；只写名字的旧写法照认，提醒补解释
       for (const x of f.in ?? []) {
         const name = typeof x === 'string' ? x : x?.title
@@ -250,12 +301,22 @@ for (const cx of names) {
       }
     }
     for (const x of dups((d.chains ?? []).map((ch) => ch.id))) say('错', cx, '业务', file, `内部流程号重复：${x}`)
-    for (const x of dups((d.workflows ?? []).map((w) => w.id))) say('错', cx, '业务', file, `工作流程号重复：${x}`)
+    for (const x of dups((d.workflows ?? []).map((w) => w.id))) say('错', cx, '业务', file, `状态转换流程号重复：${x}`)
     for (const w of d.workflows ?? []) {
       const ids = (w.states ?? []).map((st) => st.id)
-      for (const x of dups(ids)) say('错', cx, '业务', file, `工作流程 ${w.id}（${w.title ?? ''}）的状态号重复：${x}`)
-      for (const m of w.moves ?? []) for (const end of [m.from, m.to]) if (!ids.includes(end)) say('错', cx, '业务', file, `工作流程 ${w.id}（${w.title ?? ''}）的线 ${m.from} → ${m.to}：${end} 不是它的状态`)
+      for (const x of dups(ids)) say('错', cx, '业务', file, `状态转换流程 ${w.id}（${w.title ?? ''}）的状态号重复：${x}`)
+      for (const m of w.moves ?? []) for (const end of [m.from, m.to]) if (!ids.includes(end)) say('错', cx, '业务', file, `状态转换流程 ${w.id}（${w.title ?? ''}）的线 ${m.from} → ${m.to}：${end} 不是它的状态`)
+      if (w.title && !allNames.has(w.title)) say('提醒', cx, '业务', file, `状态转换流程 ${w.id}（${w.title}）的名字对不上任何一个概念：title 写它讲的那个概念的名字，页面靠名字把状态图挂到概念后面`)
+      // 分了段的：每个状态正好在一段里
+      if (Array.isArray(w.stages) && w.stages.length) {
+        const staged = w.stages.flatMap((st) => st.states ?? [])
+        for (const x of [...new Set(staged.filter((k) => !ids.includes(k)))]) say('错', cx, '业务', file, `状态转换流程 ${w.id}（${w.title ?? ''}）分段（stages）里的 ${x} 不是它的状态`)
+        for (const x of dups(staged)) say('错', cx, '业务', file, `状态转换流程 ${w.id}（${w.title ?? ''}）的状态 ${x} 分进了不止一段`)
+        const miss = ids.filter((k) => !staged.includes(k))
+        if (miss.length) say('错', cx, '业务', file, `状态转换流程 ${w.id}（${w.title ?? ''}）的状态 ${miss.join('、')} 没有分进哪一段`)
+      }
     }
+    for (const [i, t] of (d.tours ?? []).entries()) for (const st of t.steps ?? []) for (const k of st.fns ?? []) if (!fns.some((f) => f.id === k)) say('错', cx, '业务', file, `主要流程速览「${t.title ?? i + 1}」里用到的功能 ${k} 在这个主题里没有`)
     askCheck(d.asks ?? [], cx, '业务', file)
   }
 
