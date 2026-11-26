@@ -47,10 +47,12 @@ function clean() {
   // 模块业务：g1 一份；两份流程接上：开户的出口接存钱的入口
   write(A + '业务/模块业务/g1.json', { topic: 'g1', title: '开户',
     core: [{ title: '账户', why: '开户最后留下的是账户', sources: [{ steps: [{ data: '客户交来开户表', event: true, op: '创建', by: '柜员照开户表开立账户', fn: 'f-1' }] }], targets: [] }],
-    purposes: [{ text: '每位客户的钱都记在他自己的账户上', from: '银行替人存钱', source: '人 2026-01-05 说：钱要记到人头上', needs: [{ aim: '客户来存钱的时候，已经有一个记在他名下的账户', text: '开户时照开户表给客户开立一个账户', source: '人 2026-01-05 说：来了就能存', cores: ['账户'], fns: ['f-1'], chains: ['c-1'] }] }],
+    purposes: [{ text: '每位客户的钱都记在他自己的账户上', from: '银行替人存钱', source: '人 2026-01-05 说：钱要记到人头上', needs: [{ aim: '客户来存钱的时候，已经有一个记在他名下的账户', text: '开户时照开户表给客户开立一个账户', source: '人 2026-01-05 说：来了就能存', cores: ['账户'], fns: ['f-1', 'f-3'], chains: ['c-1'] }] }],
     intro: { context: '银行替人存钱', duty: '管开户，不管存取', concepts: [{ title: '账户', note: '一人存钱的那一份' }], users: [{ who: '柜员', aim: '开户', steps: ['照开户表开立账户'] }], usual: ['柜员照开户表开立账户'] },
     groups: [{ title: '账户', functions: [
-    { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '这位客户的账户', op: '创建', to: '账户开着，可以存钱', edits: ['户名：照开户表记下'] }, in: [{ title: '开户表', note: '客户填好交来的那一张' }], out: [], uses: [{ flow: '01-开户', step: 1 }] }] }],
+    { id: 'f-1', title: '开立账户', intent: '给新客户开一个账户', subject: { title: '这位客户的账户', op: '创建', to: '账户开着，可以存钱', edits: ['户名：照开户表记下'] }, in: [{ title: '开户表', note: '客户填好交来的那一张' }], out: [], uses: [{ flow: '01-开户', step: 1 }] }] },
+    { title: '查询', functions: [
+    { id: 'f-3', title: '查看一个账户', who: '柜员', intent: '柜员办存取之前，先确认这个账户是谁的、还开不开着', subject: { title: '这位客户的账户', op: '查看' }, in: [{ title: '账号', note: '客户报的那一个' }], calls: [], returns: '户名、开户日期、账户开着还是销了' }] }],
     chains: [{ id: 'c-1', title: '开了以后', after: { title: '账户', to: '开着' }, then: [{ kind: '新记录', title: '卡' }] }],
     workflows: [{ id: 'w-1', title: '账户', states: [{ id: 's-1', title: '开着' }, { id: 's-2', title: '销了' }], moves: [{ from: 's-1', to: 's-2', label: '销户' }] }],
     asks: [{ id: 'q-1', q: '一人能开几个？', lean: '一个', options: ['一个', '不限'] }] })
@@ -251,11 +253,11 @@ function split() {
   edit(M1, (d) => {
     d.rules = [
       { id: 'r-1', kind: '做之前要满足的', short: '检查开户表，填全了才能开', text: '开户表上的每一栏都填了，才能开立账户。', source: '人 2026-01-05 说', for: 'p-1.1', why: '账户要记到人头上', examples: EX },
-      { id: 'r-2', kind: '一直要守的', short: '户名不能空', text: '账户的户名一直不能是空的。', source: '人 2026-01-05 说', for: 'p-1', examples: EX },
+      { id: 'r-2', kind: '一直要守的', short: '户名不能空', text: '账户的户名一直不能是空的。', source: '人 2026-01-05 说', for: 'p-1', covers: ['账户 › 户名'], examples: EX },
       { id: 'r-3', kind: '状态能不能走', short: '检查状态，开着才能销', text: '账户开着才能销户。', source: '人 2026-01-05 说', for: 'p-1.1', examples: [{ given: '账户已经销了', when: '柜员再销一次', then: '销不了' }] },
       { id: 'r-4', kind: '怎么算的', short: '定出账号，照开户的日子和当天的序号', text: '账号是开户的日子加上当天的序号。', source: '人 2026-01-05 说', for: 'p-1.1', items: ['日子写成八位数字', '序号从 1 起，一天之内不重'] },
       { id: 'r-5', kind: '做之前要满足的', short: '检查账户，开着才发卡', text: '账户开着才给它发卡。', source: '人 2026-01-05 说', examples: [{ given: '账户销了', when: '账户已开的消息到了', then: '不发卡' }] },
-      { id: 'r-6', kind: '一直要守的', short: '开户表办结以后不改', text: '开户表办结以后，上面的内容不再改。', source: '人 2026-01-05 说', examples: [{ given: '开户表已经办结了', when: '柜员改上面的户名', then: '改不了' }] },
+      { id: 'r-6', kind: '一直要守的', short: '开户表办结以后不改', text: '开户表办结以后，上面的内容不再改。', source: '人 2026-01-05 说', covers: ['开户表'], examples: [{ given: '开户表已经办结了', when: '柜员改上面的户名', then: '改不了' }] },
       { id: 'r-7', kind: '状态能不能走', short: '检查开户表的状态，交来了才能办结', text: '开户表交来了才能办结。', source: '人 2026-01-05 说', examples: [{ given: '开户表已经办结了', when: '柜员再办结一次', then: '办不了' }] }]
     d.core[0].keeps = ['r-2']
     d.core[0].parts = ['开户表']
@@ -274,7 +276,7 @@ function split() {
     d.groups[0].functions.push({ id: 'f-2', title: '销户', intent: '客户不再用这个账户的时候把它关掉', subject: { title: '这位客户的账户', op: '更新', to: '账户销了' }, in: [], out: [],
       rules: ['客户本人来才能销'], calls: ['act-3'], steps: [{ text: '核对来的人是客户本人' }] })
     d.purposes[0].id = 'p-1'
-    Object.assign(d.purposes[0].needs[0], { id: 'p-1.1', fns: ['f-1', 'f-2'] })
+    Object.assign(d.purposes[0].needs[0], { id: 'p-1.1', fns: ['f-1', 'f-2', 'f-3'] })
     Object.assign(d.chains[0], { rules: ['r-5'], calls: ['act-2'] })
     d.services = [{ id: 's-1', title: '取一个新的账号', does: '给新开的账户取一个不重的账号', for: 'p-1.1', why: '每个账户要认得出来', in: [{ title: '开户的日子', note: '柜员开立账户的那一天' }], rules: ['r-4'], steps: [{ text: '照当天已经开出的账户数往后排一个' }], returns: '账号' }]
     d.workflows[0].moves[0].act = 'act-3'
@@ -404,6 +406,43 @@ warnS('功能、行为、服务的 steps[].on 对不上它自己的 edits 和 ou
 split(); edit(M1, (d) => { fn2(d).subject.edits = ['销户日期：记下当天']; fn2(d).steps.push({ text: '记下销户的日子', on: ['销户日期'] }) })
 r = run()
 check('功能没有自己的 edits 时，steps[].on 对着 subject.edits 冒号前面的名字看：没查出毛病', r.code === 0 && r.out.includes('没查出毛病'), r.out)
+
+// —— 标「查看」的功能：只是看、不改数据 ——
+const fnV = (d) => d.groups[1].functions[0]
+broken('核心数据的来路、去处上 op 写「查看」：还是算错', () => edit(M1, (d) => { d.core[0].sources[0].steps[0].op = '查看' }), 'op 写的是「查看」：只能写创建、更新、删除', '只是读了这样核心数据的事不算它的来路、去处')
+clean(); edit(M1, (d) => { delete fnV(d).calls })
+r = run()
+check('标「查看」的功能没写 subject.to、没写 subject.edits、也没写 calls：不算错，不提醒没列 subject.edits', r.code === 0 && r.out.includes('没查出毛病'), r.out)
+broken('别的功能照旧要求 subject.to', () => edit(M1, (d) => { delete fn1(d).subject.to }), '功能 f-1（开立账户）没写业务数据：subject 写它主要动的那样数据（title）和变成什么（to）')
+broken('标「查看」的功能没写它看的是哪样数据', () => edit(M1, (d) => { delete fnV(d).subject.title }), '功能 f-3（查看一个账户）没写业务数据：标「查看」的功能在 subject 里写它看的是哪样数据（title）')
+broken('标「查看」的功能写了 subject.edits', () => edit(M1, (d) => { fnV(d).subject.edits = ['户名：照开户表记下'] }), '功能 f-3（查看一个账户）标的是「查看」，却写了动了哪几项（edits）：查看不改数据，要改数据的不是查看')
+broken('标「查看」的功能写了 out', () => edit(M1, (d) => { fnV(d).out = [{ kind: '通知', title: '查询通知' }] }), '功能 f-3（查看一个账户）标的是「查看」，却写了顺带留下的（out）：查看不改数据，要改数据的不是查看')
+brokenS('标「查看」的功能的 calls 里有行为', () => edit(M1, (d) => { fnV(d).calls = ['act-2'] }), '功能 f-3（查看一个账户）标的是「查看」，却叫了行为（calls 里的 act-2）：查看不改数据，要改数据的不是查看')
+brokenS('标「查看」的功能三样都写了：并成一条说', () => edit(M1, (d) => { fnV(d).subject.edits = ['户名：照开户表记下']; fnV(d).out = [{ kind: '通知', title: '查询通知' }]; fnV(d).calls = ['act-2'] }),
+  '却写了动了哪几项（edits）、写了顺带留下的（out）、叫了行为（calls 里的 act-2）：查看不改数据', '1 处错')
+clean(); edit(M1, (d) => { fnV(d).out = []; fnV(d).subject.edits = [] })
+r = run()
+check('标「查看」的功能的 out、subject.edits 是空的一列：不算写了', r.code === 0 && r.out.includes('没查出毛病'), r.out)
+clean(); edit(M1, (d) => { delete fnV(d).returns })
+r = run()
+check('标「查看」的功能没写 returns：只提醒', r.code === 0 && r.out.includes('功能 f-3（查看一个账户）标的是「查看」，没写看到的是什么（returns）') && r.out.includes('0 处错，1 处提醒'), r.out)
+split(); edit(M1, (d) => { d.rules.push({ id: 'r-8', kind: '怎么算的', short: '定出账户开了多少天，照开户日期到今天', text: '账户开了多少天，是从开户日期数到今天。', source: '人 2026-01-05 说', for: 'p-1.1', examples: [{ given: '账户是三天前开的', when: '柜员查看这个账户', then: '看到开了三天' }] }); Object.assign(fnV(d), { rules: ['r-8'], services: ['s-1'], steps: [{ text: '照账号找到这个账户' }, { call: { topic: '客户', title: '查客户档案' }, text: '调用客户的功能：查客户档案' }] }) })
+r = run()
+check('拆过的主题里标「查看」的功能带着自己的规则、步骤、用的服务、调用别的主题的功能：没查出毛病', r.code === 0 && r.out.includes('没查出毛病'), r.out)
+
+// —— 规则的 covers：这条规则管着哪几样 ——
+brokenS('规则的 covers 不是一列（写成了一句话）', () => edit(M1, (d) => { d.rules[1].covers = '账户 › 户名' }), '规则 r-2 的 covers 要写成一列名字')
+brokenS('规则的 covers 里有一项不是名字', () => edit(M1, (d) => { d.rules[5].covers = ['开户表', { title: '状态' }] }), '规则 r-6 的 covers 要写成一列名字')
+warnS('covers 里的名字找不到（概念不在、带栏的概念不在、概念在而栏不在）：只提醒，一个主题并成一条', () => edit(M1, (d) => { d.rules[1].covers = ['账户 › 户名', '账户 › 余额', '总账']; d.rules[5].covers = ['没有的概念 › 状态', '开户表 › 状态'] }),
+  '有 2 条规则的 covers 里有名字找不到：r-2 的「账户 › 余额」「总账」、r-6 的「没有的概念 › 状态」。', '0 处错，1 处提醒')
+warnS('「一直要守的」规则没写 covers、或者写成空的一列：只提醒，一个主题并成一条，列规则号', () => edit(M1, (d) => { delete d.rules[1].covers; d.rules[5].covers = [] }),
+  '有 2 条「一直要守的」规则没写它管着哪几样（covers）：r-2、r-6。', '0 处错，1 处提醒')
+split(); edit(M1, (d) => { d.rules[3].covers = ['账户', '开户表›状态'] })
+r = run()
+check('别的三种规则不写 covers 不提醒；写了的照样查名字，找得到就没查出毛病（› 两边不留空格也认）', r.code === 0 && r.out.includes('没查出毛病'), r.out)
+split(); edit(M1, (d) => { d.core.push({ title: '卡', why: '发给客户取钱用的', sources: [], targets: [] }); d.purposes[0].needs[0].cores.push('卡'); d.rules[1].covers.push('卡') })
+r = run()
+check('covers 里写这个主题的核心数据的名字：概念图上没有它也算找得到', r.code === 0 && !r.out.includes('covers'), r.out)
 
 clean(); write(A + '界面/N-1/旧的.html', '<p>没人用</p>')
 r = run()

@@ -13,6 +13,8 @@
 //           目的的固定的号（业务目的的 id 写「p-1」，更细的目的的 id 写「p-1.1」）：只要有一条目的写了号就查。号有没有重复（业务目的之间、更细的目的之间、这两种之间）、是不是有的写了有的没写（都是错）；
 //           更细的目的的号点前面是不是它所在的业务目的的号、号是不是「p-数字」「p-数字.数字」的样子（都是提醒，各并成一条）
 //           模块业务：主题号对不对；功能号、响应号、状态转换流程号、待定号有没有重复；每项功能写没写业务数据（subject 带 to）和操作意图（intent）；
+//           功能的 subject.op 写的是不是创建、更新、删除、查看（核心数据的来路、去处上的 op 只有前三种，写「查看」是错）；标「查看」的功能只是看、不改数据：不要求 subject.to，也不提醒没列 subject.edits；
+//           它写了 edits、写了 out、或者 calls 里有行为（都是错）；它没写看到的是什么（returns，提醒）；
 //           功能指着的流程步在不在；状态转换流程的线两头是不是它的状态，分了段的（stages）每个状态是不是正好在一段里（不是是错）；要用到的数据写没写名字（没写是错）、写没写解释或例子（提醒）；
 //           主要流程速览（tours）里用到的功能在不在（不在是错）；
 //           拆过的主题（模块文件写了顶层 rules）才查这些，不对的是错：规则号、行为号（core[].actions 和顶层 concepts[].actions，整个主题里一起算）、服务号（services）有没有重复；规则的 kind 是不是那四种；
@@ -21,6 +23,8 @@
 //           功能、响应的 calls 和响应的 callsWhen 里的行为号在不在（核心数据的行为和概念的行为都算在）；功能的 services 里的服务号在不在；功能的步骤里接着办的功能（steps[].fn）在不在；状态转换流程的线（moves[].act）指着的行为在不在；
 //           规则、行为、服务、概念的栏写的 for 指着的目的在不在：目的写了固定的号的，for 照号找；一条都没写号的，for 照先后数（「1.2」是第 1 条业务目的下面的第 2 条更细的目的，只写「1」的指着第 1 条业务目的），
 //           这时主题里有东西写了 for 就提醒给目的写上固定的号（一个主题一条）；
+//           规则的 covers（这条规则管着哪几样）：是不是一列名字（不是是错）；名字是概念名或者「概念 › 栏」，概念在不在这个主题的概念图上或者核心数据里、栏在不在那个概念的栏（fields）里（找不到是提醒，一个主题一条）；
+//           kind 是「一直要守的」的规则写没写 covers（没写或者是空的是提醒，一个主题一条）；
 //           拆过的主题里提醒的有：规则没有例子也没有 items；规则的出处写在 from 里而没写 source（出处写在 source 里，和别处一样）；行为没有哪项功能或响应叫它；功能、行为、服务的 steps[].on 对不上它自己 edits 冒号前面的名字、也对不上它自己 out 的 title 冒号前面的名字
 //           提醒的还有：核心数据的 parts 和概念图上的上下层线对不对得上；概念图上的概念在业务文件里出没出现；状态转换流程的名字对不对得上一个概念；用到的资料写没写说明；
 //           去到别的主题的数据写没写功能号；功能的业务数据名字里是不是认得出不止一个概念名；没写 calls 的功能列没列动了业务数据的哪几项（subject.edits）；功能的出处和别的主题的功能是不是同一个代码文件
@@ -208,7 +212,7 @@ for (const cx of names) {
       const segs = [...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]), ...(c.targets ?? [])]
       // 线上都要标做了什么：创建、更新、删除；看板只画把它新建出来的来路，所以每条来路的最后一步是创建
       const badOp = segs.filter((x) => x.op && !OPS.includes(x.op))
-      for (const x of badOp) say('错', cx, '业务', file, `${who}的来路、去处上 op 写的是「${x.op}」：只能写创建、更新、删除`)
+      for (const x of badOp) say('错', cx, '业务', file, `${who}的来路、去处上 op 写的是「${x.op}」：只能写创建、更新、删除${x.op === '查看' ? '。只是读了这样核心数据的事不算它的来路、去处，不写在这里；「查看」只写在功能的 subject.op 上' : ''}`)
       const noOp = segs.filter((x) => !x.op).length
       if (noOp) say('提醒', cx, '业务', file, `${who}的来路、去处有 ${noOp} 段没标做了什么（op）：创建、更新或删除`)
       for (const s of c.sources ?? []) {
@@ -309,9 +313,18 @@ for (const cx of names) {
     for (const f of fns) {
       const who = `功能 ${f.id ?? '?'}（${f.title ?? ''}）`
       if (!f.id) say('错', cx, '业务', file, `有一项功能没写号（id）：${f.title ?? ''}`)
-      if (!f.subject?.title || !f.subject?.to) say('错', cx, '业务', file, `${who}没写业务数据：subject 写它主要动的那样数据（title）和变成什么（to）`)
-      if (f.subject?.op && !['创建', '更新', '删除'].includes(f.subject.op)) say('错', cx, '业务', file, `${who}的业务数据 op 写的是「${f.subject.op}」：只能写创建、更新、删除`)
-      else if (f.subject?.title && !f.subject.op) say('提醒', cx, '业务', file, `${who}的业务数据没标做了什么（subject.op）：创建、更新或删除`)
+      // 标「查看」的功能只是看、不改数据：subject 只写它看的是哪样数据（title）和 op，不写 to
+      const view = f.subject?.op === '查看'
+      if (view && !f.subject.title) say('错', cx, '业务', file, `${who}没写业务数据：标「查看」的功能在 subject 里写它看的是哪样数据（title）`)
+      else if (!view && (!f.subject?.title || !f.subject?.to)) say('错', cx, '业务', file, `${who}没写业务数据：subject 写它主要动的那样数据（title）和变成什么（to）`)
+      if (f.subject?.op && !['创建', '更新', '删除', '查看'].includes(f.subject.op)) say('错', cx, '业务', file, `${who}的业务数据 op 写的是「${f.subject.op}」：只能写创建、更新、删除、查看`)
+      else if (f.subject?.title && !f.subject.op) say('提醒', cx, '业务', file, `${who}的业务数据没标做了什么（subject.op）：创建、更新、删除，只是看、不改数据的写查看`)
+      if (view) {
+        const arr = (v) => (Array.isArray(v) ? v : [])
+        const wrote = [arr(f.subject.edits).length || arr(f.edits).length ? '写了动了哪几项（edits）' : '', arr(f.out).length ? '写了顺带留下的（out）' : '', arr(f.calls).length ? `叫了行为（calls 里的 ${arr(f.calls).join('、')}）` : ''].filter(Boolean)
+        if (wrote.length) say('错', cx, '业务', file, `${who}标的是「查看」，却${wrote.join('、')}：查看不改数据，要改数据的不是查看。它确实改了数据的，subject.op 改成创建、更新或删除；它只是看的，把这几样拿掉，edits、out 不写，calls 写成空的一列`)
+        if (!String(f.returns ?? '').trim()) say('提醒', cx, '业务', file, `${who}标的是「查看」，没写看到的是什么（returns）`)
+      }
       // 写了 calls 的功能是拆过的：动了哪几项写在它叫的行为的 edits 里，subject 上不再列
       else if (['创建', '更新'].includes(f.subject?.op) && !(f.subject.edits ?? []).length && !Array.isArray(f.calls)) say('提醒', cx, '业务', file, `${who}没列出动了业务数据的哪几项（subject.edits）`)
       {
@@ -421,6 +434,21 @@ for (const cx of names) {
       for (const cf of cfiles) for (const k of load(cf, cx, '业务')?.concepts ?? []) for (const x of list(k?.fields)) if (obj(x)) forCheck(`概念「${k.title ?? k.id ?? '?'}」的栏「${x.title ?? '?'}」`, x.for, cf)
       // 旧写法（目的一条都没写号）而主题里有东西写了 for：一个主题提醒一条
       if (forN && aims.length && !numbered) say('提醒', cx, '业务', file, `这个主题的规则、行为、服务和概念的栏里有 ${forN} 处写了 for，而业务目的和更细的目的都没写固定的号（id）：for 现在是照先后数的，在中间插一条目的，后面的指向都会错位。给业务目的和更细的目的各写一个固定的号：业务目的写「p-1」「p-2」，更细的目的写「p-1.1」「p-1.2」（点前面是它所在的业务目的的号），for 写这个号；号定了就不改，新加的一条用还没用过的号`)
+      // covers 是这条规则管着哪几样：一列名字，概念名或者「概念 › 栏」；概念在这个主题的概念图上或者是这个主题的核心数据，栏在那个概念的栏（fields）里
+      const coreTitles = new Set(nm(d.core)), lostCov = [], noCov = []
+      for (const x of rules) {
+        if (x.covers != null && !(Array.isArray(x.covers) && x.covers.every((k) => typeof k === 'string' && k.trim()))) { say('错', cx, '业务', file, `规则 ${x.id ?? '?'} 的 covers 要写成一列名字：一个名字是一个概念名，或者「概念 › 栏」`); continue }
+        const names = list(x.covers).map((k) => k.trim())
+        if (x.kind === '一直要守的' && !names.length) noCov.push(x.id ?? '?')
+        const lost = names.filter((k) => {
+          const i = k.indexOf('›'), con = (i < 0 ? k : k.slice(0, i)).trim(), field = i < 0 ? null : k.slice(i + 1).trim()
+          if (!conTitles.has(con) && !coreTitles.has(con)) return true
+          return field != null && !(conFields.get(con)?.has(field))
+        })
+        if (lost.length) lostCov.push(`${x.id ?? '?'} 的「${lost.join('」「')}」`)
+      }
+      if (lostCov.length) say('提醒', cx, '业务', file, `有 ${lostCov.length} 条规则的 covers 里有名字找不到：${lostCov.join('、')}。covers 里一个名字是一个概念名，或者「概念 › 栏」：概念要在这个主题的概念图上、或者是这个主题的核心数据，栏名要和那个概念的栏（fields）里的 title 一样；只列本主题的`)
+      if (noCov.length) say('提醒', cx, '业务', file, `有 ${noCov.length} 条「一直要守的」规则没写它管着哪几样（covers）：${noCov.join('、')}。covers 列出这条规则要哪几样概念、哪几栏任何时候都对得上，整样概念写概念名，只是一栏的写成「概念 › 栏」`)
       // 提醒：并成一条说
       const noEx = rules.filter((x) => !list(x.examples).length && !list(x.items).length).map((x) => x.id ?? '?')
       if (noEx.length) say('提醒', cx, '业务', file, `有 ${noEx.length} 条规则没有例子（examples），也没有并着的几小条（items）：${noEx.join('、')}。一个例子写在什么前提下（given）、做了什么（when）、结果怎样（then）`)

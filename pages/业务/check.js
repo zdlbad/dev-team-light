@@ -708,7 +708,7 @@ const cases = [
     return !!err && +err[1] === chk.x && +err[2] > chk.y + chk.h && ![...p.matchAll(/<g class="sx" data-fx="\d+"><rect x="([-\d.]+)"/g)].some((m) => +m[1] === dec.x) }, "innerWidth = 1900; popFrom('act:act-3'); innerWidth = 1200"],
   // 一直要守的规则不进流程，单放一张「做的时候守着」的卡；业务目的写在图的最上面，下面一行是它对着的那条更细的目的；行为这里不列谁会叫它
   ['#样例系统/module/g2', (s) => { const p = popup(s)
-    return p.includes('<div class="kc"><b>做的时候守着</b>') && p.includes('<div><code>r-2</code>批到的分级和路径一直和决定通知书上批的一样</div>') && !flowBoxes(p).some((b) => b.id === 'r-2') && p.indexOf('class="kc"') > p.indexOf('</svg>')
+    return p.includes('<div class="kc"><b>做的时候守着</b>') && p.includes('<div><code>r-2</code>批到的分级和路径一直和决定通知书上批的一样<span class="kv">管着：批到的分级和路径、参与者档案 › 决定通知书</span></div>') && !flowBoxes(p).some((b) => b.id === 'r-2') && p.indexOf('class="kc"') > p.indexOf('</svg>')
       && p.includes('<div class="am"><i>业务目的</i><b>从分到资金的那一天起钱开在她名下，哪天分到、分到多少要记在档案上。</b></div><div class="am2">对着目的 p-1.1：分到的钱和扣掉的钱，每一笔都查得到。</div>') && p.indexOf('class="am"') < p.indexOf('<svg')
       && !p.includes('谁会叫它') && !p.includes('f-3') && !p.includes('data-pop="fn:') }, "popFrom('act:act-3')"],
   // 副作用挂在引起它的那一步下面；右边「副作用汇总」和各步下面的加起来一样；名字只显示冒号前面的
@@ -760,6 +760,52 @@ const cases = [
   ['#样例系统/module/g2', (s) => { const p = popup(s), bs = flowBoxes(p)
     return p.includes('<div class="pw" data-kind="svc"><div class="ph"><b>参与者登记：核对这个编号还没有建过档案</b><span class="in">s-1 · 服务：要看这一类数据的全体才能做的事，功能来用它 · 从左到右：') && bs.map((b) => b.type + ':' + b.id).join() === 'chk:r-1,step:'
       && count(p, '<g class="se">') === 1 && />返回结果<\/text><text class="r" /.test(p) && !p.includes('空结果') && p.includes('>没有副作用</text>') && fxSum(p) === 0 && p.includes('<div class="am2">对着目的 p-2.1：') && inBounds(p) }, "popFrom('svc:s-1')"],
+  // ---- 标「查看」的功能：只是看、不改数据 ----
+  // 拆过的主题里照别的功能一样画流程图：图上面那一行写「看的是」，标签是「查看」；右边「返回结果」显示 returns，「副作用汇总」里写「不改数据」
+  ['#样例系统/module/g2', (s) => { const p = popup(s), bs = flowBoxes(p)
+    return p.includes('<div class="pw" data-kind="fn"><div class="ph"><b>查看一位老人的档案</b><span class="in">f-5 · 功能 · 从左到右：') && bs.map((b) => b.type + ':' + b.id).join() === 'step:' && count(p, '<g class="si">') === 1
+      && p.includes('<div class="am"><i>看的是</i><span><u class="op view">查看</u>这位老人的参与者档案</span></div>') && !p.includes('主要动的')
+      && />返回结果<\/text><text class="r"[^>]*>她的参与者档案、<\/text>/.test(p) && !p.includes('空结果')
+      && /<g class="so sum" data-fx="0"><rect[^>]*\/><text class="t"[^>]*>副作用汇总<\/text><text class="r none"[^>]*>不改数据<\/text><\/g>/.test(p) && !p.includes('>没有副作用</text>') && fxUnder(p) === 0
+      && p.includes('<div class="am2">对着目的 p-2.2：看档案就知道她签没签服务协议、签的是哪一份。</div>') && p.includes('<div class="mcap">谁能做</div>照护伙伴</div>') && !p.includes('class="fg"') && !p.includes('还没有拆出') && inBounds(p) }, "popFrom('fn:f-5')"],
+  // 标「查看」的功能带一条「怎么算的」规则：规则照样画成「定出」的框，排在步骤前面；细说里有这条规则
+  ['#样例系统/module/g2', (s) => { const p = popup(s), bs = flowBoxes(p)
+    return bs.map((b) => b.type + ':' + b.id).join() === 'dec:r-16,step:' && />定出<\/text><text class="no"[^>]*>r-16<\/text>/.test(p) && count(p, '<g class="se">') === 0
+      && p.includes('<div class="am"><i>看的是</i><span><u class="op view">查看</u>她名下这一类服务的基金账户</span></div>') && />返回结果<\/text><text class="r"[^>]*>这个基金账户还能<\/text>/.test(p) && p.includes('>不改数据</text>')
+      && p.includes('<div class="rd" data-rule="r-16"><div class="rh"><code>r-16</code><b>定出这个账户还能用多少，照它现在的余额</b><span class="rk">怎么算的</span></div>') && !p.includes('class="rcv"') && inBounds(p) }, "popFrom('fn:f-6'); wins[0].open.rules = true; drawPop()"],
+  // 别的功能照旧：图上面写「主要动的」；没有副作用的写「没有副作用」，不写「不改数据」
+  ['#样例系统/module/g2', (s) => { const p = popup(s); return p.includes('<div class="am"><i>主要动的</i><span><u class="op upd">更新</u>') && !p.includes('看的是') && !p.includes('不改数据') }, "popFrom('fn:f-4')"],
+  ['#样例系统/module/g2', (s) => popup(s).includes('>没有副作用</text>') && !popup(s).includes('不改数据'), "popFrom('svc:s-1')"],
+  // 「查看」的标签的颜色和创建、更新、删除都不一样
+  ['#map', () => { const m = html.match(/\.op\.new\{background:([^;}]+)\}\.op\.upd\{background:([^;}]+);[^}]*\}\.op\.del\{background:([^;}]+)\}\.op\.view\{background:([^;}]+)\}/); return !!m && new Set(m.slice(1)).size === 4 }],
+  // 更细的目的那一行列出挂着的查看功能，和别的功能一样能点开
+  ['#样例系统/module/g2', (s) => s.includes('<span class="chip fn" data-pop="fn:f-2">f-2 在参与者档案上记下签了的服务协议</span><span class="chip fn" data-pop="fn:f-5">f-5 查看一位老人的档案</span>') && s.includes('<span class="chip fn" data-pop="fn:f-6">f-6 查看基金账户还能用多少</span>'),
+    "secOpen['样例系统/g2/purposes'] = true; purposeOpen['样例系统/g2/0'] = purposeOpen['样例系统/g2/1'] = true; render()"],
+  // 没拆的主题里的旧功能图：中间那一栏只显示「查看」的标签和它看的是哪样数据，没有「从什么变成什么」、没有被动到的每一项（哪怕文件里写了 from、to、edits）；看到的是什么列在图下面
+  ['#样例系统/module/g2', (s) => { const p = popup(s)
+    return p.includes('<div class="mid"><div class="cls core"><div class="ct"><i>核心数据</i><u class="op view">查看</u>参与者档案</div><div class="cb"><div class="sn">这位老人的参与者档案</div></div></div></div>') && !p.includes('class="ft"') && !p.includes('class="ei"') && !p.includes('class="rc"')
+      && p.includes('<div class="mmore"><div><div class="mcap">看到的是什么</div>她的参与者档案、批到的分级和路径</div>') && !p.includes('class="sf"') && !p.includes('还没有拆出') },
+    OLD + "MODULES.g2.groups[0].functions.push({ id: 'f-9', title: '查看一位老人的档案', intent: '办事之前先看清她批到了什么', subject: { title: '这位老人的参与者档案', op: '查看', from: '不该显示的', to: '也不该显示的', edits: ['分到的资金：不该显示'] }, in: [{ title: 'My Aged Care 编号', note: '要看的是哪一位' }], returns: '她的参与者档案、批到的分级和路径' }); popFrom('fn:f-9')"],
+  // 旧功能图里别的功能照旧有「从什么变成什么」
+  ['#样例系统/module/g2', (s) => popup(s).includes('class="ft"') && !popup(s).includes('op view') && !popup(s).includes('看到的是什么'), OLD + "popFrom('fn:f-1')"],
+  // 名字就是那样数据的名字、下面没有别的话：不留一个空的格子；看的是核心数据里装着的概念的，外面套着它那样核心数据
+  ['#样例系统/module/g2', (s) => { const [a, b] = popup(s).split('<!--next-->')
+    return a.includes('<div class="mid"><div class="cls core"><div class="ct"><i>核心数据</i><u class="op view">查看</u>参与者档案</div></div></div>')
+      && b.includes('<div class="cls core"><div class="ct"><i>核心数据</i>参与者档案</div><div class="cb"><div class="cls part main"><div class="ct"><u class="op view">查看</u>签了的服务协议</div><div class="cb"><div class="sn">这位老人档案上签了的服务协议</div></div></div></div></div>') },
+    OLD + "const out = [], f = { id: 'f-9', title: '查看档案', intent: '看一眼', subject: { title: '参与者档案', op: '查看' }, in: [] }; MODULES.g2.groups[0].functions.push(f); popFrom('fn:f-9'); out.push(els.pop.innerHTML); f.subject.title = '这位老人档案上签了的服务协议'; drawPop(); out.push(els.pop.innerHTML); els.pop.innerHTML = out.join('<!--next-->')"],
+  // ---- 规则管着哪几样（covers）----
+  // 每条规则细说：全话下面多一行「管着：……」；没写 covers 的规则不出这一行
+  ['#样例系统/module/g2', (s) => { const p = popup(s), cut = (id) => p.split('data-rule="' + id + '"')[1].split('data-rule="')[0]
+    return cut('r-2').includes('才照新的那一份整个换掉。</div><div class="rcv">管着：批到的分级和路径、参与者档案 › 决定通知书</div><div class="rw"><i>为了什么</i>') && !cut('r-7').includes('rcv') && !cut('r-8').includes('管着') && count(p, 'class="rcv"') === 1 },
+    "popFrom('act:act-3'); wins[0].open.rules = true; drawPop()"],
+  // 「做的时候守着」那张卡：short 后面用小字列出管着的名字，一条规则一行；没写 covers（或者是空的一列）的那一条后面什么都不加，细说里也不出「管着」那一行
+  ['#样例系统/module/g2', (s) => { const [a, b] = popup(s).split('<!--next-->')
+    return a.includes('<div><code>r-3</code>一个基金账户只能买她批了的那一类服务<span class="kv">管着：基金账户 › 服务类型、参与者档案 › 批了的服务类型</span></div><div><code>r-4</code>她名下各个账户的余额加起来，不超过这一季分到的钱<span class="kv">管着：基金账户 › 余额、她名下的基金</span></div>')
+      && count(a, 'class="kv"') === 2 && count(a, 'class="rcv"') === 2
+      && b.includes('<div><code>r-3</code>一个基金账户只能买她批了的那一类服务</div><div><code>r-4</code>') && count(b, 'class="kv"') === 1 && count(b, 'class="rcv"') === 1 && html.includes('.kc .kv{font-size:11.5px;') },
+    "const out = []; popFrom('act:act-5'); wins[0].open.rules = true; drawPop(); out.push(els.pop.innerHTML); MODULES.g2.rules.find((r) => r.id === 'r-3').covers = []; drawPop(); out.push(els.pop.innerHTML); delete MODULES.g2.rules.find((r) => r.id === 'r-4').covers; els.pop.innerHTML = out.join('<!--next-->')"],
+  // 数据格式注释里写着「查看」和 covers
+  ['#map', () => html.includes('op 是创建、更新、删除、查看。只是看、不改数据的功能标「查看」') && html.includes('covers?: [概念名 或「概念 › 栏」]') && html.includes('//          covers 是这条规则管着哪几样')],
   // 一行排不下时折到下一行，行与行之间的线拐弯抹圆；每行的框数尽量均匀，不让最后一行只剩一个（五个框排成三个、两个）
   ['#样例系统/module/g2', (s) => { const p = popup(s), bs = flowBoxes(p), rows = [...new Set(bs.map((b) => b.y + b.h / 2))]
     return bs.length === 5 && rows.length === 2 && bs.filter((b) => b.y + b.h / 2 === rows[0]).length === 3 && bs.filter((b) => b.y + b.h / 2 === rows[1]).length === 2 && bs[3].x === bs[0].x && bs[3].y > bs[0].y + bs[0].h
@@ -900,7 +946,7 @@ const cases = [
   // 带状态变化的行为：一条检查、一条定出、三步；副作用挂在引起它的那一步下面；图上面是它为了哪条目的
   ['#样例系统/module/g5', (s) => { const p = popup(s), bs = flowBoxes(p)
     return p.includes('<b>记下审核结果</b><span class="in">act-5 · 申报行的行为 · 已报给政府 → 审核通过或被退回 · 从左到右：') && bs.map((b) => b.type + ':' + b.id).join() === 'chk:r-8,dec:r-9,step:,step:,step:'
-      && p.includes('<div class="am2">对着目的 p-1.3：政府审核的结果有着落：通过的扣款，被退回的改了重报。</div>') && fxUnder(p) === 3 && fxSum(p) === 3 && p.includes('<div><code>r-6</code>一行申报行一直对着同一条服务记录</div>') && inBounds(p) }, "popFrom('act:act-5')"],
+      && p.includes('<div class="am2">对着目的 p-1.3：政府审核的结果有着落：通过的扣款，被退回的改了重报。</div>') && fxUnder(p) === 3 && fxSum(p) === 3 && p.includes('<div><code>r-6</code>一行申报行一直对着同一条服务记录<span class="kv">管着：申报行 › 服务记录</span></div>') && inBounds(p) }, "popFrom('act:act-5')"],
   // 没有规则的行为：图上只有输入和步骤，下面写「这里没有挂规则」
   ['#样例系统/module/g5', (s) => { const p = popup(s); return flowBoxes(p).map((b) => b.type).join() === 'step,step' && p.includes('每条规则细说<span class="cn">0 条</span>') && p.includes('<p class="none">这里没有挂规则。</p>') && !p.includes('class="kc"') && inBounds(p) }, "popFrom('act:act-3'); wins[0].open.rules = true; drawPop()"],
   // 功能：调用别的主题的一步、取数、它叫的两个行为；规则的出处读 source
@@ -921,7 +967,7 @@ const cases = [
   // 概念写了 keeps 的（这里临时给发票行挂一条）：单子上它那一行多出「一直要守的 N 条」；行为的窗口里「做的时候守着」那张卡列的是这个概念自己的 keeps，不是哪样核心数据的
   ['#样例系统/module/g5', (s) => { const t = secOf(s, 'core'), p = popup(s)
     return t.includes('<span class="chip fc" data-keeps="样例系统/g5/发票行">一直要守的 1 条 ▸</span><span class="chip fc" data-acts="样例系统/g5/发票行">2 个行为 ▾</span>')
-      && p.includes('<div class="kc"><b>做的时候守着</b>') && p.includes('<div><code>r-1</code>凭据记下以后不换、不改</div>') && !p.includes('<code>r-6</code>') && !p.includes('<code>r-11</code>') && inBounds(p) },
+      && p.includes('<div class="kc"><b>做的时候守着</b>') && p.includes('<div><code>r-1</code>凭据记下以后不换、不改<span class="kv">管着：服务记录 › 凭据、凭据</span></div>') && !p.includes('<code>r-6</code>') && !p.includes('<code>r-11</code>') && inBounds(p) },
     "MODULES.g5.concepts[0].keeps = ['r-1']; " + open('g5', 'core') + "; popFrom('act:act-9')"],
   // 概念的状态转换流程：线上的 act 指着概念的行为，图下面列出这一步是哪个行为做的，点了看那个行为
   ['#样例系统/module/g5', (s) => { const p = popup(s); return p.includes('<b>状态转换流程 · 发票行</b>') && count(p, '<div class="wa">') === 1 && p.includes('<div class="was"><div class="mcap">每一步是哪个行为做的</div><div class="wa"><span>等着核对 → 核对过了</span><span class="chip bh" data-pop="act:act-9">记成核对过了</span></div>') && !p.includes('业务文件里没有这个行为') }, "popFrom('wf:w-2')"],
