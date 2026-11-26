@@ -869,13 +869,28 @@ const cases = [
   ['#样例系统/module/g2', (s) => { const p = popup(s); return p.includes('<div class="was"><div class="mcap">每一步是哪个行为做的</div><div class="wa"><span>已建档 → 已签协议</span><span class="chip bh" data-pop="act:act-2">记签协议</span></div>') && count(p, '<div class="wa">') === 3 && !p.includes('已停用</span><span class="chip bh"') }, "popFrom('wf:w-1')"],
   ['#样例系统/module/g5', (s) => !popup(s).includes('class="was"') && popup(s).includes('状态转换流程 · 申报行'), OLD5 + "popFrom('wf:w-3')"],
   // ---- 样例里的另一个主题 g5 也是拆过的 ----
-  // 核心数据那一行带「一直要守的 N 条」「N 个行为」；一行一个行为，没有规则的行为写「0 条规则」；照护管理记录没有一直要守的规则，不出那个标签；发票行不是核心数据，没有行为
+  // 核心数据那一行带「一直要守的 N 条」「N 个行为」；一行一个行为，没有规则的行为写「0 条规则」；照护管理记录没有一直要守的规则，不出那个标签；
+  // 发票行不是核心数据、但自己有状态，列在顶层 concepts 里：它在「不归哪一样核心数据的」那一组，那一行也带「N 个行为」，下面一行一个行为，点名字看这个行为；它没有一直要守的规则，不出那个标签
   ['#样例系统/module/g5', (s) => { const t = secOf(s, 'core'), g = t.split('<div class="cg">').slice(1)
-    return g.length === 6 && count(t, '<div class="ar"') === 7 && g[0].includes('<span class="chip fc" data-fields="样例系统/g5/服务记录">7 栏 ▸</span><span class="chip fc" data-keeps="样例系统/g5/服务记录">一直要守的 1 条 ▸</span><span class="chip fc" data-acts="样例系统/g5/服务记录">2 个行为 ▾</span>')
+    return g.length === 6 && count(t, '<div class="ar"') === 9 && g[0].includes('<span class="chip fc" data-fields="样例系统/g5/服务记录">7 栏 ▸</span><span class="chip fc" data-keeps="样例系统/g5/服务记录">一直要守的 1 条 ▸</span><span class="chip fc" data-acts="样例系统/g5/服务记录">2 个行为 ▾</span>')
       && g[0].includes('<span class="chip bh" data-pop="act:act-1">记下一次服务</span><span class="mv">→ 等着申报</span><span class="cn">2 条规则</span><span class="cn">向外说 1 件事</span></div>')
       && !g[1].includes('data-keeps=') && g[1].includes('<span class="chip bh" data-pop="act:act-3">记下一次照护管理</span><span class="cn">0 条规则</span><span class="cn">向外说 1 件事</span></div>')
       && g[2].includes('<span class="chip bh" data-pop="act:act-5">记下审核结果</span><span class="mv">已报给政府 → 审核通过或被退回</span><span class="cn">2 条规则</span><span class="cn">向外说 1 件事</span></div>')
-      && g[5].includes('data-fields="样例系统/g5/发票行">5 栏 ▸</span>') && !g[5].includes('data-acts=') && !g[5].includes('class="ar"') }, open('g5', 'core')],
+      && g[5].includes('data-fields="样例系统/g5/发票行">5 栏 ▸</span><span class="chip fc" data-acts="样例系统/g5/发票行">2 个行为 ▾</span><span class="nt">') && !g[5].includes('data-keeps=') && count(g[5], '<div class="ar"') === 2
+      && g[5].includes('<div class="ar" style="padding-left:24px"><span class="chip bh" data-pop="act:act-8">登记并等着核对</span><span class="mv">→ 等着核对</span><span class="cn">0 条规则</span></div>')
+      && g[5].includes('<div class="ar" style="padding-left:24px"><span class="chip bh" data-pop="act:act-9">记成核对过了</span><span class="mv">等着核对 → 核对过了</span><span class="cn">1 条规则</span><span class="cn">向外说 1 件事</span></div>')
+      && !t.includes('data-acts="样例系统/g5/凭据"') && !t.includes('data-acts="样例系统/g5/月结单明细"') }, open('g5', 'core')],
+  // 点发票行那一行的「N 个行为」：只收起它下面的那两行，核心数据的行为还在；点行为的名字开这个行为的窗口
+  ['#样例系统/module/g5', (s) => { const t = secOf(s, 'core'); return t.includes('data-acts="样例系统/g5/发票行">2 个行为 ▸</span>') && count(t, '<div class="ar"') === 7 && !t.includes('data-pop="act:act-8"') && t.includes('data-pop="act:act-1"') },
+    open('g5', 'core') + "; fire(els.main.on.click, { target: at({ '[data-acts]': { dataset: { acts: '样例系统/g5/发票行' } } }) })"],
+  ['#样例系统/module/g5', (s) => winKeys(popup(s)) === 'act:act-8' && popup(s).includes('<b>登记并等着核对</b><span class="in">act-8 · 发票行的行为 · → 等着核对 · 从左到右：'),
+    open('g5', 'core') + "; fire(els.main.on.click, { target: at({ '[data-pop]': { dataset: { pop: 'act:act-8' } } }) })"],
+  // 列在 concepts 里的概念排在某样核心数据下面的（这里临时把服务记录装着的凭据列进去）：它那一行一样多出两个标签，展开的规则和行为比它那一行再缩进一层
+  ['#样例系统/module/g5', (s) => { const t = secOf(s, 'core'), g = t.split('<div class="cg">').slice(1)
+    return count(t, '<div class="ar"') === 10 && g[0].includes('<div class="cr" style="padding-left:24px"><span class="chip part" data-pop="core:0:凭据">凭据</span><span class="chip fc" data-fields="样例系统/g5/凭据">3 栏 ▸</span><span class="chip fc" data-keeps="样例系统/g5/凭据">一直要守的 1 条 ▾</span><span class="chip fc" data-acts="样例系统/g5/凭据">1 个行为 ▾</span><span class="nt">')
+      && g[0].includes('<div class="kp" style="padding-left:48px"><code>r-1</code><b>凭据记下以后不换、不改</b>') && g[0].includes('<div class="ar" style="padding-left:48px"><span class="chip bh" data-pop="act:act-10">换一份凭据</span><span class="cn">0 条规则</span></div>')
+      && g[0].includes('<div class="ar" style="padding-left:24px"><span class="chip bh" data-pop="act:act-1">') && !t.includes('data-acts="样例系统/g5/月结单明细"') },
+    "MODULES.g5.concepts.push({ title: '凭据', keeps: ['r-1'], actions: [{ id: 'act-10', title: '换一份凭据', rules: [] }] }); keepsOpen['样例系统/g5/凭据'] = true; " + open('g5', 'core')],
   // 栏全展开：写了 for 的标「为了 p-…」；写不出 for 的两栏（服务记录的「做服务的人」、月结单的「合计」）标「没有找到目的」，待定里各有一条没答的问题问它
   ['#样例系统/module/g5', (s) => { const t = secOf(s, 'core'), a = secOf(s, 'asks')
     return count(t, '<span class="chip nf">') === 2 && t.includes('<b>做服务的人</b><span class="chip nf">没有找到目的</span><span class="nt">自己的工作者，或者外部服务方。</span></div>') && t.includes('<b>合计</b><span class="chip nf">没有找到目的</span></div>')
@@ -892,14 +907,33 @@ const cases = [
   ['#样例系统/module/g5', (s) => { const p = popup(s), bs = flowBoxes(p)
     return bs.map((b) => b.type + ':' + b.id).join() === 'call:,svc:s-1,act:act-4,act:act-2' && p.includes('>调用 · 服务清单</text>') && !p.includes('还没有拆出') && fxUnder(p) === 7 && fxSum(p) === 7 && p.includes('>空结果（无返回）</text>')
       && p.includes('<div class="am2">对着目的 p-1.1：报上去的每一行都对得上一次真做了的服务。</div>') && p.includes('<div class="mcap">谁能做</div>财务') && inBounds(p) }, "popFrom('fn:f-5')"],
-  // 动的不是核心数据的功能（发票行没有行为）：一个行为都不叫，它引起的变化写在它自己的 out 里，挂在引起它的那一步下面；入口自己的检查在最前面
+  // 动的是列在顶层 concepts 里的概念的功能（发票行不是核心数据、但自己有状态）：它叫发票行的行为，框头写「发票行的行为」，能点开；
+  // 变化写在行为里，功能自己的 out 是空的，副作用从它叫的行为里来；「等着核对才能核对」（r-5）挂在行为上，功能的图里没有检查
   ['#样例系统/module/g5', (s) => { const p = popup(s), bs = flowBoxes(p)
-    return bs.map((b) => b.type + ':' + b.id).join() === 'chk:r-5,call:,step:,step:' && fxUnder(p) === 2 && fxSum(p) === 2 && />状态改变<\/text><text class="nm"[^>]*>发票行<\/text>/.test(p) && /<text class="ct ev"[^>]*>事件<\/text><text class="nm"[^>]*>发票行已核对<\/text>/.test(p) && inBounds(p) }, "popFrom('fn:f-3')"],
-  // 副作用的小卡里，类别那一列照最宽的类别留地方：「状态改变」四个字（宽 42）后面的名字往右让，不压在一起；右边的汇总也一样。只有「修改」「事件」的卡，名字的位置照旧（差 38、42）
+    return bs.map((b) => b.type + ':' + b.id).join() === 'call:,step:,act:act-9' && bs[2].pop === 'act:act-9' && p.includes('>发票行的行为</text>') && fxUnder(p) === 2 && fxSum(p) === 2 && />修改<\/text><text class="nm"[^>]*>状态<\/text>/.test(p)
+      && /<text class="ct ev"[^>]*>事件<\/text><text class="nm"[^>]*>发票行已核对<\/text>/.test(p) && !p.includes('r-5') && !p.includes('还没有拆出') && !p.includes('业务文件里没有') && inBounds(p) }, "popFrom('fn:f-3')"],
+  // 点功能图里「发票行的行为」那个框：再开这个行为的窗口，原来的还在
+  ['#样例系统/module/g5', (s) => winKeys(popup(s)) === 'fn:f-3,act:act-9', "popFrom('fn:f-3'); fire(els.pop.on.click, { target: at({ '.wn[data-win]': { dataset: { win: 'fn:f-3' } }, '[data-pop]': { dataset: { pop: 'act:act-9' } } }) })"],
+  // 概念的行为的窗口：小标题写「发票行的行为」；一条检查、两步；图上面是它为了哪条目的；发票行没有一直要守的规则，不出「做的时候守着」那张卡
+  ['#样例系统/module/g5', (s) => { const p = popup(s), bs = flowBoxes(p)
+    return p.includes('<div class="pw" data-kind="act"><div class="ph"><b>记成核对过了</b><span class="in">act-9 · 发票行的行为 · 等着核对 → 核对过了 · 从左到右：') && bs.map((b) => b.type + ':' + b.id).join() === 'chk:r-5,step:,step:'
+      && p.includes('<div class="am2">对着目的 p-2.2：每条服务记录都指得出它的依据。</div>') && fxUnder(p) === 2 && fxSum(p) === 2 && !p.includes('class="kc"') && inBounds(p) }, "popFrom('act:act-9')"],
+  // 概念写了 keeps 的（这里临时给发票行挂一条）：单子上它那一行多出「一直要守的 N 条」；行为的窗口里「做的时候守着」那张卡列的是这个概念自己的 keeps，不是哪样核心数据的
+  ['#样例系统/module/g5', (s) => { const t = secOf(s, 'core'), p = popup(s)
+    return t.includes('<span class="chip fc" data-keeps="样例系统/g5/发票行">一直要守的 1 条 ▸</span><span class="chip fc" data-acts="样例系统/g5/发票行">2 个行为 ▾</span>')
+      && p.includes('<div class="kc"><b>做的时候守着</b>') && p.includes('<div><code>r-1</code>凭据记下以后不换、不改</div>') && !p.includes('<code>r-6</code>') && !p.includes('<code>r-11</code>') && inBounds(p) },
+    "MODULES.g5.concepts[0].keeps = ['r-1']; " + open('g5', 'core') + "; popFrom('act:act-9')"],
+  // 概念的状态转换流程：线上的 act 指着概念的行为，图下面列出这一步是哪个行为做的，点了看那个行为
+  ['#样例系统/module/g5', (s) => { const p = popup(s); return p.includes('<b>状态转换流程 · 发票行</b>') && count(p, '<div class="wa">') === 1 && p.includes('<div class="was"><div class="mcap">每一步是哪个行为做的</div><div class="wa"><span>等着核对 → 核对过了</span><span class="chip bh" data-pop="act:act-9">记成核对过了</span></div>') && !p.includes('业务文件里没有这个行为') }, "popFrom('wf:w-2')"],
+  // 响应看情形叫概念的行为（这里临时让「发票行核对过以后」分叉）：callsWhen 里概念的行为一样认，框头写「发票行的行为」
+  ['#样例系统/module/g5', (s) => { const p = popup(s), acts = flowBoxes(p).filter((b) => b.type === 'act'); return acts.map((b) => b.pop).join() === 'act:act-1,act:act-8' && acts[0].x === acts[1].x && p.includes('>服务记录的行为</text>') && p.includes('>发票行的行为</text>') && !p.includes('业务文件里没有这个行为') && inBounds(p) },
+    "Object.assign(MODULES.g5.chains[0], { alt: true, calls: ['act-1', 'act-8'], callsWhen: { 'act-1': '核对无误', 'act-8': '要重新登记' } }); popFrom('chain:c-1')"],
+  // 副作用的小卡里，类别那一列照最宽的类别留地方：「状态改变」四个字（宽 42）后面的名字往右让，不压在一起；右边的汇总也一样。只有「修改」「事件」的卡，名字的位置照旧（差 38、42）。
+  // 样例里现在没有哪一处的副作用是「状态改变」，先给 f-3 自己的 out 添一条、挂到它自己的那一步下面再看
   ['#样例系统/module/g5', (s) => { const [a, b] = popup(s).split('<!--next-->'), gap = (p, re) => { const m = p.match(re); return m ? +m[2] - +m[1] : -1 }
     return gap(a, /<text class="ct" x="([\d.]+)" y="[\d.]+">状态改变<\/text><text x="([\d.]+)"/) >= 50 && gap(a, /<text class="ct" x="([\d.]+)" y="[\d.]+">状态改变<\/text><text class="nm" x="([\d.]+)"/) >= 50
       && gap(b, /<text class="ct" x="([\d.]+)" y="[\d.]+">修改<\/text><text x="([\d.]+)"/) === 38 && gap(b, /<text class="ct" x="([\d.]+)" y="[\d.]+">修改<\/text><text class="nm" x="([\d.]+)"/) === 42 && inBounds(a) },
-    "popFrom('fn:f-3'); const a = els.pop.innerHTML; closeAll(); popFrom('act:act-6'); els.pop.innerHTML = a + '<!--next-->' + els.pop.innerHTML"],
+    "const f3 = allFns(MODULES.g5).find((f) => f.id === 'f-3'); f3.out = [{ kind: '状态改变', title: '发票行：等着核对 → 核对过了' }]; f3.steps[1].on = ['发票行']; popFrom('fn:f-3'); const a = els.pop.innerHTML; closeAll(); popFrom('act:act-6'); els.pop.innerHTML = a + '<!--next-->' + els.pop.innerHTML"],
   // 写了 after 的调用排在它叫的行为后面：g5 记下审核结果以后，审核通过的那一行交去「参与者档案与她名下的钱」扣款
   ['#样例系统/module/g5', (s) => { const p = popup(s), bs = flowBoxes(p); return bs.map((b) => b.type + ':' + (b.id || b.pop)).join() === 'act:act-5,call:' && p.includes('>调用 · 参与者档案与') && p.includes('>基金账户扣款</text>') && fxUnder(p) === 3 && fxSum(p) === 3 && inBounds(p) }, "popFrom('fn:f-8')"],
   // 两个主题的话对得上：g2 的行为「扣」发出「已扣款」，带着是照哪一行申报行扣的；g5 的响应「申报行审核通过以后」写明是这件事引起的；g2 里没有哪一步调用 g5
@@ -916,7 +950,7 @@ const cases = [
     "for (const i of [0, 1, 2]) purposeOpen['样例系统/g5/' + i] = true; " + open('g5', 'purposes')],
   // g5 的每一个行为、功能、响应、服务的窗口都画得出：不出画布，没有「还没有拆出」，没有对不上的行为、服务、功能、副作用
   ['#样例系统/module/g5', (s) => { const ps = s.split('<!--win-->').slice(1)
-    return ps.length === 19 && ps.every((p) => p.includes('class="sf"') && inBounds(p) && !p.includes('还没有拆出') && !p.includes('业务文件里没有') && !p.includes('没对上') && fxUnder(p) === Math.max(0, fxSum(p))) },
+    return ps.length === 21 && ps.every((p) => p.includes('class="sf"') && inBounds(p) && !p.includes('还没有拆出') && !p.includes('业务文件里没有') && !p.includes('没对上') && fxUnder(p) === Math.max(0, fxSum(p))) },
     "const m = MODULES.g5, keys = [...allActs(m).map((x) => 'act:' + x.a.id), ...allFns(m).map((f) => 'fn:' + f.id), ...m.chains.map((c) => 'chain:' + c.id), ...allSvcs(m).map((x) => 'svc:' + x.id)], out = []; for (const k of keys) { closeAll(); popFrom(k); out.push(els.pop.innerHTML) } els.main.innerHTML += '<!--win-->' + out.join('<!--win-->')"],
   // 改名后的六个词都在页面上：响应、行为、步骤、定出、被对方记住ID、记住对方ID；旧的叫法（内部流程、「交给」「用到」那两个标签、算出、实际做的）不再出现在给人看的字里
   ['#样例系统/module/g2', (s) => { const m = mainHtml(s), p = popup(s)

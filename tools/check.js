@@ -15,9 +15,10 @@
 //           模块业务：主题号对不对；功能号、响应号、状态转换流程号、待定号有没有重复；每项功能写没写业务数据（subject 带 to）和操作意图（intent）；
 //           功能指着的流程步在不在；状态转换流程的线两头是不是它的状态，分了段的（stages）每个状态是不是正好在一段里（不是是错）；要用到的数据写没写名字（没写是错）、写没写解释或例子（提醒）；
 //           主要流程速览（tours）里用到的功能在不在（不在是错）；
-//           拆过的主题（模块文件写了顶层 rules）才查这些，不对的是错：规则号、行为号（core[].actions，整个主题里）、服务号（services）有没有重复；规则的 kind 是不是那四种；
-//           核心数据的 keeps 和行为、响应、服务、功能的 rules 里挂着的规则号在不在（功能的 rules 里不是「r-数字」样子的旧话不查），每条规则有没有挂在这五处的哪一处；
-//           功能、响应的 calls 和响应的 callsWhen 里的行为号在不在；功能的 services 里的服务号在不在；功能的步骤里接着办的功能（steps[].fn）在不在；状态转换流程的线（moves[].act）指着的行为在不在；
+//           拆过的主题（模块文件写了顶层 rules）才查这些，不对的是错：规则号、行为号（core[].actions 和顶层 concepts[].actions，整个主题里一起算）、服务号（services）有没有重复；规则的 kind 是不是那四种；
+//           核心数据的 keeps、概念的 keeps（顶层 concepts[].keeps）和行为、响应、服务、功能的 rules 里挂着的规则号在不在（功能的 rules 里不是「r-数字」样子的旧话不查），每条规则有没有挂在这六处的哪一处；
+//           顶层 concepts 里列的概念不是核心数据、但自己有状态，它的 keeps 和行为跟核心数据的一样查；另外查它的名字：title 和某样核心数据同名、没写 title（都是错）；title 在这个主题的概念图里找不到这个名字的概念（提醒）；
+//           功能、响应的 calls 和响应的 callsWhen 里的行为号在不在（核心数据的行为和概念的行为都算在）；功能的 services 里的服务号在不在；功能的步骤里接着办的功能（steps[].fn）在不在；状态转换流程的线（moves[].act）指着的行为在不在；
 //           规则、行为、服务、概念的栏写的 for 指着的目的在不在：目的写了固定的号的，for 照号找；一条都没写号的，for 照先后数（「1.2」是第 1 条业务目的下面的第 2 条更细的目的，只写「1」的指着第 1 条业务目的），
 //           这时主题里有东西写了 for 就提醒给目的写上固定的号（一个主题一条）；
 //           拆过的主题里提醒的有：规则没有例子也没有 items；规则的出处写在 from 里而没写 source（出处写在 source 里，和别处一样）；行为没有哪项功能或响应叫它；功能、行为、服务的 steps[].on 对不上它自己 edits 冒号前面的名字、也对不上它自己 out 的 title 冒号前面的名字
@@ -241,11 +242,11 @@ for (const cx of names) {
       }
     }
     for (const u of d.uses ?? []) if (typeof u === 'string' || !String(u.note ?? '').trim()) say('提醒', cx, '业务', file, `用到的资料「${typeof u === 'string' ? u : u.title ?? '?'}」没写说明（note）：用一句话说它是什么`)
-    // 概念图上的概念都要在业务文件里出现：是一样核心数据、装在哪一样里、是用到的资料，或者是业务概述里的概念
+    // 概念图上的概念都要在业务文件里出现：是一样核心数据、装在哪一样里、是用到的资料、是业务概述里的概念，或者是列在 concepts 里的有自己行为的概念
     if ((d.core ?? []).length && conTitles.size) {
-      const inBiz = new Set([...nm(d.core), ...d.core.flatMap((k) => nm(k.parts)), ...nm(d.uses), ...nm(d.intro?.concepts)])
+      const inBiz = new Set([...nm(d.core), ...d.core.flatMap((k) => nm(k.parts)), ...nm(d.uses), ...nm(d.intro?.concepts), ...nm(Array.isArray(d.concepts) ? d.concepts : [])])
       const out = [...conTitles].filter((k) => !inBiz.has(k))
-      if (out.length) say('提醒', cx, '业务', file, `概念图上的「${out.join('、')}」在这份业务里没有出现：它该是一样核心数据、装在哪一样里（parts）、是用到的资料（uses），或者是业务概述里的概念`)
+      if (out.length) say('提醒', cx, '业务', file, `概念图上的「${out.join('、')}」在这份业务里没有出现：它该是一样核心数据、装在哪一样里（parts）、是用到的资料（uses）、是业务概述里的概念，或者是列在 concepts 里的有自己行为的概念`)
     }
     // 概述里的核心概念都要在看板上找得到：是一样核心数据、装在哪一样里、是用到的资料，或者是来路去处上的一站
     if ((d.core ?? []).length) {
@@ -358,16 +359,25 @@ for (const cx of names) {
     if (Array.isArray(d.rules)) {
       const KINDS = ['一直要守的', '做之前要满足的', '状态能不能走', '怎么算的']
       const list = (v) => (Array.isArray(v) ? v : []), obj = (x) => !!x && typeof x === 'object'
-      const rules = d.rules.filter(obj), acts = (d.core ?? []).flatMap((k) => list(k?.actions)).filter(obj), svcs = list(d.services).filter(obj), chs = list(d.chains).filter(obj)
+      // 顶层 concepts：不是核心数据、但自己有状态的概念，也有自己的 keeps 和行为；行为和核心数据的行为一起算
+      const cons = list(d.concepts).filter(obj)
+      const rules = d.rules.filter(obj), acts = [...(d.core ?? []), ...cons].flatMap((k) => list(k?.actions)).filter(obj), svcs = list(d.services).filter(obj), chs = list(d.chains).filter(obj)
       const ruleIds = new Set(rules.map((x) => x.id)), actIds = new Set(acts.map((a) => a.id)), svcIds = new Set(svcs.map((s) => s.id))
       const tag = (word, x) => `${word} ${x.id ?? '?'}（${x.title ?? ''}）`
       for (const x of dups(rules.map((x) => x.id))) say('错', cx, '业务', file, `规则号重复：${x}`)
       for (const x of dups(acts.map((a) => a.id))) say('错', cx, '业务', file, `行为号重复：${x}`)
       for (const x of dups(svcs.map((s) => s.id))) say('错', cx, '业务', file, `服务号重复：${x}`)
+      for (const k of cons) {
+        const t = String(k.title ?? '').trim()
+        if (!t) say('错', cx, '业务', file, '顶层 concepts 里有一项没写名字（title）：写这个概念在概念图里的名字')
+        else if (nm(d.core).includes(t)) say('错', cx, '业务', file, `顶层 concepts 里的「${t}」和核心数据同名：核心数据的行为（actions）和一直要守的规则（keeps）写在 core 里它自己那一项上，concepts 里只列不是核心数据、但自己有状态的概念`)
+        else if (!conTitles.has(t)) say('提醒', cx, '业务', file, `顶层 concepts 里的「${t}」在这个主题的概念图里找不到这个名字的概念：title 写它在概念图里的名字，页面靠名字把它的行为列到那个概念后面`)
+      }
       for (const x of rules) if (!KINDS.includes(x.kind)) say('错', cx, '业务', file, `规则 ${x.id ?? '?'} ${x.kind == null ? '没写 kind' : `的 kind 写的是「${x.kind}」`}：只能写${KINDS.join('、')}`)
-      // 规则挂在做它的那一个上，一共五处；功能的 rules 里不是「r-数字」样子的是没拆完的旧话，不查
+      // 规则挂在做它的那一个上，一共六处；功能的 rules 里不是「r-数字」样子的是没拆完的旧话，不查
       const hangs = [
         ...(d.core ?? []).filter(obj).map((k) => [`核心数据「${k.title ?? '?'}」的 keeps`, list(k.keeps)]),
+        ...cons.map((k) => [`概念「${k.title ?? '?'}」的 keeps`, list(k.keeps)]),
         ...acts.map((a) => [`${tag('行为', a)}的 rules`, list(a.rules)]),
         ...chs.map((ch) => [`${tag('响应', ch)}的 rules`, list(ch.rules)]),
         ...svcs.map((s) => [`${tag('服务', s)}的 rules`, list(s.rules)]),
@@ -380,7 +390,7 @@ for (const cx of names) {
         else say('错', cx, '业务', file, `${where} 里写的「${typeof x === 'string' ? x : JSON.stringify(x)}」不是这个主题的规则号：这里只挂规则号，规则的话写在顶层 rules 里`)
       }
       const loose = [...new Set(rules.map((x) => x.id).filter((k) => k && !hung.has(k)))]
-      if (loose.length) say('错', cx, '业务', file, `有 ${loose.length} 条规则没有挂在任何一处：${loose.join('、')}。规则挂在做它的那一个上：核心数据的 keeps，或者行为、响应、服务、功能的 rules`)
+      if (loose.length) say('错', cx, '业务', file, `有 ${loose.length} 条规则没有挂在任何一处：${loose.join('、')}。规则挂在做它的那一个上：核心数据或者概念的 keeps，或者行为、响应、服务、功能的 rules`)
       // 功能和响应叫的行为、功能用的服务、状态转换流程的线指着的行为
       const called = new Set()
       for (const [word, xs] of [['功能', fns], ['响应', chs]]) for (const x of xs) for (const k of list(x.calls)) { if (actIds.has(k)) called.add(k); else say('错', cx, '业务', file, `${tag(word, x)}叫的行为 ${k} 在这个主题里没有`) }

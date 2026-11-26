@@ -203,6 +203,9 @@ check('更细的目的没出处也没问人：只提醒', r.code === 0 && r.out.
 clean(); edit(M1, (d) => { delete d.purposes[0].needs[0].source })
 r = run()
 check('更细的目的没出处、但待定里问着人：不提醒', r.code === 0 && !r.out.includes('条更细的目的没写出处'), r.out)
+clean(); edit(A + '业务/概念/g1.json', (d) => { d.concepts.push({ id: 'slip', title: '回单' }) }); edit(M1, (d) => { d.concepts = [{ title: '回单', actions: [] }] })
+r = run()
+check('只列在模块文件 concepts 里的概念，算在这份业务里出现了', r.code === 0 && !r.out.includes('在这份业务里没有出现'), r.out)
 broken('模块业务的待定号重复', () => edit(M1, (d) => d.asks.push({ id: 'q-1', q: '又一个？' })), '问题号重复：q-1', 'g1.json')
 broken('模块业务的主题号写错', () => edit(M1, (d) => { d.topic = 'g2' }), 'topic 要写主题号 g1')
 broken('模块业务的文件不是全局图上的主题', () => write(A + '业务/模块业务/g7.json', { topic: 'g7', groups: [] }), 'g7 不是全局图上的主题')
@@ -232,15 +235,18 @@ clean(); edit(M1, (d) => {
   Object.assign(d.chains[0], { rules: ['r-94'], calls: ['act-9'], callsWhen: { 'act-8': '账户开着' } })
   d.services = [{ id: 's-1', title: '取号', rules: ['r-95'], for: '7' }, { id: 's-1', title: '又取号' }]
   d.workflows[0].moves[0].act = 'act-7'
+  d.concepts = [{ title: '账户', keeps: ['r-96'], actions: [{ id: 'act-1', title: '又一个', rules: ['r-97'], for: '9.9' }] }, { keeps: [] }]
 })
 r = run()
-check('没写顶层 rules 的主题：规则、行为、服务这一层一条都不查', r.code === 0 && r.out.includes('没查出毛病'), r.out)
+check('没写顶层 rules 的主题：规则、行为、服务这一层一条都不查（顶层 concepts 也不查）', r.code === 0 && r.out.includes('没查出毛病'), r.out)
 
 const C1 = A + '业务/概念/g1.json'
 const EX = [{ given: '开户表上户名没填', when: '柜员开立账户', then: '开不了，告诉柜员缺户名' }]
-// 在干净的小项目上把 g1 改成拆过的写法：目的写了固定的号（p-1、p-1.1），for 照号写
+// 在干净的小项目上把 g1 改成拆过的写法：目的写了固定的号（p-1、p-1.1），for 照号写。
+// 开户表不是核心数据、但自己有状态（交来了、办结了）：它列在顶层 concepts 里，有自己的 keeps 和一个行为 act-4，功能 f-1 叫这个行为
 function split() {
   clean()
+  edit(C1, (d) => { d.concepts.push({ id: 'form', title: '开户表', fields: ['状态'] }); d.edges.push({ id: '1', from: 'acct', to: 'form', label: '照哪一张开户表开的', tree: true }) })
   edit(C1, (d) => { d.concepts[0].fields = [{ title: '户名', note: '账户上写的名字', for: 'p-1', why: '钱记到人头上，要知道是谁的' }, { title: '开户日期', note: '柜员照开户表开立账户的那一天', for: 'p-1.1', why: '知道从哪一天起可以存钱' }, { title: '客户', note: '这个账户是谁的', ref: '客户档案', topic: '客户' }] })
   edit(M1, (d) => {
     d.rules = [
@@ -248,8 +254,13 @@ function split() {
       { id: 'r-2', kind: '一直要守的', short: '户名不能空', text: '账户的户名一直不能是空的。', source: '人 2026-01-05 说', for: 'p-1', examples: EX },
       { id: 'r-3', kind: '状态能不能走', short: '检查状态，开着才能销', text: '账户开着才能销户。', source: '人 2026-01-05 说', for: 'p-1.1', examples: [{ given: '账户已经销了', when: '柜员再销一次', then: '销不了' }] },
       { id: 'r-4', kind: '怎么算的', short: '定出账号，照开户的日子和当天的序号', text: '账号是开户的日子加上当天的序号。', source: '人 2026-01-05 说', for: 'p-1.1', items: ['日子写成八位数字', '序号从 1 起，一天之内不重'] },
-      { id: 'r-5', kind: '做之前要满足的', short: '检查账户，开着才发卡', text: '账户开着才给它发卡。', source: '人 2026-01-05 说', examples: [{ given: '账户销了', when: '账户已开的消息到了', then: '不发卡' }] }]
+      { id: 'r-5', kind: '做之前要满足的', short: '检查账户，开着才发卡', text: '账户开着才给它发卡。', source: '人 2026-01-05 说', examples: [{ given: '账户销了', when: '账户已开的消息到了', then: '不发卡' }] },
+      { id: 'r-6', kind: '一直要守的', short: '开户表办结以后不改', text: '开户表办结以后，上面的内容不再改。', source: '人 2026-01-05 说', examples: [{ given: '开户表已经办结了', when: '柜员改上面的户名', then: '改不了' }] },
+      { id: 'r-7', kind: '状态能不能走', short: '检查开户表的状态，交来了才能办结', text: '开户表交来了才能办结。', source: '人 2026-01-05 说', examples: [{ given: '开户表已经办结了', when: '柜员再办结一次', then: '办不了' }] }]
     d.core[0].keeps = ['r-2']
+    d.core[0].parts = ['开户表']
+    d.concepts = [{ title: '开户表', keeps: ['r-6'], actions: [
+      { id: 'act-4', title: '走到办结了', from: '交来了', to: '办结了', for: 'p-1.1', why: '照它开好了账户的开户表不再办第二次', does: '账户开好以后，把这张开户表记成办结了', rules: ['r-7'], edits: ['状态：交来了 → 办结了'], steps: [{ text: '把状态改成办结了', on: ['状态'] }] }] }]
     d.core[0].actions = [
       { id: 'act-1', title: '开立', to: '开着', for: 'p-1.1', why: '客户来了就能存', does: '照开户表记下户名，账户开着', rules: [], in: [{ title: '开户表', note: '客户填好交来的那一张' }],
         edits: ['户名：照开户表记下', '开户日期: 记下当天'], out: [{ kind: '事件', title: '账户已开：带着户名和开户日期' }],
@@ -258,7 +269,7 @@ function split() {
       { id: 'act-3', title: '走到销了', from: '开着', to: '销了', for: 'p-1.1', does: '账户销了，不能再存钱', rules: ['r-3'], edits: ['状态：开着 → 销了'], steps: [{ text: '把状态改成销了', on: ['状态'] }] }]
     const f = fn1(d)
     delete f.subject.edits
-    Object.assign(f, { who: '柜员', rules: ['r-1'], services: ['s-1'], calls: ['act-1'], out: [{ kind: '通知', title: '开户通知:告诉客户账号' }],
+    Object.assign(f, { who: '柜员', rules: ['r-1'], services: ['s-1'], calls: ['act-1', 'act-4'], out: [{ kind: '通知', title: '开户通知:告诉客户账号' }],
       steps: [{ text: '取一个新的账号' }, { call: { topic: '客户', title: '查客户档案' }, text: '调用客户的功能：查客户档案' }, { text: '通知客户账户开好了', on: ['开户通知'] }] })
     d.groups[0].functions.push({ id: 'f-2', title: '销户', intent: '客户不再用这个账户的时候把它关掉', subject: { title: '这位客户的账户', op: '更新', to: '账户销了' }, in: [], out: [],
       rules: ['客户本人来才能销'], calls: ['act-3'], steps: [{ text: '核对来的人是客户本人' }] })
@@ -267,9 +278,12 @@ function split() {
     Object.assign(d.chains[0], { rules: ['r-5'], calls: ['act-2'] })
     d.services = [{ id: 's-1', title: '取一个新的账号', does: '给新开的账户取一个不重的账号', for: 'p-1.1', why: '每个账户要认得出来', in: [{ title: '开户的日子', note: '柜员开立账户的那一天' }], rules: ['r-4'], steps: [{ text: '照当天已经开出的账户数往后排一个' }], returns: '账号' }]
     d.workflows[0].moves[0].act = 'act-3'
+    d.workflows.push({ id: 'w-2', title: '开户表', states: [{ id: 's-1', title: '交来了' }, { id: 's-2', title: '办结了' }], moves: [{ from: 's-1', to: 's-2', label: '账户开好了', act: 'act-4' }] })
   })
 }
 const fn2 = (d) => d.groups[0].functions[1], act = (d, i) => d.core[0].actions[i]
+// 顶层 concepts 里的那个概念（开户表）和它的行为；整个主题的行为：核心数据的和概念的
+const con = (d) => d.concepts[0], cact = (d) => d.concepts[0].actions[0], acts = (d) => [...d.core[0].actions, ...d.concepts.flatMap((k) => k.actions ?? [])]
 // 在拆过的写法上弄坏一处：退出码 1，输出里要有这几个字
 function brokenS(name, breakIt, ...words) {
   split(); breakIt()
@@ -287,7 +301,7 @@ function warnS(name, changeIt, ...words) {
 
 split()
 r = run()
-check('拆过的写法（顶层 rules、keeps 和行为、功能的 rules 和 calls 和 steps、响应的 rules 和 calls、服务、moves 的 act、概念的栏带 for）：没查出毛病', r.code === 0 && r.out.includes('没查出毛病'), r.out)
+check('拆过的写法（顶层 rules、keeps 和行为、功能的 rules 和 calls 和 steps、响应的 rules 和 calls、服务、moves 的 act、概念的栏带 for、顶层 concepts 里一个有自己的 keeps 和行为的概念）：没查出毛病', r.code === 0 && r.out.includes('没查出毛病'), r.out)
 brokenS('拆过的主题：规则号重复', () => edit(M1, (d) => d.rules.push({ ...d.rules[0] })), '规则号重复：r-1', '模块业务/g1.json')
 brokenS('拆过的主题：行为号重复（两样核心数据下各一个，整个主题里算）', () => edit(M1, (d) => d.core.push({ title: '卡', why: '发给客户取钱用的', sources: [], targets: [], actions: [{ ...act(d, 0) }] })), '行为号重复：act-1')
 brokenS('拆过的主题：服务号重复', () => edit(M1, (d) => d.services.push({ ...d.services[0] })), '服务号重复：s-1')
@@ -307,6 +321,23 @@ r = brokenS('响应的 callsWhen 的键不是存在的行为号', () => edit(M1,
 check('callsWhen 里存在的行为号不报', !r.out.includes('callsWhen 里写的 act-2') && r.out.includes('1 处错，0 处提醒'), r.out)
 brokenS('功能用的服务不存在', () => edit(M1, (d) => fn1(d).services.push('s-9')), '功能 f-1（开立账户）用的服务 s-9 在这个主题里没有')
 brokenS('状态转换流程的线指着的行为不存在', () => edit(M1, (d) => { d.workflows[0].moves[0].act = 'act-9' }), '状态转换流程 w-1（账户）的线 s-1 → s-2 指着的行为 act-9 在这个主题里没有')
+// —— 顶层 concepts：不是核心数据、但自己有状态的概念，它的 keeps 和行为跟核心数据的一样查 ——
+brokenS('行为号重复：核心数据的行为和概念的行为一起算', () => edit(M1, (d) => con(d).actions.push({ id: 'act-1', title: '又一个' })), '行为号重复：act-1')
+brokenS('概念的 keeps 里挂着没有的规则', () => edit(M1, (d) => con(d).keeps.push('r-96')), '概念「开户表」的 keeps 里挂着的规则 r-96 在这个主题的 rules 里没有')
+brokenS('概念的行为的 rules 里挂着没有的规则', () => edit(M1, (d) => cact(d).rules.push('r-97')), '行为 act-4（走到办结了）的 rules 里挂着的规则 r-97 在这个主题的 rules 里没有')
+r = brokenS('只挂在概念的 keeps、概念的行为的 rules 上的规则，从这两处拿掉就没有挂在任何一处', () => edit(M1, (d) => { con(d).keeps = []; cact(d).rules = [] }), '有 2 条规则没有挂在任何一处：r-6、r-7。规则挂在做它的那一个上：核心数据或者概念的 keeps，或者行为、响应、服务、功能的 rules')
+check('规则从概念上拿掉：只报这一处', r.out.includes('1 处错，0 处提醒'), r.out)
+split(); edit(M1, (d) => Object.assign(d.chains[0], { alt: true, calls: ['act-2', 'act-4'], callsWhen: { 'act-2': '账户还开着', 'act-4': '开户表还没办结' } }))
+r = run()
+check('响应的 calls 和 callsWhen 指着概念的行为：算在，没查出毛病', r.code === 0 && r.out.includes('没查出毛病'), r.out)
+r = brokenS('概念的行为从 concepts 里拿掉：功能的 calls、状态转换流程的线指着的就不在了', () => edit(M1, (d) => { con(d).actions = [] }), '功能 f-1（开立账户）叫的行为 act-4 在这个主题里没有', '状态转换流程 w-2（开户表）的线 s-1 → s-2 指着的行为 act-4 在这个主题里没有')
+warnS('概念的行为没有哪项功能或响应叫它：只提醒', () => edit(M1, (d) => { fn1(d).calls = ['act-1'] }), '有 1 个行为没有哪项功能或响应叫它（不在任何 calls 里）：act-4（走到办结了）', '0 处错，1 处提醒')
+brokenS('概念的行为的 for 指着的号不存在', () => edit(M1, (d) => { cact(d).for = 'p-9.9' }), '行为 act-4（走到办结了）的 for 写的是「p-9.9」，主题 g1 的业务目的（purposes）里没有这个号的目的')
+warnS('概念的行为的 steps[].on 对不上它自己的 edits 和 out：只提醒', () => edit(M1, (d) => { cact(d).steps[0].on = ['状态', '办结日期'] }), '有 1 处步骤（steps）的 on 里写的名字对不上副作用：行为 act-4（走到办结了）的「办结日期」。', '0 处错，1 处提醒')
+warnS('concepts 里的名字在这个主题的概念图里找不到：只提醒', () => edit(M1, (d) => { con(d).title = '开户申请' }), '顶层 concepts 里的「开户申请」在这个主题的概念图里找不到这个名字的概念：title 写它在概念图里的名字', '0 处错，1 处提醒')
+r = brokenS('concepts 里的名字和一样核心数据同名', () => edit(M1, (d) => { con(d).title = '账户' }), '顶层 concepts 里的「账户」和核心数据同名：核心数据的行为（actions）和一直要守的规则（keeps）写在 core 里它自己那一项上')
+check('concepts 里的名字和核心数据同名：只报这一处', r.out.includes('1 处错，0 处提醒'), r.out)
+brokenS('concepts 里有一项没写名字', () => edit(M1, (d) => { delete con(d).title }), '顶层 concepts 里有一项没写名字（title）')
 // —— 目的的固定的号：业务目的 p-1，更细的目的 p-1.1；for 照号找目的 ——
 // 再添的一条更细的目的、一条业务目的（不给号就不写 id）
 const NEED2 = (id) => ({ ...(id ? { id } : {}), aim: '账户不用了能关掉', text: '客户本人来销户', source: '人 2026-01-05 说：不用了要能销', cores: ['账户'] })
@@ -316,7 +347,7 @@ function splitOld() {
   split()
   const strip = (x) => { if (typeof x?.for === 'string') x.for = x.for.replace(/^p-/, '') }
   edit(C1, (d) => d.concepts[0].fields.forEach(strip))
-  edit(M1, (d) => { for (const p of d.purposes) { delete p.id; for (const n of p.needs) delete n.id } [...d.rules, ...d.core[0].actions, ...d.services].forEach(strip) })
+  edit(M1, (d) => { for (const p of d.purposes) { delete p.id; for (const n of p.needs) delete n.id } [...d.rules, ...acts(d), ...d.services].forEach(strip) })
 }
 brokenS('规则的 for 指着的号没有哪一条目的用', () => edit(M1, (d) => { d.rules[0].for = 'p-1.2' }), '规则 r-1 的 for 写的是「p-1.2」，主题 g1 的业务目的（purposes）里没有这个号的目的：for 写的是一条业务目的的号（id）或者一条更细的目的的号（id）')
 brokenS('行为、服务的 for 指着的号不存在、写的不是号', () => edit(M1, (d) => { act(d, 0).for = 'p-2'; d.services[0].for = '头一条' }), '行为 act-1（开立）的 for 写的是「p-2」，主题 g1 的业务目的（purposes）里没有这个号的目的', '服务 s-1（取一个新的账号）的 for 写的是「头一条」')
@@ -351,17 +382,17 @@ check('号写成纯数字「1」「1.1」：只提醒号不是规定的样子', 
 splitOld()
 r = run()
 check('旧写法（目的不写号，for 写「1.1」照先后数）：for 指得到，不算错；提醒给目的写上固定的号，一个主题一条',
-  r.code === 0 && r.out.includes('有 10 处写了 for，而业务目的和更细的目的都没写固定的号（id）：for 现在是照先后数的，在中间插一条目的，后面的指向都会错位。给业务目的和更细的目的各写一个固定的号') && r.out.includes('0 处错，1 处提醒'), r.out)
+  r.code === 0 && r.out.includes('有 11 处写了 for，而业务目的和更细的目的都没写固定的号（id）：for 现在是照先后数的，在中间插一条目的，后面的指向都会错位。给业务目的和更细的目的各写一个固定的号') && r.out.includes('0 处错，1 处提醒'), r.out)
 splitOld(); edit(M1, (d) => { d.rules[0].for = '1.2' })
 r = run()
 check('旧写法：for 指着的更细的目的不存在，照先后数的话报', r.code === 1 && r.out.includes('规则 r-1 的 for 写的是「1.2」，主题 g1 的业务目的（purposes）里没有这一条：for 写成「业务目的的序号.更细的目的的序号」，从 1 数起') && r.out.includes('1 处错，1 处提醒'), r.out)
 splitOld(); edit(M1, (d) => { d.purposes[0].needs.push(NEED2()); d.rules[2].for = '1.2'; act(d, 2).for = '1.2' })
 r = run()
 check('旧写法：for 写「1.2」、第 1 条业务目的下面有第 2 条更细的目的：指得到，只有「没写固定的号」那一条提醒', r.code === 0 && r.out.includes('没写固定的号') && r.out.includes('0 处错，1 处提醒'), r.out)
-splitOld(); edit(C1, (d) => d.concepts[0].fields.forEach((x) => { delete x.for })); edit(M1, (d) => [...d.rules, ...d.core[0].actions, ...d.services].forEach((x) => { delete x.for }))
+splitOld(); edit(C1, (d) => d.concepts[0].fields.forEach((x) => { delete x.for })); edit(M1, (d) => [...d.rules, ...acts(d), ...d.services].forEach((x) => { delete x.for }))
 r = run()
 check('旧写法、主题里没有东西写 for：不提醒「没写固定的号」', r.code === 0 && r.out.includes('没查出毛病'), r.out)
-splitOld(); edit(M1, (d) => [...d.rules, ...d.core[0].actions, ...d.services].forEach((x) => { delete x.for }))
+splitOld(); edit(M1, (d) => [...d.rules, ...acts(d), ...d.services].forEach((x) => { delete x.for }))
 r = run()
 check('旧写法、只有概念的栏写了 for：也提醒，报在模块文件上', r.code === 0 && r.out.includes('有 2 处写了 for，而业务目的和更细的目的都没写固定的号（id）') && r.out.includes('0 处错，1 处提醒'), r.out)
 warnS('规则没有例子也没有 items：只提醒，并成一条说；只有 items 的不算', () => edit(M1, (d) => { delete d.rules[0].examples; d.rules[2].examples = [] }), '有 2 条规则没有例子（examples），也没有并着的几小条（items）：r-1、r-3。', '0 处错，1 处提醒')
