@@ -958,7 +958,7 @@
           "chains": [
             "c-1"
           ],
-          "side": true
+          "sys": true
         }
       ]
     },

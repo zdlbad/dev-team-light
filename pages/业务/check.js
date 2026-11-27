@@ -1121,7 +1121,7 @@ const cases = [
   // 默认看「业务目的拆解」；最上面一行图例，说了目的、子目的、如何拆为子目的、途径、落点，和功能、响应到哪里看
   ['#样例系统/module/g2', (s) => { const m = secOf(s, 'model')
     return m.includes('<button data-model-tab="tree" data-key="样例系统/g2" class="on">业务目的拆解</button><button data-model-tab="parts" data-key="样例系统/g2">业务模型成员</button>')
-      && m.includes('<p class="lg">一个 <i class="gk root">目的</i> 直接到不了的，拆成几个 <i class="gk">子目的</i> 去到，<i class="gq">如何拆为子目的</i> 说明是怎么拆的') && m.includes('写 <i class="gq">途径</i>：哪样核心数据（或者有自己状态的概念）的哪个行为') && m.includes('再写 <i class="gq">落点</i>')
+      && m.includes('<p class="lg">一个 <i class="gk root">目的</i> 直接到不了的，拆成几个 <i class="gk">子目的</i> 去到，<i class="gq">如何拆为子目的</i> 说明是怎么拆的') && m.includes('写 <i class="gq">途径</i>：哪个成员（核心数据，或者有自己状态的概念）的哪个行为') && m.includes('再写 <i class="gq">落点</i>')
       && m.includes('功能、响应不在里面，在「业务方案」的流程视角、角色视角里看') && m.includes('点带 ▸ 的一行展开或收起') && !m.includes('class="cg"') }, tree('g2')],
   // 到不了的节点：一行是标签「目的」（根）加粗的目的，右边「N 个子目的」；下面一行「如何拆为子目的」；再下面是子节点。带 made 的后面标「推出来的」；写了 source 的鼠标停在目的上显示它
   ['#样例系统/module/g2', (s) => { const a = nodeOf(s, 'g-1'), b = nodeOf(s, 'g-2')
@@ -1188,7 +1188,7 @@ const cases = [
     return m.includes('<button data-plan-tab="flow" data-key="样例系统/g2" class="on">流程视角</button><button data-plan-tab="role" data-key="样例系统/g2">角色视角</button>')
       && m.includes('<button data-flow-tab="0" data-key="样例系统/g2" class="on">1 从建档到分到资金</button><button data-flow-tab="1" data-key="样例系统/g2">2 做了服务以后扣款</button>')
       && m.includes('<div class="fpu">业务目的：替一位新来的老人把档案建好、记准，分到的钱开在她名下，后面做的服务才有依据、有钱可扣。</div><div class="ftl"><b>业务流程：从建档到分到资金</b>建档、签协议、分到资金是接着办的一条线：')
-      && m.includes('虚线边的小块是系统接着办的、或者要先备好的一步；浅色的小块是不顺利时才重走的一步') && !m.includes('class="jtb"') }, open('g2', 'plan')],
+      && m.includes('虚线边的小块是系统接着办的一步；点线边的小块是旁支：顺利时不必走的、或者要先备好的一步；浅色的小块是不顺利时才重走的一步') && !m.includes('class="jtb"') }, open('g2', 'plan')],
   // 一段一行：左边是序号加段名，下面小字是这一段里的状态；右边先是说明，下面是步骤，一个步骤一个小块「角色 · 步骤标题」，小块之间用箭头连着；系统接着办的一步是虚线边的小块
   ['#样例系统/module/g2', (s) => { const m = secOf(s, 'plan'), rows = m.split('<tr').slice(1)
     return rows.length === 4 && rows[0].includes('<td><b><i>1</i>建档</b><div class="fst">已建档</div></td><td><div>老人交来决定通知书和支持计划，照护伙伴照它们建立参与者档案。</div><div class="frn"><span class="fp" data-jstep="j-1.1">照护伙伴 · 照决定通知书建立参与者档案</span></div></td>')
@@ -1214,6 +1214,11 @@ const cases = [
   // 不顺利时才重走的一步（again）是浅色的小块；又是系统接着办的，两样都带上（样例里没有 again 的步骤，这里临时标一个）
   ['#样例系统/module/g5', (s) => { const m = secOf(s, 'plan'); return m.includes('<span class="fp again" data-jstep="j-5.2">财务 · 记下政府对申报行的审核结果</span>') && m.includes('<span class="fp sys again" data-jstep="j-5.4">') && count(m, ' again"') === 2 },
     "{ const st = Object.fromEntries(allSteps(MODULES.g5).map((x) => [x.s.id, x.s])); st['j-5.2'].again = true; st['j-5.4'].again = true } " + open('g5', 'plan')],
+  // 旁支（side）：顺利时不必走的、或者要先备好的一步，是点线边的小块，和系统接着办的（sys）分开；角色视角里标「旁支」（样例里没有旁支，这里临时标一个）
+  ['#样例系统/module/g5', (s) => { const m = secOf(s, 'plan'); return m.includes('<span class="fp side" data-jstep="j-5.2">财务 · 记下政府对申报行的审核结果</span>') && m.includes('<span class="fp sys" data-jstep="j-5.4">') && count(m, 'fp side') === 1 },
+    "{ const st = Object.fromEntries(allSteps(MODULES.g5).map((x) => [x.s.id, x.s])); st['j-5.2'].side = true } " + open('g5', 'plan')],
+  ['#样例系统/module/g5', (s) => { const r = stepRow(s, 'j-5.2'); return r.includes('<span class="jk">旁支</span>') && !r.includes('系统接着办的') },
+    "{ const st = Object.fromEntries(allSteps(MODULES.g5).map((x) => [x.s.id, x.s])); st['j-5.2'].side = true } " + roleV('g5', '财务')],
   // 只有一张流程表：不出流程表的页签；流程表指着的步骤各角色要办成的事里没有：标红说一句，点不动
   ['#样例系统/module/g2', (s) => { const m = secOf(s, 'plan'); return !m.includes('data-flow-tab') && m.includes('<div class="fpu">业务目的：做了的服务，') && m.includes('<span class="fp miss">j-9.9：各角色要办成的事里没有这一步</span>') && stepIds(m) === 'j-5.1' },
     "MODULES.g2.flows.shift(); MODULES.g2.flows[0].stages[0].parts.push('j-9.9'); " + open('g2', 'plan')],
@@ -1250,7 +1255,7 @@ const cases = [
   // 一条目的都没达成的一步写「没有达成树上的目的」；不顺利时才重走的、系统接着办的各带一个小标；没用到功能、响应的一步右边是空的（样例里没有这样的一步，这里临时添一步）。步骤前面的序号照它在这件事里排第几
   ['#样例系统/module/g5', (s) => { const r = stepRow(s, 'j-5.9'), q = stepRow(s, 'j-5.4')
     return r.includes('<b>4. 改了以后重新报上去</b><span class="jk">不顺利时才重走的</span></div>') && r.includes('<div><span class="none">没有达成树上的目的</span></div>') && r.includes('<td><div class="jc"></div></td>')
-      && q.includes('<b>3. 扣成了以后，系统把申报行记成已扣款</b><span class="jk">系统接着办的，或者要先备好的</span></div>') && !stepRow(s, 'j-5.1').includes('class="jk"') && secOf(s, 'plan').includes('<td class="jj" rowspan="4">') },
+      && q.includes('<b>3. 扣成了以后，系统把申报行记成已扣款</b><span class="jk">系统接着办的</span></div>') && !stepRow(s, 'j-5.1').includes('class="jk"') && secOf(s, 'plan').includes('<td class="jj" rowspan="4">') },
     "MODULES.g5.jobs[4].steps.push({ id: 'j-5.9', title: '改了以后重新报上去', again: true }); " + roleV('g5', '财务')],
   // 一个节点写了途径、同时又写了 parts：它也算到得了的目的。树上途径、落点那几行一直在（收着也在），点它那一行展开的是「如何拆为子目的」和子节点；叫到它的行为的那一步，达成的目的里有它
   ['#样例系统/module/g2', (s) => { const [a, b] = mainHtml(s).split('<!--next-->'), n = nodeOf(a, 'g-2.1'), r = b.slice(b.indexOf('data-step-row="j-5.1"'), b.indexOf('</tr>', b.indexOf('data-step-row="j-5.1"')))
@@ -1301,9 +1306,9 @@ const cases = [
   ['#样例系统/module/g2', (s) => secOf(s, 'plan').includes('<td class="js hi" data-step-row="j-3.2">') && secOf(s, 'plan').includes('class="on">照护伙伴　4 件事</button>'), open('g2', 'tours') + '; ' + tapMain('[data-jstep]', { jstep: 'j-3.2' })],
   ['#样例系统/module/g2', (s) => { const m = secOf(s, 'tours'); return m.includes('<g class="tj miss"><rect') && m.includes('>j-9.9：各角色要办成的事里没有这一步</text>') && inBounds(m) }, "MODULES.g2.tours[0].steps[1].jobs = ['j-9.9']; " + open('g2', 'tours')],
   // ---- 窗口里跟着改的 ----
-  // 行为的窗口：照旧显示它自己的 why（业务目的那一行）；下面「达成的目的」是树上 act 指着它的那几个节点，点了跳到树上；不再有「对着目的 p-…」，也不说「还没有写它为了哪条业务目的」
+  // 行为的窗口：进了树的行为只出「达成的目的」一行，是树上 act 指着它的那几个节点，点了跳到树上，不再另出「业务目的」那一行；不再有「对着目的 p-…」，也不说「还没有写它为了哪条业务目的」
   ['#样例系统/module/g2', (s) => { const p = popup(s), l = lineOf(p, '达成的目的')
-    return p.includes('<div class="am"><i>业务目的</i><b>做了的服务从她名下对着这一类服务的账户里出钱，每扣一笔都查得到。</b></div><div class="am"><i>达成的目的</i><span><span class="ga" data-goal="g-2.1.4">每扣一笔都查得到：')
+    return !p.includes('<i>业务目的</i>') && p.includes('<div class="am"><i>达成的目的</i><span><span class="ga" data-goal="g-2.1.4">每扣一笔都查得到：')
       && goalIds(l) === 'g-2.1.4,g-2.2' && !p.includes('对着目的') && !p.includes('还没有写它为了哪条业务目的') && !p.includes('没有找到目的') && p.includes('<div class="am"><i>做什么</i>') && inBounds(p) }, "popFrom('act:act-5')"],
   // 没进树的行为：写「没进目的的树」；行为上还留着 for 的，不拿它显示，也不因为它找不到说什么
   ['#样例系统/module/g2', (s) => { const p = popup(s); return lineOf(p, '达成的目的').includes('<span><span class="none">没进目的的树</span></span>') && goalIds(p) === '' && p.includes('<i>业务目的</i><b>先分到一部分、后来补到全额的，账户上的钱要跟着补上。</b>') && !p.includes('p-9.9') && !p.includes('业务目的里没有这一条') && !p.includes('没有找到目的') },

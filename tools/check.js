@@ -32,7 +32,7 @@
 //           目的的树（模块文件写了 goals 才查）：旧样子的树不认，节点带 title、answer、basis 里的哪一栏，或者 parts 里的项带 fn、chain，就只提醒一条「目的的树是旧的样子，要重做」，这棵树不再逐条查，行为有没有进树、步骤有没有达成目的也跳过。
 //           不是旧样子的：目的号（id）有没有重复、act 指着的行为在不在（核心数据的行为和顶层 concepts 里概念的行为都算；都是错）；
 //           提醒的有（各并成一条）：节点是不是又写了 parts 又写了 way、或者两样都没写；写了 parts 的节点写没写 plan；节点写没写 aim；目的号是不是「g-1」「g-1.2」的样子、子目的的号是不是接着上一层的号往下写的；
-//           写了 act 的节点，way 是不是「这个行为所在的核心数据或概念的名字-这个行为的名字」；每个行为有没有进树（有没有哪个到得了的目的的 act 指着它）；
+//           写了 act 的节点，way 是不是「这个行为所在的成员的名字-这个行为的名字」；每个行为有没有进树（有没有哪个到得了的目的的 act 指着它）；
 //           land 可以写几样，用全角分号「；」隔开，每一段横线前面的名字（没有横线就是整段）是不是这个主题概念图上的概念或者核心数据（way 以「外部调用-」开头的不查）；way 是「外部调用-主题名-功能名」的，主题名是不是全局图上的主题；写了 goals 还留着 purposes 的提醒拿掉
 //           各角色要办成的事（写了 jobs 才查）：事的号、步骤的号有没有重复，步骤的 fns、chains 指着的功能、响应在不在（都是错）；
 //           提醒的有（各并成一条）：每项功能、每条响应有没有被哪个步骤用到；写了 fns 或 chains 的步骤有没有达成目的的树上的哪个目的（fns 全是「查看」的功能、又没有 chains 的不提醒；没写 goals 的主题不查这一样）；步骤是不是 fns、chains 都没写（步骤的 note 不查）
@@ -293,7 +293,7 @@ for (const cx of names) {
         ...(c.sources ?? []).flatMap((s) => [...(s.heads ?? []).flatMap((h) => h.steps ?? []), ...(s.steps ?? [])]).filter((x) => !x.event).map((x) => x.data), ...(c.targets ?? []).map((x) => x.data)]), ...conTitles])
       const chainIds = (d.chains ?? []).map((ch) => ch.id), hungF = new Set(), hungC = new Set()
       // 没写目的：该写的是目的的树
-      if (!ps.length) say('提醒', cx, '业务', file, '没写目的的树（goals）：这块业务要达到哪几个目的；到不了的目的一层层拆成子目的，拆到靠核心数据（或者有自己状态的概念）的一个行为就到得了为止')
+      if (!ps.length) say('提醒', cx, '业务', file, '没写目的的树（goals）：这块业务要达到哪几个目的；到不了的目的一层层拆成子目的，拆到靠成员（核心数据，或者有自己状态的概念）的一个行为就到得了为止')
       else {
         say('提醒', cx, '业务', file, '这个主题的业务目的还写在 purposes 里：业务目的改成写目的的树（goals）了。把业务目的和更细的目的搬进 goals：到不了的目的写目的（aim）、如何拆为子目的（plan）、子目的（parts），到得了的目的写目的（aim）、途径（way）、落点（land）；搬完把 purposes 拿掉')
         if (!String(d.intro?.context ?? '').trim()) say('提醒', cx, '业务', file, '写了业务目的却没写背景（intro.context）：业务目的是从背景里挖出来的')
@@ -539,7 +539,7 @@ for (const cx of names) {
         const both = nodes.filter(({ n }) => hasParts(n) && hasWay(n)).map(({ n }) => gname(n))
         if (both.length) say('提醒', cx, '业务', file, `目的的树上有 ${both.length} 个目的又写了子目的（parts）又写了途径（way）：${both.join('、')}。到不了的目的写如何拆为子目的（plan）和子目的（parts），不写途径；到得了的目的写途径，不写子目的`)
         const neither = nodes.filter(({ n }) => !hasParts(n) && !hasWay(n)).map(({ n }) => gname(n))
-        if (neither.length) say('提醒', cx, '业务', file, `目的的树上有 ${neither.length} 个目的既没写子目的（parts）也没写途径（way）：${neither.join('、')}。到不了的目的往下拆成子目的；到得了的目的写途径：哪样核心数据（或者有自己状态的概念）的哪个行为`)
+        if (neither.length) say('提醒', cx, '业务', file, `目的的树上有 ${neither.length} 个目的既没写子目的（parts）也没写途径（way）：${neither.join('、')}。到不了的目的往下拆成子目的；到得了的目的写途径：哪个成员（核心数据，或者有自己状态的概念）的哪个行为`)
         const noPlan = nodes.filter(({ n }) => hasParts(n) && !txt(n.plan)).map(({ n }) => gname(n))
         if (noPlan.length) say('提醒', cx, '业务', file, `目的的树上有 ${noPlan.length} 个到不了的目的没写如何拆为子目的（plan）：${noPlan.join('、')}。plan 只说哪几个子目的要成立、哪一个要等哪一个`)
         const noAim = nodes.filter(({ n }) => !txt(n.aim)).map(({ n }) => gname(n))
@@ -553,7 +553,7 @@ for (const cx of names) {
         // 写了 act 的目的，途径照着那个行为写
         const offWay = nodes.filter(({ n }) => actAt.has(n.act)).map(({ n }) => { const { a, on } = actAt.get(n.act); return { n, want: `${txt(on) || '?'}-${txt(a.title) || '?'}` } }).filter(({ n, want }) => txt(n.way) !== want)
           .map(({ n, want }) => `${gname(n)} ${txt(n.way) ? `的途径写的是「${txt(n.way)}」` : '没写途径'}，它的 act 指着的 ${n.act} 是「${want}」`)
-        if (offWay.length) say('提醒', cx, '业务', file, `目的的树上有 ${offWay.length} 个目的的途径（way）和它的 act 指着的行为对不上：${offWay.join('；')}。写了 act 的目的，途径写成「这个行为所在的核心数据或概念的名字-这个行为的名字」`)
+        if (offWay.length) say('提醒', cx, '业务', file, `目的的树上有 ${offWay.length} 个目的的途径（way）和它的 act 指着的行为对不上：${offWay.join('；')}。写了 act 的目的，途径写成「这个行为所在的成员的名字-这个行为的名字」`)
         const inTree = new Set(leaves.map((n) => n.act).filter((k) => k != null))
         const outTree = acts.filter((x) => x.a.id && !inTree.has(x.a.id)).map((x) => `${x.a.id}（${x.a.title ?? ''}）`)
         if (outTree.length) say('提醒', cx, '业务', file, `有 ${outTree.length} 个行为没进目的的树：${outTree.join('、')}。没有哪个到得了的目的的 act 指着它：它达成的是树上哪个目的，就把那个目的的途径（way）写成它、act 写它的号；树上找不到这样的目的，回头看这个行为是为了什么`)
@@ -618,7 +618,7 @@ for (const cx of names) {
         for (const k of one(w.done)) if (!ids.includes(k)) say('错', cx, '业务', file, `状态转换流程 ${w.id}（${w.title ?? ''}）的 done 指着的 ${k} 不是它的状态：done 写办成的终点那个状态的号，有几个就写成一列`)
         for (const k of one(w.open)) if (!actAt.has(k)) say('错', cx, '业务', file, `状态转换流程 ${w.id}（${w.title ?? ''}）的 open 指着的行为 ${k} 在这个主题里没有：open 写新开这样东西的那个行为的号`)
       }
-      // 主要步骤：叫到的行为里有一个是某份状态转换流程的 open，或者是一条往前的线的 act。
+      // 主要步骤：叫到的行为里有一个是某份状态转换流程的 open，或者是一条往前的线的 act。标了 again 的步骤是不顺利时才重走的，不算主要步骤。
       // 往前的线照 moves 的先后一条条看：没标 again；从它的去处沿没标 again 的线走得到 done；从它的去处沿已经算作往前的线走不回它的来处
       if (hasJobs) {
         const noDone = wfs.filter((w) => !one(w.done).length).map((w) => `${w.id ?? '?'}（${w.title ?? ''}）`)
@@ -632,7 +632,7 @@ for (const cx of names) {
           for (const m of calm) if (walkTo(m.to, calm, (k) => done.has(k)) && !walkTo(m.to, ahead, (k) => k === m.from)) { ahead.push(m); if (m.act != null) mainActs.add(m.act) }
         }
         const toured = new Set(list(d.tours).filter(obj).flatMap((t) => list(t.steps).filter(obj).flatMap((st) => list(st.jobs))))
-        const untoured = stepRows.filter(({ s }) => s.id != null && !toured.has(s.id) && [...calledBy(s)].some((k) => mainActs.has(k))).map(({ s }) => sname(s))
+        const untoured = stepRows.filter(({ s }) => s.id != null && !s.again && !toured.has(s.id) && [...calledBy(s)].some((k) => mainActs.has(k))).map(({ s }) => sname(s))
         if (untoured.length) say('提醒', cx, '业务', file, `有 ${untoured.length} 个主要步骤没出现在主要流程速览里：${untoured.join('、')}。主要步骤是这样的角色的步骤：它的功能、响应叫的行为里，有一个是新开一样东西的行为（状态转换流程的 open），或者是状态转换流程里一条往前的线上的行为。把它的号写进速览里对着的那一步的 jobs`)
       }
 

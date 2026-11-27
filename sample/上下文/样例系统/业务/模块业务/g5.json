@@ -1308,7 +1308,7 @@
           "chains": [
             "c-1"
           ],
-          "side": true
+          "sys": true
         }
       ]
     },
@@ -1373,7 +1373,7 @@
           "chains": [
             "c-2"
           ],
-          "side": true
+          "sys": true
         }
       ]
     },
